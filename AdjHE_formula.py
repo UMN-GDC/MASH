@@ -1,19 +1,3 @@
-import pandas as pd
-import numpy as np
-import sys
-import os
-import psutil
-import scipy.sparse as sp
-import scipy.sparse.linalg
-import inspect
-from scipy.sparse import csr_matrix, rand
-from scipy.misc import imsave
-from struct import unpack, calcsize
-from numpy.linalg import inv
-from numpy.linalg import multi_dot
-import timeit
-import logging
-import resource
 import argparse
 from argparse import RawTextHelpFormatter
 from functions import *
@@ -39,10 +23,7 @@ parser.add_argument('--std',action='store_true',default=False,help='Run SAdj-HE 
 args = parser.parse_args()
 
 
-if (args.npc == "NULL"):
-    npc=0
-else:
-    npc = args.npc
+npc = args.npc
 outprefix = args.out
 logging.basicConfig(format='%(asctime)s - %(pathname)s[line:%(lineno)d] - %(levelname)s: %(message)s',
                     level=logging.DEBUG,filename=outprefix+'.log',filemode='a')
@@ -54,23 +35,38 @@ prefix = args.prefix
 G = ReadGRMBin(prefix)
 ids = G['id']
 n_phen_nona = ids.shape[0]
-phenotypes = pd.read_csv(args.pheno, sep=" ", header =None  )
-# remove null only to make it work because I have a null column, need to figure out how to fix this permantetly later
-# phenotypes = phenotypes.iloc[: , :-1]
 
-phenotypes.index = phenotypes.iloc[:,0].astype("int32")
-intersection_indiv = np.intersect1d(ids.iloc[:,0].astype("int32"), phenotypes.iloc[:,0].astype("int32"))
-final_phen = phenotypes.loc[intersection_indiv]
 
+# Read data function that can load csv pheno and txt file types
+def read_datas(file_path) :
+ if(file_path.split(".")[-1] == "csv"):
+  dat = pd.read_csv(file_path)
+ elif(file_path.split(".")[-1] == "phen"):
+  dat = pd.read_table(file_path, sep = " " )
+ elif(file_path.split(".")[-1] == "txt"):
+  dat = pd.read_table(file_path, sep = " " )
+ # remove the unintentional columns that sometimes happen with phenotype and csv filetypes
+ dat = dat[dat.columns.drop(list(dat.filter(regex='Unnamed')))]
+ # only keep intersections of the individuals in the GRM and in the covariates and phenotypes
+ intersection_indiv = np.intersect1d(ids.iloc[:,1], dat.IID)
+ dat = dat[dat.IID.isin(intersection_indiv)]
+ # store it as an array for efficiency and for certain linear alg functions to work
+ dat = dat.drop(["FID", "IID"], axis = 1)
+# dat = np.asarray(dat.drop(["FID", "IID"], axis = 1))
+ return(dat)
+
+# seed the covariates matrix with a column of 1's for the intercept
 cov_selected = np.ones(n_phen_nona)
 
-# only load covaraites if nonnull 
-if (args.covar!="NULL"):
-    covariates = pd.read_csv(args.covar, sep=" ", header = 0)
-    covariates.index = covariates.iloc[:,0].astype("int32")
-    final_covar = covariates.loc[intersection_indiv]
-    final_covar = final_covar.values[:,2:]
-    cov_selected = np.column_stack((cov_selected,final_covar))
+# load phenotypes and covariates
+y = read_datas(args.pheno)
+
+# read in covariates if nonnull
+if (args.covar != "NULL"):
+ X = read_datas(args.covar)
+
+# stack the covariates onto the incercepts
+cov_selected = np.column_stack((cov_selected,X))
 
 # onlyt load pcs if non null
 if (args.PC != "NULL"):
@@ -83,14 +79,16 @@ if (args.PC != "NULL"):
         final_PC = final_PC.values[:,2:(2+npc)]
         cov_selected = np.column_stack((cov_selected,final_PC))
 
-y = final_phen.iloc[:,args.mpheno+1]
+# y = y.iloc[:,args.mpheno+1]
 
 
 # only regress out covariates if they are entered
-res_y = regout(cov_selected, y, args.covar, args.PC)
+res_y = regout(cov_selected, y)
+# this is reshaping 1-D array to vector in numpy, this might cause problems for multivariate regression
+res_y = np.reshape(np.asarray(y), -1)
+
 
 start_read = timeit.default_timer()
-G = ReadGRMBin(prefix)
 nmarkers = G['N']
 x = G['diag'].astype('float64')
 n_phen_nona = G['diag'].size

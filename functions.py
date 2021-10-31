@@ -7,7 +7,6 @@ import scipy.sparse as sp
 import scipy.sparse.linalg
 import inspect
 from scipy.sparse import csr_matrix, rand
-from scipy.misc import imsave
 from struct import unpack, calcsize
 from numpy.linalg import inv
 from numpy.linalg import multi_dot
@@ -142,15 +141,11 @@ def myformula2(A,y,trA=None,trA2=None, npc =0 ):
     return h2,np.sqrt(var_ge)
 
 # only if covaraites or PC's nonnull
-def regout(X, y, covar, PC):
-    if (covar!="NULL") and (PC != "NULL"):
-        X = cov_selected
-        XTX_inv = np.linalg.inv(np.dot(X.T,X))
-        XTY = np.dot(X.T,y)
-        beta = np.dot(XTX_inv,XTY)
-        res = y - np.dot(X,beta)
-        return(res)
-    else: 
-        return(y)
-
-
+def regout(X, y):
+    XTX_inv = np.linalg.inv(np.dot(X.T,X))
+    XTY = np.dot(X.T,y)
+    beta = np.dot(XTX_inv,XTY)
+    res = y - np.dot(X,beta)
+    return(res)
+    
+    
