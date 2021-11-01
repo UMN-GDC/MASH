@@ -1,7 +1,8 @@
 import argparse
 from argparse import RawTextHelpFormatter
-from functions import *
-
+from functions.load_data import *
+from functions.regress_covs import *
+from functions.estimate import *
 
 start_time = timeit.default_timer()
 parser = argparse.ArgumentParser(prog='Running adjusted HE regression',description='This program gives estimation in formula fashion.\n Make sure you have enough memory to store GRM matrix in python.',formatter_class=RawTextHelpFormatter)
@@ -21,52 +22,34 @@ parser.add_argument('--out',type=str, help='Specify the output file name. [requi
 parser.add_argument('--std',action='store_true',default=False,help='Run SAdj-HE (i.e., with standardization)')
 
 args = parser.parse_args()
-
-
-npc = args.npc
 outprefix = args.out
+
 logging.basicConfig(format='%(asctime)s - %(pathname)s[line:%(lineno)d] - %(levelname)s: %(message)s',
                     level=logging.DEBUG,filename=outprefix+'.log',filemode='a')
 for arg, value in sorted(vars(args).items()):
     logging.info("Argument %s: %r", arg, value)
 
+
+
 prefix = args.prefix
+npc = args.npc
 
 G = ReadGRMBin(prefix)
 ids = G['id']
 n_phen_nona = ids.shape[0]
 
 
-# Read data function that can load csv pheno and txt file types
-def read_datas(file_path) :
- if(file_path.split(".")[-1] == "csv"):
-  dat = pd.read_csv(file_path)
- elif(file_path.split(".")[-1] == "phen"):
-  dat = pd.read_table(file_path, sep = " " )
- elif(file_path.split(".")[-1] == "txt"):
-  dat = pd.read_table(file_path, sep = " " )
- # remove the unintentional columns that sometimes happen with phenotype and csv filetypes
- dat = dat[dat.columns.drop(list(dat.filter(regex='Unnamed')))]
- # only keep intersections of the individuals in the GRM and in the covariates and phenotypes
- intersection_indiv = np.intersect1d(ids.iloc[:,1], dat.IID)
- dat = dat[dat.IID.isin(intersection_indiv)]
- # store it as an array for efficiency and for certain linear alg functions to work
- dat = dat.drop(["FID", "IID"], axis = 1)
-# dat = np.asarray(dat.drop(["FID", "IID"], axis = 1))
- return(dat)
-
 # seed the covariates matrix with a column of 1's for the intercept
 cov_selected = np.ones(n_phen_nona)
 
 # load phenotypes and covariates
-y = read_datas(args.pheno)
+y = read_datas(args.pheno, ids)
 
 # read in covariates if nonnull
 if (args.covar != "NULL"):
- X = read_datas(args.covar)
-
-# stack the covariates onto the incercepts
-cov_selected = np.column_stack((cov_selected,X))
+ X = read_datas(args.covar, ids)
+ # stack the covariates onto the incercepts
+ cov_selected = np.column_stack((cov_selected,X))
 
 # onlyt load pcs if non null
 if (args.PC != "NULL"):
@@ -81,7 +64,7 @@ if (args.PC != "NULL"):
 
 # y = y.iloc[:,args.mpheno+1]
 
-
+cov_selected = pd.DataFrame(cov_selected)
 # only regress out covariates if they are entered
 res_y = regout(cov_selected, y)
 # this is reshaping 1-D array to vector in numpy, this might cause problems for multivariate regression
