@@ -1,21 +1,6 @@
 import pandas as pd
 import numpy as np
-import sys
-import os
-import psutil
-import scipy.sparse as sp
-import scipy.sparse.linalg
-import inspect
-from scipy.sparse import csr_matrix, rand
 from struct import unpack, calcsize
-from numpy.linalg import inv
-from numpy.linalg import multi_dot
-import timeit
-import logging
-import resource
-import argparse
-from argparse import RawTextHelpFormatter
-from functions import *
 
 
 
@@ -72,20 +57,18 @@ def multirange(counts):
 
 
 # Read data function that can load csv pheno and txt file types
-def read_datas(file_path, GRM_ids) :
+def read_datas(file_path) :
  if(file_path.split(".")[-1] == "csv"):
-  dat = pd.read_csv(file_path)
+  dat = pd.read_csv(file_path, header=None)
  elif(file_path.split(".")[-1] == "phen"):
-  dat = pd.read_table(file_path, sep = " " )
+  dat = pd.read_table(file_path, sep = " " , header=None)
  elif(file_path.split(".")[-1] == "txt"):
-  dat = pd.read_table(file_path, sep = " " )
+  dat = pd.read_table(file_path, sep = " " , header=None)
+ elif(file_path.split(".")[-1] == "eigenvec"):
+   dat = pd.read_table(file_path, sep = " " , header=None)
+
  # remove the unintentional columns that sometimes happen with phenotype and csv filetypes
  dat = dat[dat.columns.drop(list(dat.filter(regex='Unnamed')))]
- # only keep intersections of the individuals in the GRM and in the covariates and phenotypes
- intersection_indiv = np.intersect1d(GRM_ids.iloc[:,1], dat.IID)
- dat = dat[dat.IID.isin(intersection_indiv)]
- # store it as an array for efficiency and for certain linear alg functions to work
- dat = dat.drop(["FID", "IID"], axis = 1)
-# dat = np.asarray(dat.drop(["FID", "IID"], axis = 1))
+ dat = dat.rename(columns={0 : "FID", 1 : "IID"})
  return(dat)
 

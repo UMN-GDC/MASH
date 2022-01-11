@@ -2,6 +2,7 @@ import argparse
 from argparse import RawTextHelpFormatter
 from functions.load_data import *
 from functions.estimate import *
+import timeit
 
 start_time = timeit.default_timer()
 parser = argparse.ArgumentParser(prog='Running adjusted HE regression',description='This program gives estimation in formula fashion.\n Make sure you have enough memory to store GRM matrix in python.',formatter_class=RawTextHelpFormatter)
@@ -24,11 +25,6 @@ parser.add_argument('--std',action='store_true',default=False,help='Run SAdj-HE 
 args = parser.parse_args()
 outprefix = args.out
 
-logging.basicConfig(format='%(asctime)s - %(pathname)s[line:%(lineno)d] - %(levelname)s: %(message)s',
-                    level=logging.DEBUG,filename=outprefix+'.log',filemode='a')
-for arg, value in sorted(vars(args).items()):
-    logging.info("Argument %s: %r", arg, value)
-
 
 
 prefix = args.prefix
@@ -40,5 +36,4 @@ pheno = args.pheno
 k = args.k
 std = args.std
 out = args.out
-
 

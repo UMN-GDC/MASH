@@ -1,6 +1,5 @@
 # import pandas as pd
 import numpy as np
-import statsmodels.api as sm
 # =============================================================================
 # import sys
 # import os
@@ -19,15 +18,17 @@ import statsmodels.api as sm
 # import resource
 # 
 # =============================================================================
-def AdjHE_estimator(A,y,trA=None,trA2=None, npc=0, std=False):
+def AdjHE_estimator(A,y, npc=0, std=False, PCs = None):
+    # remove identifiers form y for linear algebra 
+    y = y.drop(["FID", "IID"], axis = 1)
     # If standardized AdjHE is chosen 
     if (std == True) :
         # Standardize the y
         std_y = (y-np.mean(y))/np.std(y)
         
-        if (trA is None) and (trA2 is None):
-            trA = np.sum(np.diag(A))
-            trA2 = np.sum(np.multiply(A,A))
+        
+        trA = np.sum(np.diag(A))
+        trA2 = np.sum(np.multiply(A,A))
         n = A.shape[1]
         yay = np.dot(std_y.T,np.dot(A,std_y))
         yty = np.dot(std_y,std_y)
@@ -35,7 +36,7 @@ def AdjHE_estimator(A,y,trA=None,trA2=None, npc=0, std=False):
             denominator = trA2 - 2*trA + n
             nominator = n - trA + yay - yty
         else:
-            pc = final_PC
+            pc = PCs
             s = np.diag(np.dot(pc.T,np.dot(A,pc)))
             b = s - 1
             c = np.dot(std_y,pc)**2 - 1
@@ -65,13 +66,12 @@ def AdjHE_estimator(A,y,trA=None,trA2=None, npc=0, std=False):
     else :
         
     # else we solve the unstandardized version
-        if (trA is None) and (trA2 is None):
-            trA2 = np.sum(np.multiply(A,A))
-            trA = np.sum(np.diag(A))
+        trA2 = np.sum(np.multiply(A,A))
+        trA = np.sum(np.diag(A))
 
         n = A.shape[1]
-        yay = np.dot(y,np.dot(A,y))
-        yty = np.dot(y,y)
+        yay = np.dot(y.T, np.dot(A,y))
+        yty = np.dot(y.T, y)
         tn = np.sum(y)**2/n # all 1s PC
         if (npc==0):
             sigg = n*yay - trA*yty
@@ -80,20 +80,21 @@ def AdjHE_estimator(A,y,trA=None,trA2=None, npc=0, std=False):
             sige = sige-tn*trA2 # add 1's
             denominator = trA2 - 2*trA + n
         else:
-            pc = final_PC
+            # remove identifiers for linear algebra
+            pc = PCs.drop(["FID", "IID"], axis = 1)
             pcA = np.dot(pc.T,A)
             pcApc = np.dot(pcA,pc)
             s = np.diag(pcApc) #pciApci
             b = s-1
-            t = np.dot(y,pc)**2 #ypcipciy
+            t = np.dot(y.transpose(),pc)**2 #ypcipciy
             a11 = trA2 - np.sum(s**2) 
             a12 = trA - np.sum(s)
             b1 = yay - np.sum(s*t)
             b2 = yty - np.sum(t)
             sigg = (n-npc)*b1 - a12*b2
-            sigg = sigg-yay+tn*a12 # add 1's
+            sigg = sigg.flatten() - yay.flatten() + tn * a12 # add 1's
             sige = a11*b2 - a12*b1
-            sige = sige-tn*a11 # add 1's
+            sige = sige.flatten()-tn*a11 # add 1's
             denominator = trA2 - 2*trA + n - np.sum(b**2)
         h2 = sigg/(sigg+sige)
         var_ge = 2/denominator
