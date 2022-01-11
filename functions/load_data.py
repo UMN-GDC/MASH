@@ -20,10 +20,10 @@ from functions import *
 
 
 def sum_n_vec(n):
-    out = [int(0)] * n
+    s = [int(0)] * n
     for i in range(n):
-        out[i] = int(((i + 1) * (i + 2) / 2) - 1)
-    return(out)
+        s[i] = int(((i + 1) * (i + 2) / 2) - 1)
+    return(s)
 
 
 def ReadGRMBin(prefix, AllN = False):
@@ -50,8 +50,8 @@ def ReadGRMBin(prefix, AllN = False):
             N = unpack(entry_format, record)[0]
             N = int(N)
     i = sum_n_vec(n)
-    out = {'diag': grm[i], 'off': np.delete(grm, i),'id': ids,'N':N}
-    return(out)
+    val = {'diag': grm[i], 'off': np.delete(grm, i),'id': ids,'N':N}
+    return(val)
 
 
 def multirange(counts):
@@ -65,8 +65,8 @@ def multirange(counts):
     incr[reset_index] = 1 - counts1
     # Reuse the incr array for the final result.
     incr.cumsum(out=incr)
-    out = {'a':incr,'b':np.repeat(counts,counts)}
-    return(out)
+    val = {'a':incr,'b':np.repeat(counts,counts)}
+    return(val)
 
 
 

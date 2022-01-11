@@ -33,3 +33,12 @@ for arg, value in sorted(vars(args).items()):
 
 prefix = args.prefix
 npc = args.npc
+mpheno = args.mpheno
+PC = args.PC
+covar = args.covar
+pheno = args.pheno
+k = args.k
+std = args.std
+out = args.out
+
+
