@@ -1,0 +1,37 @@
+2021-11-18 08:49:43,225 - /home/christian/Research/Stat_gen/AdjHE/functions/arg_parser.py[line:31] - INFO: Argument PC: 'NULL'
+2021-11-18 08:49:43,225 - /home/christian/Research/Stat_gen/AdjHE/functions/arg_parser.py[line:31] - INFO: Argument covar: 'NULL'
+2021-11-18 08:49:43,225 - /home/christian/Research/Stat_gen/AdjHE/functions/arg_parser.py[line:31] - INFO: Argument k: 0
+2021-11-18 08:49:43,225 - /home/christian/Research/Stat_gen/AdjHE/functions/arg_parser.py[line:31] - INFO: Argument mpheno: 1
+2021-11-18 08:49:43,225 - /home/christian/Research/Stat_gen/AdjHE/functions/arg_parser.py[line:31] - INFO: Argument npc: 0
+2021-11-18 08:49:43,225 - /home/christian/Research/Stat_gen/AdjHE/functions/arg_parser.py[line:31] - INFO: Argument out: 'Example/results'
+2021-11-18 08:49:43,226 - /home/christian/Research/Stat_gen/AdjHE/functions/arg_parser.py[line:31] - INFO: Argument pheno: 'Example/pheno.phen'
+2021-11-18 08:49:43,226 - /home/christian/Research/Stat_gen/AdjHE/functions/arg_parser.py[line:31] - INFO: Argument prefix: 'Example/grm'
+2021-11-18 08:49:43,226 - /home/christian/Research/Stat_gen/AdjHE/functions/arg_parser.py[line:31] - INFO: Argument std: False
+2021-11-18 08:49:43,839 - AdjHE_formula.py[line:68] - INFO: GRM matrix restored done. It takes: 0.5335991940000895 seconds.
+2021-11-18 08:49:43,946 - AdjHE_formula.py[line:83] - INFO: h2: 0.5647428239828036
+2021-11-18 08:49:43,946 - AdjHE_formula.py[line:84] - INFO: Standard error: 0.02442332868354013
+2021-11-18 08:49:43,946 - AdjHE_formula.py[line:85] - INFO: It takes: 0.7228118729999551 seconds.
+2021-11-18 08:49:43,946 - AdjHE_formula.py[line:86] - INFO: Memory usage:510996
+2021-11-18 08:52:13,946 - /home/christian/Research/Stat_gen/AdjHE/functions/arg_parser.py[line:31] - INFO: Argument PC: 'NULL'
+2021-11-18 08:52:13,946 - /home/christian/Research/Stat_gen/AdjHE/functions/arg_parser.py[line:31] - INFO: Argument covar: 'NULL'
+2021-11-18 08:52:13,946 - /home/christian/Research/Stat_gen/AdjHE/functions/arg_parser.py[line:31] - INFO: Argument k: 0
+2021-11-18 08:52:13,946 - /home/christian/Research/Stat_gen/AdjHE/functions/arg_parser.py[line:31] - INFO: Argument mpheno: 1
+2021-11-18 08:52:13,946 - /home/christian/Research/Stat_gen/AdjHE/functions/arg_parser.py[line:31] - INFO: Argument npc: 0
+2021-11-18 08:52:13,946 - /home/christian/Research/Stat_gen/AdjHE/functions/arg_parser.py[line:31] - INFO: Argument out: 'Example/results'
+2021-11-18 08:52:13,946 - /home/christian/Research/Stat_gen/AdjHE/functions/arg_parser.py[line:31] - INFO: Argument pheno: 'Example/pheno.phen'
+2021-11-18 08:52:13,946 - /home/christian/Research/Stat_gen/AdjHE/functions/arg_parser.py[line:31] - INFO: Argument prefix: 'Example/grm'
+2021-11-18 08:52:13,947 - /home/christian/Research/Stat_gen/AdjHE/functions/arg_parser.py[line:31] - INFO: Argument std: True
+2021-11-18 08:52:14,562 - AdjHE_formula.py[line:68] - INFO: GRM matrix restored done. It takes: 0.5332872709996082 seconds.
+2021-11-18 08:52:14,671 - AdjHE_formula.py[line:83] - INFO: h2: 0.563592539578385
+2021-11-18 08:52:14,671 - AdjHE_formula.py[line:84] - INFO: Standard error: 0.02442332868354013
+2021-11-18 08:52:14,671 - AdjHE_formula.py[line:85] - INFO: It takes: 0.7274090959999739 seconds.
+2021-11-18 08:52:14,671 - AdjHE_formula.py[line:86] - INFO: Memory usage:511612
+2021-11-18 08:53:21,647 - AdjHE_formula.py[line:177] - INFO: Argument PC: 'NULL'
+2021-11-18 08:53:21,648 - AdjHE_formula.py[line:177] - INFO: Argument covar: 'NULL'
+2021-11-18 08:53:21,648 - AdjHE_formula.py[line:177] - INFO: Argument k: 0
+2021-11-18 08:53:21,648 - AdjHE_formula.py[line:177] - INFO: Argument mpheno: 1
+2021-11-18 08:53:21,648 - AdjHE_formula.py[line:177] - INFO: Argument npc: -9
+2021-11-18 08:53:21,648 - AdjHE_formula.py[line:177] - INFO: Argument out: '../AdjHE/Example/results'
+2021-11-18 08:53:21,648 - AdjHE_formula.py[line:177] - INFO: Argument pheno: '../AdjHE/Example/pheno.phen'
+2021-11-18 08:53:21,648 - AdjHE_formula.py[line:177] - INFO: Argument prefix: '../AdjHE/Example/grm'
+2021-11-18 08:53:21,648 - AdjHE_formula.py[line:177] - INFO: Argument std: True
