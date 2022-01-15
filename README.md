@@ -1,3 +1,5 @@
+# Basu_herit
+
 # adjustedHE
 
 ## Adjusted-HE with closed form formula version
@@ -39,3 +41,4 @@ You should only call ```AdjHE_reg_s2.py``` once after finishing ```AdjHE_reg_s1.
 
 1. ```--pheno```, ```--covar```, ```--PC``` follow the same format as mentioned in ```AdjHE_formula.py```. ```--Npart```, ```--id```  follow the same format as mentioned in ```AdjHE_reg_s1.py```
 2. ```--out``` specifies the *SAME* directory as you use in ```AdjHE_reg_s1.py```. Make sure you have m intermediate result files in this directoory. The point estimate and standard error of heritability will be output to the Log file generated in ```AdjHE_reg_s1.py```.
+# Basu_herit

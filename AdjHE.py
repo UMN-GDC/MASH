@@ -6,24 +6,25 @@ import numpy as np
 import pandas as pd
 import timeit
 import resource
-os.chdir("/home/christian/Research/Stat_gen/AdjHE/")
+#os.chdir("/home/christian/Research/Stat_gen/AdjHE/")
 from functions.arg_parser import prefix, npc
 from functions.arg_parser import *
+from functions.estimate import AdjHE_estimator
 
 # good stuff
 # from argparse import RawTextHelpFormatter
 
 # %% for troubleshooting
-os.chdir("/home/christian/Research/Stat_gen/AdjHE")
-prefix = "Example/grm"
-pheno = "Example/pheno.phen"
-covar = "Example/covar.csv"
-PC = "Example/pcas.eigenvec"
-k = 0
-npc = 2
-mpheno = 1
-std = False
-out = "Example/results"
+#os.chdir("/home/christian/Research/Stat_gen/AdjHE")
+#prefix = "Example/grm"
+#pheno = "Example/pheno.phen"
+#covar = "Example/covar.csv"
+#PC = "Example/pcas.eigenvec"
+#k = 0
+#npc = 2
+#mpheno = 1
+#std = False
+#out = "Example/results"
 
 # %% Read GRM
 G = ReadGRMBin(prefix)
