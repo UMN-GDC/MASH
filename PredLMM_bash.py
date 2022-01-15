@@ -146,5 +146,6 @@ temp_results = pd.DataFrame(full_results, index = ["PredLMM"])
 #%%
 temp = [results, temp_results]
 results = pd.concat(temp)
-results.to_csv(args.out + ".csv", index = False )
+# write indices because that has estimators name
+results.to_csv(args.out + ".csv", index = True )
 
