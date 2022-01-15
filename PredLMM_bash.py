@@ -1,4 +1,5 @@
 #-----------------------Loading  the required Module------------------------------------------
+import os
 import timeit
 from functions.load_data import sum_n_vec, ReadGRMBin, multirange, read_datas
 from functions.math_functions import derivative_minim_sub, derivative_minim_full
@@ -115,13 +116,13 @@ ynew = y.drop(["FID", "IID"], axis =1)
 result_full = derivative_minim_full(ynew, Xnew, Xnew.T, Ct, id_diag, add, G_selected, GRM_array, N)
 # print(result_full)
 #%%
-GREML_sub_est = result_subsample['Heritability estimate'][0]
+GREML_sub_est = result_subsample['Heritability estimate'][0,0]
 GREML_sub_sd = result_subsample['SD of heritability estimate']
-GREML_sub_var = result_subsample['Variance estimate'][0]
+GREML_sub_var = result_subsample['Variance estimate'][0][0]
 #%%
-Pred_est = result_full['Heritability estimate'][0]
+Pred_est = result_full['Heritability estimate'][0][0]
 Pred_sd = result_full['SD of heritability estimate']
-Pred_var = result_full['Variance estimate'][0]
+Pred_var = result_full['Variance estimate'][0][0]
 
 
 
