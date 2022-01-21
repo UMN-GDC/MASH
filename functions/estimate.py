@@ -30,8 +30,8 @@ def AdjHE_estimator(A,y, npc=0, std=False, PCs = None):
         trA = np.sum(np.diag(A))
         trA2 = np.sum(np.multiply(A,A))
         n = A.shape[1]
-        yay = np.dot(std_y.T,np.dot(A,std_y))
-        yty = np.dot(std_y,std_y)
+        yay = np.dot(std_y.T, np.dot(A,std_y)).flatten()
+        yty = np.dot(std_y.T, std_y).flatten()
         if (npc==0):
             denominator = trA2 - 2*trA + n
             nominator = n - trA + yay - yty
@@ -39,10 +39,11 @@ def AdjHE_estimator(A,y, npc=0, std=False, PCs = None):
             pc = PCs
             s = np.diag(np.dot(pc.T,np.dot(A,pc)))
             b = s - 1
-            c = np.dot(std_y,pc)**2 - 1
+            c = np.dot(std_y.T, pc)**2 - 1
             denominator = trA2 - 2*trA + n - np.sum(b**2)
             nominator = n - trA + yay - yty - np.sum(b*c)
         h2 = nominator/denominator
+        h2 = h2[0]
         var_ge = 2/denominator
         #    tau = n/nmarkers
         #    b1 = (1-np.sqrt(tau))**2
@@ -70,8 +71,8 @@ def AdjHE_estimator(A,y, npc=0, std=False, PCs = None):
         trA = np.sum(np.diag(A))
 
         n = A.shape[1]
-        yay = np.dot(y.T, np.dot(A,y))
-        yty = np.dot(y.T, y)
+        yay = np.dot(y.T, np.dot(A,y)).flatten()
+        yty = np.dot(y.T, y).flatten()
         tn = np.sum(y)**2/n # all 1s PC
         if (npc==0):
             sigg = n*yay - trA*yty
@@ -97,6 +98,7 @@ def AdjHE_estimator(A,y, npc=0, std=False, PCs = None):
             sige = sige.flatten()-tn*a11 # add 1's
             denominator = trA2 - 2*trA + n - np.sum(b**2)
         h2 = sigg/(sigg+sige)
+        h2 = h2[2]
         var_ge = 2/denominator
     return h2,np.sqrt(var_ge)
 

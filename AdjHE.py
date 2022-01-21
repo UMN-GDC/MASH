@@ -6,10 +6,10 @@ import numpy as np
 import pandas as pd
 import timeit
 import resource
+from functions.estimate import AdjHE_estimator
 #os.chdir("/home/christian/Research/Stat_gen/AdjHE/")
 from functions.arg_parser import prefix, npc
 from functions.arg_parser import *
-from functions.estimate import AdjHE_estimator
 
 # good stuff
 # from argparse import RawTextHelpFormatter
@@ -49,8 +49,7 @@ try:
     if (npc == -9):
         npc = PCs.shape[1] - 2
     # prune it to only the number of pc's wanted
-    PCs.iloc[:, list(range(npc + 2))]
-
+    PCs= PCs.iloc[:, list(range(npc + 2))]
 except:
     print("No PC file specified or specified file is not found or cannot be loaded.")
 
@@ -61,7 +60,6 @@ cov_selected = pd.merge(cov_selected, ids, on = ["FID", "IID"])
 # only regress out covariates if they are entered
 res_y = sm.OLS(endog=y, exog=cov_selected).fit().resid
 # this is reshaping 1-D array to vector in numpy, this might cause problems for multivariate regression
-# res_y = np.reshape(np.asarray(res_y), -1)
 
 # %%
 
@@ -94,9 +92,12 @@ GRM_array_nona[np.diag_indices(n_phen_nona)] = G['diag']
 h2, se = AdjHE_estimator(A=GRM_array_nona, y=res_y, npc=1, std=std, PCs = PCs)
 # %%
 
-results = {"h2" : h2[2],
+results = {"h2" : h2,
       "SE" : se,
       "Time for analysis(s)" : timeit.default_timer() - start_read,
       "Memory usage" : resource.getrusage(resource.RUSAGE_SELF).ru_maxrss}
+print(h2)
+print(se)
+
 results= pd.DataFrame(results, index =[0])
 results.to_csv(out + ".csv", index = False )
