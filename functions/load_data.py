@@ -59,16 +59,51 @@ def multirange(counts):
 # Read data function that can load csv pheno and txt file types
 def read_datas(file_path) :
  if(file_path.split(".")[-1] == "csv"):
+  # read csv with write optinos
   dat = pd.read_csv(file_path, header=None)
+  # Rename columns to make them neat
+  n=list(range(1, dat.shape[1] -1))
+  dat.columns = ["FID", "IID"] + ["Covar_" + str(s) for s in n]
  elif(file_path.split(".")[-1] == "phen"):
   dat = pd.read_table(file_path, sep = " " , header=None)
+  n = list(range(1, dat.shape[1] -1))
+  dat.columns = ["FID", "IID"] + ["Pheno_" + str(s) for s in n]
  elif(file_path.split(".")[-1] == "txt"):
   dat = pd.read_table(file_path, sep = " " , header=None)
+  n = list(range(1, dat.shape[1] -1))
+  dat.columns = ["FID", "IID"] + ["Covar_" + str(s) for s in n]
  elif(file_path.split(".")[-1] == "eigenvec"):
    dat = pd.read_table(file_path, sep = " " , header=None)
+   n = list(range(1, dat.shape[1] -1))
+   dat.columns = ["FID", "IID"] + ["PC_" + str(s) for s in n]
 
  # remove the unintentional columns that sometimes happen with phenotype and csv filetypes
  dat = dat[dat.columns.drop(list(dat.filter(regex='Unnamed')))]
- dat = dat.rename(columns={0 : "FID", 1 : "IID"})
+ # dat = dat.rename(columns={0 : "FID", 1 : "IID"})
  return(dat)
+
+
+# Read covariates, PC's, and phenotype all at once
+def load_data(pheno_file, cov_file=None, PC_file=None, npc=-9) :
+  # load phenotypes
+  df = read_datas(pheno_file)
+  # read in covariates if nonnull
+  try:
+    cov_selected = read_datas(cov_file)
+    df = pd.merge(cov_selected, df, on = ["FID", "IID"])
+  except:
+    print("No covariates file specified or specified file is not found or cannot be loaded.")
+
+  # onlyt load pcs if non null
+  try:
+    PCs = read_datas(PC_file)
+    PCs= PCs.iloc[:, list(range(npc + 2))]
+    df = pd.merge(PCs, df, on=["FID", "IID"])
+    
+  except:
+    print("No PC file specified or specified file is not found or cannot be loaded.")
+  if(npc == -9 and PC != None) :
+    print("You  specified a PC file, without specifying how many PC's, here we assume keeping 0 PC's")
+  return(df)
+
 

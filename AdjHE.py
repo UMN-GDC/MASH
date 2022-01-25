@@ -1,6 +1,6 @@
 # Delete this
 import statsmodels.api as sm
-from functions.load_data import sum_n_vec, ReadGRMBin, multirange, read_datas
+from functions.load_data import sum_n_vec, ReadGRMBin, multirange, read_datas, load_data
 import os
 import numpy as np
 import pandas as pd
@@ -13,18 +13,18 @@ from functions.AdjHE_parser import *
 
 # good stuff
 # from argparse import RawTextHelpFormatter
-
+print(args)
 # %% for troubleshooting
-#os.chdir("/home/christian/Research/Stat_gen/AdjHE")
-#prefix = "Example/grm"
-#pheno = "Example/pheno.phen"
-#covar = "Example/covar.csv"
-#PC = "Example/pcas.eigenvec"
-#k = 0
-#npc = 2
-#mpheno = 1
-#std = False
-#out = "Example/results"
+os.chdir("/home/christian/Scripts/Basu_herit")
+prefix = "Example/grm"
+pheno = "Example/pheno.phen"
+covar = "Example/covar.csv"
+PC = "Example/pcas.eigenvec"
+k = 0
+npc = 2
+mpheno = 1
+std = False
+out = "Example/results"
 
 print("reaading GRM")
 
@@ -36,34 +36,12 @@ ids = ids.rename(columns = {0:"FID", 1:"IID"})
 n_phen_nona = ids.shape[0]
 
 print("loading data")
-# %%  load phenotypes and covariates
-# load phenotypes
-y = read_datas(pheno)
-# %%
-# read in covariates if nonnull
-try:
-    cov_selected = read_datas(covar)
-except:
-    print("No covariates file specified or specified file is not found or cannot be loaded.")
+#%%
+df = load_data(pheno_file = pheno, cov_file=covar, PC_file=PC, npc = npc)
 #%%
 
-# onlyt load pcs if non null
-try:
-    PCs = read_datas(PC)
-    if (npc == -9):
-        npc = PCs.shape[1] - 2
-    # prune it to only the number of pc's wanted
-    PCs= PCs.iloc[:, list(range(npc + 2))]
-except:
-    print("No PC file specified or specified file is not found or cannot be loaded.")
-
-# join PC's and covariates
-cov_selected = pd.merge(cov_selected, PCs, on = ["FID", "IID"])
-cov_selected = pd.merge(cov_selected, ids, on = ["FID", "IID"])
-
 # only regress out covariates if they are entered
-res_y = sm.OLS(endog=y, exog=cov_selected).fit().resid
-# this is reshaping 1-D array to vector in numpy, this might cause problems for multivariate regression
+res_y = sm.OLS(endog=df.loc[:,"Pheno_" + str(mpheno)], exog=df.drop("Pheno_" + str(mpheno), 1)).fit().resid
 
 # %%
 
@@ -92,9 +70,13 @@ for i in l:
 
 GRM_array_nona[np.diag_indices(n_phen_nona)] = G['diag']
 #%%
-
 print("Calculating heritibility")
-h2, se = AdjHE_estimator(A=GRM_array_nona, y=res_y, npc=1, std=std, PCs = PCs)
+res_y.name = "Residual"
+
+df["Residual"] = res_y
+
+#%%
+h2, se = AdjHE_estimator(A=GRM_array_nona, data = df, npc=npc, std=std)
 # %%
 
 results = {"h2" : h2,

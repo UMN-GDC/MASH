@@ -1,9 +1,12 @@
 import numpy as np
 
 
-def AdjHE_estimator(A,y, npc=0, std=False, PCs = None):
+def AdjHE_estimator(A,data, npc=0, std=False):
     # remove identifiers form y for linear algebra 
-    y = y.drop(["FID", "IID"], axis = 1)
+    y = data.Residual
+    # select PC columns 
+    PC_cols = [ col.startswith("PC")   for col in data ]
+    PCs = data.iloc[:, PC_cols]
     # If standardized AdjHE is chosen 
     if (std == True) :
         # Standardize the y
@@ -65,7 +68,7 @@ def AdjHE_estimator(A,y, npc=0, std=False, PCs = None):
             denominator = trA2 - 2*trA + n
         else:
             # remove identifiers for linear algebra
-            pc = PCs.drop(["FID", "IID"], axis = 1)
+            pc = PCs
             pcA = np.dot(pc.T,A)
             pcApc = np.dot(pcA,pc)
             s = np.diag(pcApc) #pciApci
@@ -81,7 +84,6 @@ def AdjHE_estimator(A,y, npc=0, std=False, PCs = None):
             sige = sige.flatten()-tn*a11 # add 1's
             denominator = trA2 - 2*trA + n - np.sum(b**2)
         h2 = sigg/(sigg+sige)
-        h2 = h2[2]
         var_ge = 2/denominator
     return h2,np.sqrt(var_ge)
 
