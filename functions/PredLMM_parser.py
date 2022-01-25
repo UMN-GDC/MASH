@@ -17,12 +17,11 @@ parser.add_argument('--out',type=str, help='Specify the output file name. [requi
 parser.add_argument('--std',action='store_true',default=False,help='Run SAdj-HE (i.e., with standardization)')
 
 args = parser.parse_args()
-#%%%
-prefix= "Example/grm"
-covar = "Example/covar.csv"
-pheno = "Example/pheno.phen"
-outprefix = "lkajfkjads"
 
-#%%
+prefix= args.prefix 
+covar = args.covar
+pheno = args.pheno
 outprefix = args.out
+mpheno = args.mpheno
+
 
