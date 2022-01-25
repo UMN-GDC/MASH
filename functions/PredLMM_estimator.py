@@ -62,7 +62,8 @@ def derivative_minim_full(y, X, X_T, Ct, id_diag, add, G_selected, GRM_array, N)
   #print(h)
   return(diff1)
  start_time = time.time()
- pc_minimizer_f = newton(der_predproc_exponential,0.5,tol=0.000005)
+# pc_minimizer_f = newton(der_predproc_exponential,0.5,tol=0.000005)
+ pc_minimizer_f = newton(der_predproc_exponential, 0.5, tol=0.005)
  if pc_minimizer_f>1:
     pc_minimizer_f = 1   
  if pc_minimizer_f<0:

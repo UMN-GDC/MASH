@@ -26,12 +26,16 @@ from functions.AdjHE_parser import *
 #std = False
 #out = "Example/results"
 
+print("reaading GRM")
+
+
 # %% Read GRM
 G = ReadGRMBin(prefix)
 ids = G['id']
 ids = ids.rename(columns = {0:"FID", 1:"IID"})
 n_phen_nona = ids.shape[0]
 
+print("loading data")
 # %%  load phenotypes and covariates
 # load phenotypes
 y = read_datas(pheno)
@@ -89,6 +93,7 @@ for i in l:
 GRM_array_nona[np.diag_indices(n_phen_nona)] = G['diag']
 #%%
 
+print("Calculating heritibility")
 h2, se = AdjHE_estimator(A=GRM_array_nona, y=res_y, npc=1, std=std, PCs = PCs)
 # %%
 

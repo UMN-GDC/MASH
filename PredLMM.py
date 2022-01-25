@@ -22,7 +22,7 @@ from functions.PredLMM_parser import *
 #                     level=logging.DEBUG,filename=outprefix+'.log',filemode='a')
 # for arg, value in sorted(vars(args).items()):
 #     logging.info("Argument %s: %r", arg, value)
-
+print("Reading GRM")
 start_read = timeit.default_timer()
 #%%
 G = ReadGRMBin(prefix)
@@ -44,7 +44,7 @@ GRM_array = np.float32(GRM_array)
 #GRM_array= np.array(hf.get('GRM'),dtype="float32")
 
 
-
+print("Reading covariate and phenotype data")
 
 y = read_datas(args.pheno) 
 X = read_datas(args.covar)
@@ -52,6 +52,7 @@ X = read_datas(args.covar)
 #%%
 
 #----------------------Knot selection and selecting corresponding vectors----------------------------
+print("selecting knots")
 subsample_size = 500;
 sub_sample = sorted(np.random.choice(range(0,N),subsample_size,replace=False))
 non_subsample = np.setdiff1d(range(0,N),sub_sample)
@@ -68,12 +69,14 @@ cov_sub = np.array(X.iloc[range(0,subsample_size)].drop(["FID","IID"], axis =1))
 Knot_sel_time = timeit.default_timer() - start_read
 #%%
 #------------------Fitting LMM using only the selected subsample (set of knots)-------------------------
+print("fitting subsample")
 A_selc = np.copy(G_selected)-np.identity(subsample_size)
 result_subsample = derivative_minim_sub(phen_sub, cov_sub, cov_sub.T, G_selected, A_selc, subsample_size)
 # print(result_subsample)
 
 #%%
 #------------------Running PredLMM----------------------------------------------------------------------
+print("fitting full")
 Ct =  np.copy(GRM_array[range(0,subsample_size),:],order='F')
 C12 = Ct[:,range(subsample_size,N)]
 id_diag = np.diag_indices(N)
@@ -100,7 +103,7 @@ Pred_sd = result_full['SD of heritability estimate']
 Pred_var = result_full['Variance estimate'][0][0]
 
 
-
+print("writing results")
 
 #%%
 sub_results = {"Est" : GREML_sub_est,
