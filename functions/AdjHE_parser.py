@@ -1,7 +1,5 @@
 import argparse
 from argparse import RawTextHelpFormatter
-from functions.load_data import *
-from functions.estimate import *
 import timeit
 
 start_time = timeit.default_timer()

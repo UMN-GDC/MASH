@@ -1,23 +1,6 @@
-# import pandas as pd
 import numpy as np
-# =============================================================================
-# import sys
-# import os
-# import psutil
-# import scipy.sparse as sp
-# import scipy.sparse.linalg
-# import inspect
-# from scipy.sparse import csr_matrix, rand
-# from struct import unpack, calcsize
-# from numpy.linalg import inv
-# =============================================================================
-# =============================================================================
-# from numpy.linalg import multi_dot
-# import timeit
-# import logging
-# import resource
-# 
-# =============================================================================
+
+
 def AdjHE_estimator(A,y, npc=0, std=False, PCs = None):
     # remove identifiers form y for linear algebra 
     y = y.drop(["FID", "IID"], axis = 1)

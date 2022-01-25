@@ -6,10 +6,10 @@ import numpy as np
 import pandas as pd
 import timeit
 import resource
-from functions.estimate import AdjHE_estimator
+from functions.AdjHE_estimator import AdjHE_estimator
 #os.chdir("/home/christian/Research/Stat_gen/AdjHE/")
-from functions.arg_parser import prefix, npc
-from functions.arg_parser import *
+from functions.AdjHE_parser import prefix, npc
+from functions.AdjHE_parser import *
 
 # good stuff
 # from argparse import RawTextHelpFormatter
