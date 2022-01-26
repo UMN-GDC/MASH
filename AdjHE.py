@@ -15,16 +15,16 @@ from functions.AdjHE_parser import *
 # from argparse import RawTextHelpFormatter
 print(args)
 # %% for troubleshooting
-os.chdir("/home/christian/Scripts/Basu_herit")
-prefix = "Example/grm"
-pheno = "Example/pheno.phen"
-covar = "Example/covar.csv"
-PC = "Example/pcas.eigenvec"
-k = 0
-npc = 2
-mpheno = 1
-std = False
-out = "Example/results"
+#os.chdir("/home/christian/Scripts/Basu_herit")
+#prefix = "Example/grm"
+#pheno = "Example/pheno.phen"
+#covar = "Example/covar.csv"
+#PC = "Example/pcas.eigenvec"
+#k = 0
+#npc = 2
+#mpheno = 1
+#std = False
+#out = "Example/results"
 
 print("reaading GRM")
 

@@ -1,19 +1,15 @@
 #-----------------------Loading  the required Module------------------------------------------
 import os
 import timeit
-from functions.load_data import sum_n_vec, ReadGRMBin, multirange, read_datas
-from functions.PredLMM_estimator import derivative_minim_sub, derivative_minim_full
-import logging
 import resource
-import argparse
-from argparse import RawTextHelpFormatter
-from scipy.sparse import csr_matrix, rand
+from scipy.sparse import csr_matrix
 import numpy as np
 from numpy.linalg import inv
-from scipy.optimize import newton
-from scipy.linalg.blas import dgemm,sgemm,sgemv
+from scipy.linalg.blas import sgemm
 from copy import copy
 import pandas as pd 
+from functions.load_data import sum_n_vec, ReadGRMBin, multirange, read_datas, load_data
+from functions.PredLMM_estimator import derivative_minim_sub, derivative_minim_full
 from functions.PredLMM_parser import *
 from functions.PredLMM_parser import *
 
@@ -22,6 +18,20 @@ from functions.PredLMM_parser import *
 #                     level=logging.DEBUG,filename=outprefix+'.log',filemode='a')
 # for arg, value in sorted(vars(args).items()):
 #     logging.info("Argument %s: %r", arg, value)
+
+# %% for troubleshooting
+os.chdir("/home/christian/Scripts/Basu_herit")
+prefix = "Example/grm"
+pheno = "Example/pheno.phen"
+covar = "Example/covar.csv"
+PC = "Example/pcas.eigenvec"
+k = 0
+npc = 2
+mpheno = 1
+std = False
+out = "Example/results"
+print(args)
+
 print("Reading GRM")
 start_read = timeit.default_timer()
 #%%
@@ -45,9 +55,14 @@ GRM_array = np.float32(GRM_array)
 
 
 print("Reading covariate and phenotype data")
-
-y = read_datas(args.pheno) 
-X = read_datas(args.covar)
+df = load_data(pheno_file = pheno, cov_file=covar, PC_file=None, npc = 0)
+y = df[["FID", "IID", "Pheno_1"]]
+#%%
+cov_cols = [ col.startswith("Covar")   for col in df ]
+n = ["FID", "IID"]
+X = df.iloc[:, cov_cols]
+X['IID'] = df["IID"]
+X['FID'] = df["FID"]
 
 #%%
 
