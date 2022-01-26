@@ -1,6 +1,5 @@
 # Delete this
 import statsmodels.api as sm
-from functions.load_data import sum_n_vec, ReadGRMBin, multirange, read_datas, load_data
 import os
 import numpy as np
 import pandas as pd
@@ -8,6 +7,7 @@ import timeit
 import resource
 from functions.AdjHE_estimator import AdjHE_estimator
 #os.chdir("/home/christian/Research/Stat_gen/AdjHE/")
+from functions.load_data import sum_n_vec, ReadGRMBin, multirange, read_datas, load_data
 from functions.AdjHE_parser import prefix, npc
 from functions.AdjHE_parser import *
 
@@ -15,16 +15,16 @@ from functions.AdjHE_parser import *
 # from argparse import RawTextHelpFormatter
 print(args)
 # %% for troubleshooting
-#os.chdir("/home/christian/Scripts/Basu_herit")
-#prefix = "Example/grm"
-#pheno = "Example/pheno.phen"
-#covar = "Example/covar.csv"
-#PC = "Example/pcas.eigenvec"
-#k = 0
-#npc = 2
-#mpheno = 1
-#std = False
-#out = "Example/results"
+# os.chdir("/home/christian/Scripts/Basu_herit")
+# prefix = "Example/grm"
+# pheno = "Example/pheno.phen"
+# covar = "Example/covar.csv"
+# PC = "Example/pcas.eigenvec"
+# k = 0
+# npc = 2
+# mpheno = 1
+# std = False
+# out = "Example/results"
 
 print("reaading GRM")
 
@@ -41,7 +41,7 @@ df = load_data(pheno_file = pheno, cov_file=covar, PC_file=PC, npc = npc)
 #%%
 
 # only regress out covariates if they are entered
-res_y = sm.OLS(endog=df.loc[:,"Pheno_" + str(mpheno)], exog=df.drop("Pheno_" + str(mpheno), 1)).fit().resid
+res_y = sm.OLS(endog=df.loc[:,"Pheno_" + str(mpheno)], exog=df.drop(["Pheno_" + str(mpheno), "FID", "IID"], 1)).fit().resid
 
 # %%
 

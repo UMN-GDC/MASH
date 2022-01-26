@@ -20,16 +20,16 @@ from functions.PredLMM_parser import *
 #     logging.info("Argument %s: %r", arg, value)
 
 # %% for troubleshooting
-#os.chdir("/home/christian/Scripts/Basu_herit")
-#prefix = "Example/grm"
-#pheno = "Example/pheno.phen"
-#covar = "Example/covar.csv"
-#PC = "Example/pcas.eigenvec"
-#k = 0
-#npc = 2
-#mpheno = 1
-#std = False
-#out = "Example/results"
+os.chdir("/home/christian/Scripts/Basu_herit")
+prefix = "Example/grm"
+pheno = "Example/pheno.phen"
+covar = "Example/covar.csv"
+PC = "Example/pcas.eigenvec"
+k = 0
+npc = 2
+mpheno = 1
+std = False
+out = "Example/results"
 print(args)
 
 print("Reading GRM")
@@ -62,11 +62,6 @@ cov_cols = [ col.startswith("Covar")   for col in df ]
 cov_cols = list(df.columns[cov_cols])
 n = ["FID", "IID"] + cov_cols
 X = df[n]
-#X['IID'] = df["IID"]
-#%%
-#X.loc['FID'] = df["FID"]
-
-#%%
 
 #----------------------Knot selection and selecting corresponding vectors----------------------------
 print("selecting knots")
@@ -91,7 +86,7 @@ Knot_sel_time = timeit.default_timer() - start_read
 print("fitting subsample")
 A_selc = np.copy(G_selected)-np.identity(subsample_size)
 result_subsample = derivative_minim_sub(phen_sub, cov_sub, cov_sub.T, G_selected, A_selc, subsample_size)
-# print(result_subsample)
+print(result_subsample)
 
 #%%
 #------------------Running PredLMM----------------------------------------------------------------------
@@ -103,7 +98,7 @@ diag_G_sub = GRM_array[id_diag]
 G_inv = inv(G_selected).T
 GRM_array[np.ix_(range(subsample_size,N),range(subsample_size,N))] = sgemm(alpha=1,a=C12.T,b=sgemm(alpha=1,a=G_inv,b=C12))
 #%%
-del G_inv, C12
+# del G_inv, C12
 #%%
 add = copy(-GRM_array[id_diag] + diag_G_sub) ## diagonal adjustment
 np.fill_diagonal(GRM_array, - 1 + diag_G_sub)
