@@ -59,10 +59,12 @@ df = load_data(pheno_file = pheno, cov_file=covar, PC_file=None, npc = 0)
 y = df[["FID", "IID", "Pheno_1"]]
 #%%
 cov_cols = [ col.startswith("Covar")   for col in df ]
-n = ["FID", "IID"]
-X = df.iloc[:, cov_cols]
-X['IID'] = df["IID"]
-X['FID'] = df["FID"]
+cov_cols = list(df.columns[cov_cols])
+n = ["FID", "IID"] + cov_cols
+X = df[n]
+#X['IID'] = df["IID"]
+#%%
+#X.loc['FID'] = df["FID"]
 
 #%%
 
