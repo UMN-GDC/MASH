@@ -77,6 +77,8 @@ y = y.iloc[indices]; X=X.iloc[indices]; X_T = X.T;
 #%%
 G_selected = GRM_array[range(0,subsample_size),:][:,range(0,subsample_size)]
 
+# phen_sub = df.Pheno_1.iloc[sub_sample]
+# cov_sub = df.iloc[sub_sample, cov_cols]
 phen_sub = np.array(y.iloc[range(0,subsample_size)].drop(["FID", "IID"], axis = 1))
 cov_sub = np.array(X.iloc[range(0,subsample_size)].drop(["FID","IID"], axis =1))
 #%%
