@@ -20,16 +20,16 @@ from functions.PredLMM_parser import *
 #     logging.info("Argument %s: %r", arg, value)
 
 # %% for troubleshooting
-os.chdir("/home/christian/Scripts/Basu_herit")
-prefix = "Example/grm"
-pheno = "Example/pheno.phen"
-covar = "Example/covar.csv"
-PC = "Example/pcas.eigenvec"
-k = 0
-npc = 2
-mpheno = 1
-std = False
-out = "Example/results"
+#os.chdir("/home/christian/Scripts/Basu_herit")
+#prefix = "Example/grm"
+#pheno = "Example/pheno.phen"
+#covar = "Example/covar.csv"
+#PC = "Example/pcas.eigenvec"
+#k = 0
+#npc = 2
+#mpheno = 1
+#std = False
+#out = "Example/results"
 print(args)
 
 print("Reading GRM")
