@@ -38,9 +38,12 @@ n_phen_nona = ids.shape[0]
 print("loading data")
 #%%
 df = load_data(pheno_file = pheno, cov_file=covar, PC_file=PC, npc = npc)
+# dropping nas for ease of use
+df = df.dropna()
 #%%
 
-# only regress out covariates if they are entered
+# only regress out covariates if they are entered 
+# NOTE: I added to drop missing values here to make it run!!!! Might want to change in the future
 res_y = sm.OLS(endog=df.loc[:,"Pheno_" + str(mpheno)], exog=df.drop(["Pheno_" + str(mpheno), "FID", "IID"], 1)).fit().resid
 
 # %%
@@ -75,8 +78,12 @@ res_y.name = "Residual"
 
 df["Residual"] = res_y
 
+# keep portion of GRM without missingess
+nonmissing = ids.IID.isin(df.IID)
+GRM_nonmissing = GRM_array_nona[nonmissing,:][:,nonmissing]
+
 #%%
-h2, se = AdjHE_estimator(A=GRM_array_nona, data = df, npc=npc, std=std)
+h2, se = AdjHE_estimator(A= GRM_nonmissing, data = df, npc=npc, std=std)
 # %%
 
 results = {"h2" : h2,
