@@ -86,12 +86,12 @@ GRM_nonmissing = GRM_array_nona[nonmissing,:][:,nonmissing]
 h2, se = AdjHE_estimator(A= GRM_nonmissing, data = df, npc=npc, std=std)
 # %%
 
-results = {"h2" : h2,
+results = {"h2" : h2[0],
       "SE" : se,
       "Time for analysis(s)" : timeit.default_timer() - start_read,
       "Memory usage" : resource.getrusage(resource.RUSAGE_SELF).ru_maxrss}
-print(h2)
-print(se)
-
+print("Heritability estimate: " + str(h2[0]))
+print("With Standard error: " + str(se))
+print("Writing results")
 results= pd.DataFrame(results, index =[0])
 results.to_csv(out + ".csv", index = False )
