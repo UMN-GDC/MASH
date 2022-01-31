@@ -20,13 +20,26 @@ Arguments
 | --mpheno m| OPTIONAL. If you have multiple phenotypes in the file, you can specify by ```--mpheno m```. Otherwise, the first phenotype will be used.|
 | --PC PC| OPTIONAL. The name of PCs file, following GCTA (space delimited, no column names) ```--pca``` file (same as plink ```--pca```). The third column is the first PC, the forth column is the second PC...|
 | --npc n| OPTIONAL. You can specify top n PCs to be adjusted by ```--npc n```. Otherwise, all PCs in the PC file will be used.|
-| --covar COVAR| OPTIONAL. The name of covariate file, following GCTA ```--qcovar``` file format. It may contain sex, age, etc. *Note that this file does not include principal components, which need to be include seperately by ```--PC PC```*.|
+| --covar COVAR| OPTIONAL. The name of covariate file, following GCTA ```--qcovar``` file format or .csv file format. It may contain sex, age, etc. *Note that this file does not include principal components, which need to be include seperately by ```--PC PC```*.|
 | --k k| OPTIONAL. You can specify the number of rows in restoring the GCTA GRM binary file into matrix each time. If not provide, it will process the whole GRM at one time. When you have a relative large sample size, specifying ```--k k``` can speed up the computation and save the memory. |
 | --std | OPTIONAL. Run SAdj-HE by specifying ```--std```. Otherwise, UAdj-HE will be computed.  (There are potential bugs with the standardized version, so it is reccommended to use unstandardized for now).|
 
 
 
 The output of ```AdjHE_formula.py``` contains heritability estimation and its standard error in a .csv file. Computational time and peak memory are also provided.
+
+
+```
+module load python
+prefix='EXAMPLE/grm' #We partitioned the GRM into 200 parts.
+id='/EXAMPLE/ukbiobank.grm.id'
+pheno='Example/phen.pheno'
+PC='Example/pcas.eigenvec'
+covar='Example/covar.csv'
+out='/PATH/TO/RESULT/DIRECTORY'
+
+python AdjHE.py --prefix ${prefix} --PC ${PC} --npc 10  --covar ${covar} --pheno ${pheno} --mpheno 1 --out ${out}
+```
 
 ## Adjusted-HE with regression version (Still being tested)
 
