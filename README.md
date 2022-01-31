@@ -7,9 +7,9 @@ Lin, Z., Seal, S., & Basu, S. (2020). Estimating SNP heritability in presence of
 
 ## Adjusted-HE with closed form formula version
 
-```AdjHE_formula.py```  estimates SNP-heritability via closed form formula with single GRM as input. It is suggested to use this version on a server with sufficient memory when sample size is less than 100k. In our paper, analyzing a 45k sample only used less than 2 minutes and about 40 GB memory.
+```AdjHE.py```  estimates SNP-heritability via closed form formula with single GRM as input. It is suggested to use this version on a server with sufficient memory when sample size is less than 100k. In our paper, analyzing a 45k sample only used less than 2 minutes and about 40 GB memory.
 
-Please check the input description with ```./AdjHE_formula.py --help```.
+Please check the input description with ```./AdjHE.py --help```.
 
 Arguments
 
@@ -26,7 +26,7 @@ Arguments
 
 
 
-The output of ```AdjHE_formula.py``` contains heritability estimation and its standard error in a .csv file. Computational time and peak memory are also provided.
+The output of ```AdjHE.py``` contains heritability estimation and its standard error in a .csv file. Computational time and peak memory are also provided.
 
 
 ```
