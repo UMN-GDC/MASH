@@ -130,24 +130,22 @@ logging.basicConfig(format='%(asctime)s - %(pathname)s[line:%(lineno)d] - %(leve
                     level=logging.DEBUG,filename='pheno'+str(args.mpheno)+'.log',filemode='a')
 #logging.info('begin..!')
 
-ids = np.loadtxt(args.id)
+ids = pd.read_csv(args.id,sep='\s+',header=None)
 n_phen_nona = ids.shape[0]
-phenotypes = pd.DataFrame(np.loadtxt(args.pheno))
-phenotypes.index = phenotypes.iloc[:,0].astype("int32")
-intersection_indiv = np.intersect1d(ids[:,0].astype("int32"), phenotypes.iloc[:,0].astype("int32"))
-final_phen = phenotypes.loc[intersection_indiv]
+phenotypes = pd.DataFrame(pd.read_csv(args.pheno,sep='\s+',header=None))
+final_phen = pd.merge(ids,phenotypes,how='inner',on=[0,1])
+
 
 #logging.info('file read.. finish!')
 cov_selected = np.ones(n_phen_nona)
 if (args.covar!="NULL"):
-    covariates = pd.DataFrame(np.loadtxt(args.covar))
-    covariates.index = covariates.iloc[:,0].astype("int32")
-    final_covar = covariates.loc[intersection_indiv]
+    covariates = pd.DataFrame(pd.read_csv(args.covar,sep='\s+',header=None))
+    final_covar = pd.merge(final_phen,covariates,how='inner',on=[0,1])
     final_covar = final_covar.values[:,2:]
     cov_selected = np.column_stack((cov_selected,final_covar))
 if (args.PC != "NULL"):
-    PCs = pd.DataFrame(np.loadtxt(args.PC))
-    PCs.index = PCs.iloc[:,0].astype("int32")
+    PCs = pd.DataFrame(pd.read_csv(args.PC,sep='\s+',header=None))
+    final_PC = pd.merge(final_phen,PCs,how='inner',on=[0,1])
     if (args.npc == -9):
         npc = PCs.shape[1] - 2
     if (npc != 0):
@@ -202,6 +200,8 @@ if(args.std==False):
     se_1 = np.sqrt(sigma_1 * np.linalg.inv(xtx)[-1,-1])
     sigma_p = np.std(res_y)
     logging.info('standard error: '+str(se_1/sigma_p))
+    logging.info('Vg: '+str(betas[-1]))
+    logging.info('Ve: '+str(betas[-2]))
     #logging.info('finally done... it takes: '+str(timeit.default_timer() - start_time0)+' seconds.'+'\n')
 else:
     xtx = np.zeros((npc+1,npc+1))

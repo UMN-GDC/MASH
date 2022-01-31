@@ -1,0 +1,43 @@
+cd /home/saonli/lin00374/Desktop/HE_simulation/simulation/pcrelate/temp 
+module unload python2/2.7.12_anaconda4.2
+module load plink/2.00-alpha-091019
+module load R/3.6.0
+module load python
+seed=999
+R CMD BATCH --vanilla "--args nclus=4 seed=${seed} pcausalsnps=0.02 heritability=0.8 npeople=1000 nmarkers=15000 a1=0 a2=0 a3=0 a4=0 F1=0.01 F2=0.01 F3=0.01 F4=0.01" simulate_BN_y.R Logfiles/job${seed}_${PBS_ARRAYID}.txt
+
+plink2 --import-dosage sim${PBS_ARRAYID}.dosage noheader --thread-num 32 --fam sim${PBS_ARRAYID}.fam --map sim${PBS_ARRAYID}.map --maf 0.05 --make-bed --out sim${PBS_ARRAYID}
+.gcta64 --bfile sim${PBS_ARRAYID}  --make-grm --thread-num 32 --out sim${PBS_ARRAYID}
+.gcta64 --grm sim${PBS_ARRAYID} --pca 10 --out sim${PBS_ARRAYID}
+for i in {1..5}
+do
+    awk '{NF=2+"'"$i"'"}1' sim${PBS_ARRAYID}.eigenvec > sim${PBS_ARRAYID}.eigenvec${i}
+done
+
+.gcta64 --grm sim${PBS_ARRAYID} --pheno sim${PBS_ARRAYID}.pheno --reml --out reml_sim${PBS_ARRAYID}
+grep /Vp reml_sim${PBS_ARRAYID}.hsq | awk '{print $2}' >> reml_${PBS_ARRAYID}
+.gcta64 --grm sim${PBS_ARRAYID} --pheno sim${PBS_ARRAYID}.pheno --qcovar sim${PBS_ARRAYID}.eigenvec3 --reml --out reml_sim${PBS_ARRAYID}
+grep /Vp reml_sim${PBS_ARRAYID}.hsq | awk '{print $2}' >> reml_${PBS_ARRAYID}
+
+prefix="'sim"${PBS_ARRAYID}"'"
+R CMD BATCH --vanilla "--args prefix=${prefix} npc=3" pcrelate.R Logfiles/pcrelate${PBS_ARRAYID}.txt
+#covar-pheno-grm-outputjobid-npc
+for i in 0 3 
+do
+    python HE_simple_simu.py sim${PBS_ARRAYID}.eigenvec sim${PBS_ARRAYID}.pheno sim${PBS_ARRAYID} myfo2_${PBS_ARRAYID} ${i}
+    python HE_simple_simu_temp.py sim${PBS_ARRAYID}.eigenvec sim${PBS_ARRAYID}.pheno sim${PBS_ARRAYID} myfo1_${PBS_ARRAYID} ${i}
+done 
+
+module unload python
+module load python2/2.7.12_anaconda4.2
+python ./mmhe.py --grm sim${PBS_ARRAYID} --pheno sim${PBS_ARRAYID}.pheno  >> Ge_${PBS_ARRAYID}
+for i in 3
+do
+    python ./mmhe.py --grm sim${PBS_ARRAYID} --pheno sim${PBS_ARRAYID}.pheno --covar sim${PBS_ARRAYID}.eigenvec${i} >> Ge_${PBS_ARRAYID}
+done
+#awk '{print $2}' Ge_${PBS_ARRAYID} > timeGe_${PBS_ARRAYID}
+awk '{print $1}' Ge_${PBS_ARRAYID} > Geh2_${PBS_ARRAYID}
+rm Ge_${PBS_ARRAYID}
+rm sim${PBS_ARRAYID}.*
+rm reml_sim${PBS_ARRAYID}.*
+

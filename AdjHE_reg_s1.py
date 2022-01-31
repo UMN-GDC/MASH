@@ -116,7 +116,10 @@ def fun1(current_sum,counter,n,pc,lower_diag):
         
 def regout(y):
     X = cov_selected
-    XTX_inv = np.linalg.inv(np.dot(X.T,X))
+    if(len(X.shape)==1):
+        XTX_inv = 1/np.dot(X.T,X)
+    else:
+        XTX_inv = np.linalg.inv(np.dot(X.T,X))
     XTY = np.dot(X.T,y)
     beta = np.dot(XTX_inv,XTY)
     res = y - np.dot(X,beta)
@@ -132,27 +135,27 @@ os.chdir(outprefix)
 logging.basicConfig(format='%(asctime)s - %(pathname)s[line:%(lineno)d] - %(levelname)s: %(message)s',
                     level=logging.DEBUG,filename='pheno'+str(args.mpheno)+'.log',filemode='a')
 
-ids = np.loadtxt(args.id)
+#ids = np.loadtxt(args.id)
+ids = pd.read_csv(args.id,sep='\s+',header=None)
 n_phen_nona = ids.shape[0]
-phenotypes = pd.DataFrame(np.loadtxt(args.pheno))
-phenotypes.index = phenotypes.iloc[:,0].astype("int32")
-intersection_indiv = np.intersect1d(ids[:,0].astype("int32"), phenotypes.iloc[:,0].astype("int32"))
-final_phen = phenotypes.loc[intersection_indiv]
+phenotypes = pd.DataFrame(pd.read_csv(args.pheno,sep='\s+',header=None))
+final_phen = pd.merge(ids,phenotypes,how='inner',on=[0,1])
+#phenotypes.index = phenotypes.iloc[:,0].astype("int32")
+#intersection_indiv = np.intersect1d(ids[:,0].astype("int32"), phenotypes.iloc[:,0].astype("int32"))
+#final_phen = phenotypes.loc[intersection_indiv]
 
 cov_selected = np.ones(n_phen_nona)
 if (args.covar!="NULL"):
-    covariates = pd.DataFrame(np.loadtxt(args.covar))
-    covariates.index = covariates.iloc[:,0].astype("int32")
-    final_covar = covariates.loc[intersection_indiv]
+    covariates = pd.DataFrame(pd.read_csv(args.covar,sep='\s+',header=None))
+    final_covar = pd.merge(final_phen,covariates,how='inner',on=[0,1])
     final_covar = final_covar.values[:,2:]
     cov_selected = np.column_stack((cov_selected,final_covar))
 if (args.PC != "NULL"):
-    PCs = pd.DataFrame(np.loadtxt(args.PC))
-    PCs.index = PCs.iloc[:,0].astype("int32")
+    PCs = pd.DataFrame(pd.read_csv(args.PC,sep='\s+',header=None))
+    final_PC = pd.merge(final_phen,PCs,how='inner',on=[0,1])
     if (args.npc == -9):
         npc = PCs.shape[1] - 2
     if (npc != 0):
-        final_PC = PCs.loc[intersection_indiv]
         final_PC = final_PC.values[:,2:(2+npc)]
         cov_selected = np.column_stack((cov_selected,final_PC))
 
@@ -173,19 +176,20 @@ prefix = args.prefix
 igrm = args.job
 iformat = len(str(args.Npart))
 exec('prefix1 = prefix + \'{:0'+str(iformat)+'}\'.format(igrm)')
-tempid = np.loadtxt(prefix1+'.grm.id')[:,0].astype("int32")
-tempid_1 = tempid[0]
-counter = int(np.where(ids[:,0] == tempid_1)[0])
+#tempid = np.loadtxt(prefix1+'.grm.id')[:,0].astype("int32")
+tempid = pd.read_csv(prefix1+'.grm.id',sep='\s+',header=None) 
+tempid_1 = tempid.iloc[0]
+counter = int(np.where((ids[0] == tempid_1[0]) & (ids[1]==tempid_1[1]))[0])
 G = ReadGRMBin(prefix1, m = counter)
 n_ind = len(G['id'])
 lower_diag = G['off'].astype('float64')
-if (args.wostd==False):
+if (args.std==False):
     diag = G['diag'].astype('float64')
-    current_sum_grm = np.dot(lower_diag,lower_diag) + np.dot(diag,diag) 
-    current_sum_grm_e = np.sum(diag)
-    current_sum_y = fun1(current_sum_y,counter,n_ind,res_y,lower_diag) + np.dot(diag,res_y[counter:counter+n_ind]**2)
+    current_sum_grm = np.dot(lower_diag,lower_diag) + np.dot(diag,diag) # A cross A
+    current_sum_grm_e = np.sum(diag) # A cross I
+    current_sum_y = fun1(current_sum_y,counter,n_ind,res_y,lower_diag) + np.dot(diag,res_y[counter:counter+n_ind]**2) # A cross yy^T 
     for j in range(npc):
-        current_sum_pc[j] = fun1(current_sum_pc[j],counter,n_ind,final_PC[:,j],lower_diag) + np.dot(diag,final_PC[counter:counter+n_ind,j]**2)
+        current_sum_pc[j] = fun1(current_sum_pc[j],counter,n_ind,final_PC[:,j],lower_diag) + np.dot(diag,final_PC[counter:counter+n_ind,j]**2) # A cross PCj
     current_out = np.append(current_sum_pc,[current_sum_y,current_sum_grm_e,current_sum_grm])
 else:
     current_sum_grm = np.dot(lower_diag,lower_diag)
