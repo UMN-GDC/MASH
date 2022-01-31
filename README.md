@@ -16,19 +16,19 @@ Arguments
 |&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; Input &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;| Description
 :-------|-------------------
 | --prefix PREFIX|  REQUIRED. The prefix of GRM file with GCTA binary GRM format. (```PREFIX.grm.bin```, ```PREFIX.grm.N.bin``` and ```PREFIX.grm.id```)|
-| --pheno PHENO|  REQUIRED. The name of phenotype file, following GCTA phenotype file format. The first two columns are FID and IID and phenotypes start from the third column. |
+| --pheno PHENO|  REQUIRED. The name of phenotype file, following GCTA phenotype file format (space delimited, no column names). The first two columns are FID and IID and phenotypes start from the third column. |
 | --mpheno m| OPTIONAL. If you have multiple phenotypes in the file, you can specify by ```--mpheno m```. Otherwise, the first phenotype will be used.|
-| --PC PC| OPTIONAL. The name of PCs file, following GCTA ```--pca``` file (same as plink ```--pca```). The third column is the first PC, the forth column is the second PC...|
+| --PC PC| OPTIONAL. The name of PCs file, following GCTA (space delimited, no column names) ```--pca``` file (same as plink ```--pca```). The third column is the first PC, the forth column is the second PC...|
 | --npc n| OPTIONAL. You can specify top n PCs to be adjusted by ```--npc n```. Otherwise, all PCs in the PC file will be used.|
 | --covar COVAR| OPTIONAL. The name of covariate file, following GCTA ```--qcovar``` file format. It may contain sex, age, etc. *Note that this file does not include principal components, which need to be include seperately by ```--PC PC```*.|
 | --k k| OPTIONAL. You can specify the number of rows in restoring the GCTA GRM binary file into matrix each time. If not provide, it will process the whole GRM at one time. When you have a relative large sample size, specifying ```--k k``` can speed up the computation and save the memory. |
-| --std | OPTIONAL. Run SAdj-HE by specifying ```--std```. Otherwise, UAdj-HE will be computed.|
+| --std | OPTIONAL. Run SAdj-HE by specifying ```--std```. Otherwise, UAdj-HE will be computed.  (There are potential bugs with the standardized version, so it is reccommended to use unstandardized for now).|
 
 
 
-The output of ```AdjHE_formula.py``` contains heritability estimation and its standard error. Computational time and peak memory are also provided.
+The output of ```AdjHE_formula.py``` contains heritability estimation and its standard error in a .csv file. Computational time and peak memory are also provided.
 
-## Adjusted-HE with regression version
+## Adjusted-HE with regression version (Still being tested)
 
 For large sample size (e.g. biobank size), it is suggested to use ```AdjHE_reg_s1.py``` and ```AdjHE_reg_s2.py``` to perform linear regression to get the heritability estimation. In our estimation of the UKB data, we partitioned the whole data set (n = 305,639) into 200 parts and allocated 15GB memory to each job. And the maximum running time for 200 jobs was less than 10 minutes (not include construcing GRM and computing PCs).
 
