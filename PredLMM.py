@@ -20,16 +20,16 @@ from functions.PredLMM_parser import *
 #     logging.info("Argument %s: %r", arg, value)
 
 # %% for troubleshooting
-os.chdir("/home/christian/Scripts/Basu_herit")
-prefix = "Example/grm"
-pheno = "Example/pheno.phen"
-covar = "Example/covar.csv"
-PC = "Example/pcas.eigenvec"
-k = 0
-npc = 2
-mpheno = 1
-std = False
-out = "Example/results"
+#os.chdir("/home/christian/Scripts/Basu_herit")
+#prefix = "Example/grm"
+#pheno = "Example/pheno.phen"
+#covar = "Example/covar.csv"
+#PC = "Example/pcas.eigenvec"
+#k = 0
+#npc = 2
+#mpheno = 1
+#std = False
+#out = "Example/results"
 print(args)
 
 print("Reading GRM")
@@ -56,7 +56,7 @@ GRM_array = np.float32(GRM_array)
 
 print("Reading covariate and phenotype data")
 df = load_data(pheno_file = pheno, cov_file=covar, PC_file=None, npc = 0)
-y = df[["FID", "IID", "Pheno_1"]]
+y = df[["FID", "IID", "Pheno_" + str(mpheno) ]]
 #%%
 cov_cols = [ col.startswith("Covar")   for col in df ]
 cov_cols = list(df.columns[cov_cols])
