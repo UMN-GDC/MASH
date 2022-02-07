@@ -76,7 +76,8 @@ GRM_nonmissing = GRM_array_nona[nonmissing,:][:,nonmissing]
 #%%
 # regress covariates 
 for mp in mpheno :
-    df["res"+str(mp)] = sm.OLS(endog=df.loc[:,"Pheno_" + str(mp)], exog=df.drop(["Pheno_" + str(mp), "FID", "IID"], 1)).fit().resid
+    df["res"+str(mp)] = sm.OLS(endog=df.loc[:,"Pheno_" + str(mp)], 
+                               exog=df.loc[df.columns.str.startswith('PC')+ df.columns.str.startswith('Covar')]).fit().resid
 # remove nonresidualized phenos
 df = df.loc[:, ~df.columns.str.startswith('Pheno')]
 #%%
@@ -86,7 +87,7 @@ X = df.loc[:, ~df.columns.str.startswith('res')]
 h2s =np.empty; SEs = []; Mems = []; Times = []
 #%%
 
-results = pd.DataFrame(np.zeros((mp, 4)))
+results = pd.DataFrame(np.zeros((len(mpheno), 4)))
 results.columns = ["h2", "SE", "Time for analysis(s)", "Memory Usage"]
 
 #%%

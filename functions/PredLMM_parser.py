@@ -11,7 +11,7 @@ parser.add_argument('--prefix', type=str, help='prefix for GCTA format GRM files
 parser.add_argument('--covar', type=str, help='Read PLINK format covariate file contains covariates besides PCs to be adjusted')
 parser.set_defaults(covar="NULL")
 parser.add_argument('--pheno', type=str, help='Read PLINK format phenotype file [required]\nIf --mpheno is not specified then then 3rd column (the 1st phenotype) will be used.', required=True)
-parser.add_argument('--mpheno',type=int, default=1,help='Specify which phenotype to use from phenotype file (1 phenotype only)')
+parser.add_argument('--mpheno',nargs="+",type=int, default=1,help='Specify which phenotype to use from phenotype file (Can be a list)')
 parser.set_defaults(mpheno=1)
 parser.add_argument('--out',type=str, help='Specify the output file name. [required]',required=True)
 parser.add_argument('--std',action='store_true',default=False,help='Run SAdj-HE (i.e., with standardization)')

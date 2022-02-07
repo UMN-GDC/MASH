@@ -12,7 +12,7 @@ parser.add_argument('--prefix', type=str, help='prefix for GCTA format GRM files
 parser.add_argument('--covar', type=str, help='Read PLINK format covariate file contains covariates besides PCs to be adjusted')
 parser.set_defaults(covar="NULL")
 parser.add_argument('--pheno', type=str, help='Read PLINK format phenotype file [required]\nIf --mpheno is not specified then then 3rd column (the 1st phenotype) will be used.', required=True)
-parser.add_argument('--mpheno',nargs="+",type=int, default=1,help='Specify which phenotype to use from phenotype file (1 phenotype only)')
+parser.add_argument('--mpheno',nargs="+",type=int, default=1,help='Specify which phenotype to use from phenotype file (Can be a list)')
 parser.set_defaults(mpheno=1)
 parser.add_argument('--k',type=int,help='Specify the number of rows in restoring the GRM each time.\n This could affect the computation time and memory especially when sample size is large. If not provide, it will process the whole GRM at one time.')
 parser.set_defaults(k=0)
