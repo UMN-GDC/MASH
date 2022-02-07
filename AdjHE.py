@@ -17,12 +17,12 @@ print(args)
 # %% for troubleshooting
 # os.chdir("/home/christian/Scripts/Basu_herit")
 # prefix = "Example/grm"
-# pheno = "Example/pheno.phen"
+# pheno = "Example/pheno2.phen"
 # covar = "Example/covar.csv"
 # PC = "Example/pcas.eigenvec"
 # k = 0
 # npc = 2
-# mpheno = 1
+# mpheno = [1,2,3]
 # std = False
 # out = "Example/results"
 
@@ -34,19 +34,6 @@ G = ReadGRMBin(prefix)
 ids = G['id']
 ids = ids.rename(columns = {0:"FID", 1:"IID"})
 n_phen_nona = ids.shape[0]
-
-print("loading data")
-#%%
-df = load_data(pheno_file = pheno, cov_file=covar, PC_file=PC, npc = npc)
-# dropping nas for ease of use
-df = df.dropna()
-#%%
-
-# only regress out covariates if they are entered 
-# NOTE: I added to drop missing values here to make it run!!!! Might want to change in the future
-res_y = sm.OLS(endog=df.loc[:,"Pheno_" + str(mpheno)], exog=df.drop(["Pheno_" + str(mpheno), "FID", "IID"], 1)).fit().resid
-
-# %%
 
 start_read = timeit.default_timer()
 nmarkers = G['N']
@@ -73,25 +60,49 @@ for i in l:
 
 GRM_array_nona[np.diag_indices(n_phen_nona)] = G['diag']
 #%%
-print("Calculating heritibility")
-res_y.name = "Residual"
 
-df["Residual"] = res_y
+
+
+print("loading data")
+df = load_data(pheno_file = pheno, cov_file=covar, PC_file=PC, npc = npc)
+# dropping nas for ease of use
+df = df.dropna()
+
+print("Calculating heritibility")
 
 # keep portion of GRM without missingess
 nonmissing = ids.IID.isin(df.IID)
 GRM_nonmissing = GRM_array_nona[nonmissing,:][:,nonmissing]
+#%%
+# regress covariates 
+for mp in mpheno :
+    df["res"+str(mp)] = sm.OLS(endog=df.loc[:,"Pheno_" + str(mp)], exog=df.drop(["Pheno_" + str(mp), "FID", "IID"], 1)).fit().resid
+# remove nonresidualized phenos
+df = df.loc[:, ~df.columns.str.startswith('Pheno')]
+#%%
+# select everything else besides y
+X = df.loc[:, ~df.columns.str.startswith('res')]
+# Empty vectors of heritability SEs, time and memory
+h2s =np.empty; SEs = []; Mems = []; Times = []
+#%%
+
+results = pd.DataFrame(np.zeros((mp, 4)))
+results.columns = ["h2", "SE", "Time for analysis(s)", "Memory Usage"]
 
 #%%
-h2, se = AdjHE_estimator(A= GRM_nonmissing, data = df, npc=npc, std=std)
-# %%
 
-results = {"h2" : h2[0],
-      "SE" : se,
-      "Time for analysis(s)" : timeit.default_timer() - start_read,
-      "Memory usage" : resource.getrusage(resource.RUSAGE_SELF).ru_maxrss}
-print("Heritability estimate: " + str(h2[0]))
-print("With Standard error: " + str(se))
+for mp in mpheno :
+    # merge temporary dataframe
+    tempy = df[["FID", "IID", "res" + str(mp)]]
+    # rename to make easier
+    tempy.columns = ["FID", "IID", "Residual"]
+    temp = pd.merge(X, tempy, on = ["FID", "IID"])
+    results.iloc[(mp-1),0], results.iloc[(mp-1),1] = AdjHE_estimator(A= GRM_nonmissing, data = temp, npc=npc, std=std)
+    results.iloc[(mp-1), 2] = timeit.default_timer() - start_read
+    results.iloc[(mp-1), 3] = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
+    print(results.iloc[(mp-1),0])
+# %%
+# print("Heritability estimate: " + str(h2[0]))
+# print("With Standard error: " + str(se))
 print("Writing results")
-results= pd.DataFrame(results, index =[0])
 results.to_csv(out + ".csv", index = False )

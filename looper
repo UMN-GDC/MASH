@@ -1,0 +1,9 @@
+echo ",Est,SD,Var,Knot time,Time for analysis(s),Memory usage" > total_results.csv 
+
+
+for PHENO in {1..10}
+do 
+	python PredLMM.py --prefix Example/grm --covar Example/covar.csv --pheno Example/pheno.phen --mpheno ${PHENO} --out delete
+	tail -2 delete.csv >> total_results.csv
+done
+
