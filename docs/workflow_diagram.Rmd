@@ -1,0 +1,69 @@
+---
+title: "&nbsp;"
+output:
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, include = TRUE)
+library(DiagrammeR)
+```
+
+
+
+```{r}
+# Code base (Black).
+# Interfaces (Orange outline)
+# Visualizers (Purple outline)
+# Markdown-formatters (Blue outline)
+
+
+
+grViz(diagram = "digraph flowchart {
+  node[shape=parallelogram]
+  in1[label='File paths']
+  in2[label='Pheno specification']
+  out[label='Store results', shape = ellipse]
+  
+  node[shape=rectangle, color = Black, style = filled, fontcolor=  White]
+  load[label='load Phenos and \\n PCs/covars if specified']
+  subset[label='subset to 1 pheno \\n remove missing']
+  predlmm[label='PredLMM']
+  adjhe[label='AdjHE']
+  
+
+  select[label='select estimator', shape= diamond]
+  
+  
+  
+  in1 -> load
+  in2 -> load
+  
+  load -> subset -> select -> predlmm -> out
+  select->adjhe -> out -> subset
+  
+  
+  
+}
+")
+```
+
+```{r}
+grViz(diagram = "digraph flowchart {
+  node[fontname = arial, shape = oval]
+  in1[label = 'Imputed Genos']
+  in2[label= 'R^2 > 0.99, MAF > 0.0005', color =Red, style = filled, fontcolor=  Black]
+  
+
+  node[fontname = arial, shape = box]
+  qc0[label='Bad subjects (n=2)']
+  qc1[label='VCF-BED, SNPs(ACGT), hwe>1e-6, rel-cutoff<0.25 \\n n=???, p=???']
+  
+  
+  in1 -> qc0
+  in2 -> qc1
+  qc0 ->qc2
+}
+")
+```
+
