@@ -15,16 +15,16 @@ from functions.AdjHE_parser import *
 # from argparse import RawTextHelpFormatter
 print(args)
 # %% for troubleshooting
-# os.chdir("/home/christian/Scripts/Basu_herit")
-# prefix = "Example/grm"
-# pheno = "Example/pheno2.phen"
-# covar = "Example/covar.csv"
-# PC = "Example/pcas.eigenvec"
-# k = 0
-# npc = 2
-# mpheno = [1,2,3]
-# std = False
-# out = "Example/results"
+os.chdir("/home/christian/Research/Stat_gen/Basu_herit")
+prefix = "Example/grm"
+pheno = "Example/pheno2.phen"
+covar = "Example/covar.csv"
+PC = "Example/pcas.eigenvec"
+k = 0
+npc = 2
+mpheno = [1,2,3]
+std = False
+out = "Example/results"
 
 print("reaading GRM")
 
@@ -65,41 +65,37 @@ GRM_array_nona[np.diag_indices(n_phen_nona)] = G['diag']
 
 print("loading data")
 df = load_data(pheno_file = pheno, cov_file=covar, PC_file=PC, npc = npc)
-# dropping nas for ease of use
-df = df.dropna()
 
 print("Calculating heritibility")
 
-# keep portion of GRM without missingess
-nonmissing = ids.IID.isin(df.IID)
-GRM_nonmissing = GRM_array_nona[nonmissing,:][:,nonmissing]
-#%%
-# regress covariates 
-for mp in mpheno :
-    df["res"+str(mp)] = sm.OLS(endog=df.loc[:,"Pheno_" + str(mp)], 
-                               exog=df.loc[df.columns.str.startswith('PC')+ df.columns.str.startswith('Covar')]).fit().resid
-# remove nonresidualized phenos
-df = df.loc[:, ~df.columns.str.startswith('Pheno')]
-#%%
-# select everything else besides y
-X = df.loc[:, ~df.columns.str.startswith('res')]
 # Empty vectors of heritability SEs, time and memory
 h2s =np.empty; SEs = []; Mems = []; Times = []
-#%%
-
+# create empty list to store heritability estimates
 results = pd.DataFrame(np.zeros((len(mpheno), 4)))
 results.columns = ["h2", "SE", "Time for analysis(s)", "Memory Usage"]
 
 #%%
 
 for mp in mpheno :
-    # merge temporary dataframe
-    tempy = df[["FID", "IID", "res" + str(mp)]]
-    # rename to make easier
-    tempy.columns = ["FID", "IID", "Residual"]
-    temp = pd.merge(X, tempy, on = ["FID", "IID"])
-    results.iloc[(mp-1),0], results.iloc[(mp-1),1] = AdjHE_estimator(A= GRM_nonmissing, data = temp, npc=npc, std=std)
-    results.iloc[(mp-1), 2] = timeit.default_timer() - start_read
+    # Save residuals of selected phenotype after regressing out PCs and covars
+    df["res" + str(mp)] = sm.OLS(endog=df.loc[:,"Pheno_" + str(mp)], 
+                           exog=df.loc[:,df.columns.str.startswith('PC')+ df.columns.str.startswith('Covar')], missing="drop").fit().resid
+    
+    # drop missing values from covariates or phenotypes
+    temp = df.dropna()
+    
+    # keep portion of GRM without missingess
+    nonmissing = ids.IID.isin(temp.IID)
+    GRM_nonmissing = GRM_array_nona[nonmissing,:][:,nonmissing]
+
+    
+    # resutls from mp pheno
+    start_est = timeit.default_timer()
+    # Get heritability and SE estimates
+    results.iloc[(mp-1),0], results.iloc[(mp-1),1] = AdjHE_estimator(A= GRM_nonmissing, data = temp, mp = mp, npc=npc, std=std)
+    # Get time for each estimate
+    results.iloc[(mp-1), 2] = timeit.default_timer() - start_est
+    # Get memory for each step (This is a little sketchy)
     results.iloc[(mp-1), 3] = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
     print(results.iloc[(mp-1),0])
 # %%

@@ -1,9 +1,9 @@
 import numpy as np
 
 
-def AdjHE_estimator(A,data, npc=0, std=False):
+def AdjHE_estimator(A,data, mp, npc=0, std=False):
     # remove identifiers form y for linear algebra 
-    y = data.Residual
+    y = data["res" + str(mp)]
     # select PC columns 
     PC_cols = [ col.startswith("PC")   for col in data ]
     PCs = data.iloc[:, PC_cols]

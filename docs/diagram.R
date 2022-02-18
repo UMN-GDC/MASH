@@ -39,6 +39,7 @@ graph <- grViz(diagram = "digraph flowchart {
 }
 ")
 
-graph %>% export_svg %>% charToRaw %>% rsvg_png("diagram.png")
+graph
+# graph %>% export_svg %>% charToRaw %>% rsvg_png("diagram.png")
 
 
