@@ -77,18 +77,15 @@ results.columns = ["h2", "SE", "Time for analysis(s)", "Memory Usage"]
 #%%
 
 for mp in mpheno :
+    # Save temp with just the phenotype we need (I'm sure this can be written given the hints that python returns
+    temp=df.loc[:,(df.columns == "FID") + (df.columns == "IID") + df.columns.str.startswith('PC')+ df.columns.str.startswith('Covar')+ (df.columns == 'Pheno_'+ str(mp))]
+    # drop missing values from both phenos and covariates
+    temp = temp.dropna()    
     # Save residuals of selected phenotype after regressing out PCs and covars
-    df["res" + str(mp)] = sm.OLS(endog=df.loc[:,"Pheno_" + str(mp)], 
-                           exog=df.loc[:,df.columns.str.startswith('PC')+ df.columns.str.startswith('Covar')], missing="drop").fit().resid
-    
-    # drop missing values from covariates or phenotypes
-    temp = df.dropna()
-    
+    temp["res" + str(mp)] = sm.OLS(endog= temp.loc[:,"Pheno_" + str(mp)], exog= temp.loc[:,temp.columns.str.startswith('PC')+ temp.columns.str.startswith('Covar')]).fit().resid
     # keep portion of GRM without missingess
     nonmissing = ids.IID.isin(temp.IID)
     GRM_nonmissing = GRM_array_nona[nonmissing,:][:,nonmissing]
-
-    
     # resutls from mp pheno
     start_est = timeit.default_timer()
     # Get heritability and SE estimates
