@@ -1,6 +1,8 @@
 import pandas as pd
 import numpy as np
 from struct import unpack, calcsize
+from functions.loading_extracting_niis import load_extract_niis
+#%%
 
 
 
@@ -76,6 +78,11 @@ def read_datas(file_path) :
    dat = pd.read_table(file_path, sep = " " , header=None)
    n = list(range(1, dat.shape[1] -1))
    dat.columns = ["FID", "IID"] + ["PC_" + str(s) for s in n]
+ elif(file_path.split(".")[-1] == "files"):
+   dat = load_extract_niis(file_path)
+   n = list(range(1, dat.shape[1] -1))
+   dat.columns = ["FID", "IID"] + ["Pheno_" + str(s) for s in n]
+
 
  # remove the unintentional columns that sometimes happen with phenotype and csv filetypes
  dat = dat[dat.columns.drop(list(dat.filter(regex='Unnamed')))]
