@@ -11,7 +11,7 @@ library(rsvg)
 # Markdown-formatters (Blue outline)
 
 
-graph <- grViz(diagram = "digraph flowchart {
+analysis <- grViz(diagram = "digraph flowchart {
   node[shape=parallelogram]
   in1[label='File paths']
   in2[label='Pheno specification']
@@ -39,7 +39,47 @@ graph <- grViz(diagram = "digraph flowchart {
 }
 ")
 
-graph
-# graph %>% export_svg %>% charToRaw %>% rsvg_png("diagram.png")
+analysis
+analysis %>% export_svg %>% charToRaw %>% rsvg_png("analysis.png")
 
 
+####################################################################
+## Data loading ####################################################
+####################################################################
+loading <- grViz(diagram = "digraph flowchart {
+  node[shape=parallelogram]
+  infiles[label='Input files']
+
+  
+
+  node[shape=parallelogram]
+  infile[label='Input file']
+
+  node[shape=diamond, color = Black, style = filled, fontcolor=  White]
+  filetype[label='Parse filetype \\n (.csv, .txt, .phen, .eigenvec, files,']
+
+  node[shape=rectangle, color = Black, style = filled, fontcolor=  White]
+  easytype[label='.csv, .txt, .phen, .eigenvec']
+  clean[label='Add IID, FID']
+
+  
+  hardtype[label='.files']
+  readnii[label='Read .nii files \\n extract upper triange \\n stack subjects']
+  id_hard[label= 'Add IID, ???FID???, task']
+  
+  merge[label='pd.merge data']
+
+  infiles -> infile -> filetype -> easytype, hardtype
+  hardtype -> readnii -> id_hard
+  easytype -> clean -> infile
+  
+  id_hard -> infile
+  
+  clean, id_hard -> merge
+  
+}
+")
+
+loading
+
+loading %>% export_svg %>% charToRaw %>% rsvg_png("loading.png")
