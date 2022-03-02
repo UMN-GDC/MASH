@@ -12,7 +12,8 @@ import pandas as pd
 import re
 #%%
 
-def load_extract_niis(files, save = False, save_path = None) :
+def load_extract_niis(files, IDs, save = False, save_path = None) :
+    # load the list of file paths
     files = pd.read_csv(files, header=None)
 
     # start empty array for phenotpes
@@ -34,34 +35,45 @@ def load_extract_niis(files, save = False, save_path = None) :
     phens = pd.DataFrame(phens)
     
     # pattern to match for subject ids
-    id_pat = "sub-(.*?)_ses"
+    id_pat = "sub-(.*?)/ses"
     # pattern for sesison
     ses_pat = "ses-(.*?)_task"
     # patter for task
     task_pat = "_task-(.*?).pconn"
     
     # seed empty lists
-    ids = []
+    iids = []
     sess = []
     tasks = []
 
 
     #parse id, session, and task
-    for i in files[0] : 
-        ids.append(re.search(id_pat, i).group(1))
+    for i in files[0] :
+        # select IID from the file name
+        iid =  re.search(id_pat, i).group(1)
+        # Add a - to make names consistent across data types
+        iid = iid[:4] + "_" + iid[4:]
+        # Add to cumulative iid column
+        iids.append(iid)
         sess.append(re.search(ses_pat, i).group(1))
         tasks.append(re.search(task_pat, i).group(1))
     
     # Save ID, seession, and task
-    phens["IID"] = ids
-    phens["ses"] = sess
-    phens["task"] = tasks
-        
+    phens.insert(loc=0, column='IID', value=iids)    
+    #phens["ses"] = sess
+    #phens["task"] = tasks
+    phens = pd.merge(IDs, phens, on="IID") 
+    # Save ID's and FID's to reenter in front of dataframe
+    IIDs = phens.IID
+    FIDs = phens.FID
+    phens.drop(["FID", "IID"], axis = 1)
+    
+    #phens.insert(loc=0, column= "IID", value= IIDs)
+    #phens.insert(loc=0, column= "FID", value= FIDs)
+
     
     # save if you want
     if (save == True) :
-        # add subject ID
-        phens["grid"] = files[0].str.split("/", expand = True)[1].str.split("_", expand=True)[0]
         phens.to_csv(save_path, columns = False, index= False, quotes = False)
         
     # return the dataframe
