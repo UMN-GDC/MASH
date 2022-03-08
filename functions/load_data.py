@@ -59,13 +59,17 @@ def multirange(counts):
 
 
 # Read data function that can load csv pheno and txt file types
-def read_datas(file_path, IDs) :
+def read_datas(file_path, IDs, covars= None) :
  if(file_path.split(".")[-1] == "csv"):
   # read csv with write optinos
   dat = pd.read_csv(file_path, header=None)
   # Rename columns to make them neat
-  n=list(range(1, dat.shape[1] -1))
+  # Create a sequence selecting all columns unless covars is specified, then only select those
+  n = list(range(1, dat.shape[1] -1))
   dat.columns = ["FID", "IID"] + ["Covar_" + str(s) for s in n]
+  # Select the intended covaraites
+  selected = ["FID", "IID"] + ["Covar_" + str(s) for s in covars]
+  dat = dat[selected]
  elif(file_path.split(".")[-1] == "phen"):
   dat = pd.read_table(file_path, sep = " " , header=None)
   n = list(range(1, dat.shape[1] -1))
@@ -91,12 +95,12 @@ def read_datas(file_path, IDs) :
 
 
 # Read covariates, PC's, and phenotype all at once
-def load_data(pheno_file, IDs, cov_file=None, PC_file=None, npc=-9) :
+def load_data(pheno_file, IDs, cov_file=None, PC_file=None, npc=-9, covars = None) :
   # load phenotypes
   df = read_datas(pheno_file, IDs)
   # read in covariates if nonnull
   try:
-    cov_selected = read_datas(cov_file, IDs)
+    cov_selected = read_datas(cov_file, IDs, covars = covars)
     df = pd.merge(cov_selected, df, on = ["FID", "IID"])
   except:
     print("No covariates file specified or specified file is not found or cannot be loaded.")

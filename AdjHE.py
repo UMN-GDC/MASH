@@ -7,7 +7,7 @@ import resource
 from functions.AdjHE_estimator import AdjHE_estimator
 #os.chdir("/home/christian/Research/Stat_gen/AdjHE/")
 from functions.load_data import sum_n_vec, ReadGRMBin, multirange, read_datas, load_data
-from functions.AdjHE_parser import prefix, npc
+from functions.AdjHE_parser import prefix, npc, covars
 from functions.AdjHE_parser import *
 
 # from argparse import RawTextHelpFormatter
@@ -16,18 +16,16 @@ print(args)
 #################################################
 # %% for troubleshooting Basic example
 # os.chdir("/home/christian/Research/Stat_gen/Basu_herit")
-# prefix = "Example/grm"
-#prefix = 
-# pheno = "Example/pheno2.phen"
-# pheno = "/panfs/roc/groups/3/rando149/coffm049/ABCD/workflow/02_Phenotypes/Pconns/conn_files_short.files"
-# covar = "Example/covar.csv"
-# PC = "Example/pcas.eigenvec"
-# k = 0
-# npc = 2
-# mpheno = [1,2,3]
-# std = False
-# out = "Example/results"
-
+#prefix = "Example/grm"
+#pheno = "Example/pheno2.phen"
+#covar = "Example/covar.csv"
+#PC = "Example/pcas.eigenvec"
+#k = 0
+#npc = 2
+#mpheno = [1,2,3]
+#std = False
+#out = "Example/results"
+#covars = [1,2]
 ###############################
 # TROUBLESHOOT ABCD data
 # prefix= "/panfs/roc/groups/3/rando149/coffm049/ABCD/workflow/01_Gene_QC/filters/filter1/GRMs/full"
@@ -82,8 +80,9 @@ GRM_array_nona[np.diag_indices(n_phen_nona)] = G['diag']
 
 
 print("loading data")
-df = load_data(pheno_file = pheno, IDs= ids, cov_file=covar, PC_file=PC, npc = npc)
-
+df = load_data(pheno_file = pheno, IDs= ids, cov_file=covar, PC_file=PC, npc = npc, covars = covars)
+print(covars)
+print("Covariates:", df.columns)
 print("Calculating heritibility")
 
 # Empty vectors of heritability SEs, time and memory

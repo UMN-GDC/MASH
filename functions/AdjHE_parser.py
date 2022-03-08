@@ -18,6 +18,7 @@ parser.add_argument('--k',type=int,help='Specify the number of rows in restoring
 parser.set_defaults(k=0)
 parser.add_argument('--out',type=str, help='Specify the output file name. [required]',required=True)
 parser.add_argument('--std',action='store_true',default=False,help='Run SAdj-HE (i.e., with standardization)')
+parser.add_argument('--covars',nargs="+",type=int, default=None,help='Specify which covariates to control for from the covariate file. Should be a list of the column numbers not including the FID and IID columns')
 
 
 args = parser.parse_args()
@@ -34,4 +35,5 @@ pheno = args.pheno
 k = args.k
 std = args.std
 out = args.out
+covars = args.covars
 
