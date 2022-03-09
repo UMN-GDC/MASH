@@ -59,7 +59,7 @@ def multirange(counts):
 
 
 # Read data function that can load csv pheno and txt file types
-def read_datas(file_path, IDs, covars= None) :
+def read_datas(file_path, IDs, covars= 1) :
  if(file_path.split(".")[-1] == "csv"):
   # read csv with write optinos
   # This is expected ot have column names
