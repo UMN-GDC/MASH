@@ -22,7 +22,7 @@ def load_extract_niis(files, IDs, save = False, save_path = None) :
 
     # Loop for loading and stacking all data
     for i, file in enumerate(files[0]):
-        print(file)
+        # print(file)
         # load the nifty
         img = nib.load(file)
         # Convert to numpy array

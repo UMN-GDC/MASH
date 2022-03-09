@@ -62,14 +62,20 @@ def multirange(counts):
 def read_datas(file_path, IDs, covars= None) :
  if(file_path.split(".")[-1] == "csv"):
   # read csv with write optinos
-  dat = pd.read_csv(file_path, header=None)
-  # Rename columns to make them neat
-  # Create a sequence selecting all columns unless covars is specified, then only select those
-  n = list(range(1, dat.shape[1] -1))
-  dat.columns = ["FID", "IID"] + ["Covar_" + str(s) for s in n]
-  # Select the intended covaraites
-  selected = ["FID", "IID"] + ["Covar_" + str(s) for s in covars]
-  dat = dat[selected]
+  # This is expected ot have column names
+  dat = pd.read_csv(file_path)
+  # Make list of columns to keep
+  try :
+   # Change indexing from intuitive selection to python 0 based and adjust for first two columns
+   covars_p = [c + 1 for c in covars]
+   selected = [0, 1] + covars_p
+   dat = dat.iloc[:,selected]
+   dat.columns = ["FID", "IID"] + ["Covar_" + str(s) for s in covars]
+  except:
+  # handle case of single integer
+   selected = [0, 1] + [covars+ 1]
+   dat = dat.iloc[:,selected]
+   dat.columns = ["FID", "IID", "Covar_1"]
  elif(file_path.split(".")[-1] == "phen"):
   dat = pd.read_table(file_path, sep = " " , header=None)
   n = list(range(1, dat.shape[1] -1))
@@ -86,8 +92,6 @@ def read_datas(file_path, IDs, covars= None) :
   dat = load_extract_niis(file_path, IDs)
   n = list(range(1, dat.shape[1]-1 ))
   dat.columns = ["FID", "IID"] + ["Pheno_" + str(s) for s in n]
-
-
  # remove the unintentional columns that sometimes happen with phenotype and csv filetypes
  dat = dat[dat.columns.drop(list(dat.filter(regex='Unnamed')))]
  # dat = dat.rename(columns={0 : "FID", 1 : "IID"})

@@ -28,16 +28,16 @@ print(args)
 #covars = [1,2]
 ###############################
 # TROUBLESHOOT ABCD data
-# prefix= "/panfs/roc/groups/3/rando149/coffm049/ABCD/workflow/01_Gene_QC/filters/filter1/GRMs/full"
-#covar= "/panfs/roc/groups/3/rando149/coffm049/ABCD/workflow/02_Phenotypes/empty_covar.csv"
-#pheno= "/panfs/roc/groups/3/rando149/coffm049/ABCD/workflow/02_Phenotypes/Pconns/conn_files_short.files"
-#mpheno= [1, 2, 3]
-#PC= "/panfs/roc/groups/3/rando149/coffm049/ABCD/workflow/01_Gene_QC/filters/filter1/Eigens/full.eigenvec"
-#npc=4
-#out="AdjHE_first"
-#std = False
-#k=0
-#ids= "/panfs/roc/groups/3/rando149/coffm049/ABCD/workflow/IDs.txt"
+prefix= "/panfs/roc/groups/3/rando149/coffm049/ABCD/workflow/01_Gene_QC/filters/filter1/GRMs/EUR_no_rels/EUR_no_rels"
+covar= "/panfs/roc/groups/3/rando149/coffm049/ABCD/workflow/02_Phenotypes/Covars.csv"
+pheno= "/panfs/roc/groups/3/rando149/coffm049/ABCD/workflow/02_Phenotypes/Pconns/conn_files_short.files"
+mpheno= [1, 2, 3]
+PC= "/panfs/roc/groups/3/rando149/coffm049/ABCD/workflow/01_Gene_QC/filters/filter1/Eigens/EUR_no_rels.eigenvec"
+npc=4
+out="delete"
+std = False
+k=0
+covars = 1
 ####################################################################
 
 print("reaading GRM")
