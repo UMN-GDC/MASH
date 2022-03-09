@@ -1,0 +1,10 @@
+prefix=Example/grm
+covar=Example/covar.csv
+pheno=Example/pheno2.phen
+mpheno=[1, 2, 3]
+PC=Example/pcas.eigenvec
+npc=4
+out=delete
+std=False
+k=0
+covars=1

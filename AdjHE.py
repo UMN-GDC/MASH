@@ -7,8 +7,7 @@ import resource
 from functions.AdjHE_estimator import AdjHE_estimator
 #os.chdir("/home/christian/Research/Stat_gen/AdjHE/")
 from functions.load_data import sum_n_vec, ReadGRMBin, multirange, read_datas, load_data
-from functions.AdjHE_parser import prefix, npc, covars
-from functions.AdjHE_parser import *
+from functions.AdjHE_parser import args
 
 # from argparse import RawTextHelpFormatter
 print(args)
@@ -28,17 +27,29 @@ print(args)
 #covars = [1,2]
 ###############################
 # TROUBLESHOOT ABCD data
-prefix= "/panfs/roc/groups/3/rando149/coffm049/ABCD/workflow/01_Gene_QC/filters/filter1/GRMs/EUR_no_rels/EUR_no_rels"
-covar= "/panfs/roc/groups/3/rando149/coffm049/ABCD/workflow/02_Phenotypes/Covars.csv"
-pheno= "/panfs/roc/groups/3/rando149/coffm049/ABCD/workflow/02_Phenotypes/Pconns/conn_files_short.files"
-mpheno= [1, 2, 3]
-PC= "/panfs/roc/groups/3/rando149/coffm049/ABCD/workflow/01_Gene_QC/filters/filter1/Eigens/EUR_no_rels.eigenvec"
-npc=4
-out="delete"
-std = False
-k=0
-covars = 1
+# prefix= "/panfs/roc/groups/3/rando149/coffm049/ABCD/workflow/01_Gene_QC/filters/filter1/GRMs/EUR_no_rels/EUR_no_rels"
+# covar= "/panfs/roc/groups/3/rando149/coffm049/ABCD/workflow/02_Phenotypes/Covars.csv"
+# pheno= "/panfs/roc/groups/3/rando149/coffm049/ABCD/workflow/02_Phenotypes/Pconns/conn_files_short.files"
+# mpheno= [1, 2, 3]
+# PC= "/panfs/roc/groups/3/rando149/coffm049/ABCD/workflow/01_Gene_QC/filters/filter1/Eigens/EUR_no_rels.eigenvec"
+# npc=4
+# out="delete"
+# std = False
+# k=0
+# covars = 1
 ####################################################################
+
+prefix= args["prefix"]
+covar= args["covar"]
+pheno= args["pheno"]
+mpheno= args["mpheno"]
+PC= args["PC"]
+npc=args["npc"]
+out=args["out"]
+std = args["std"]
+k=args["k"]
+covars = args["covars"]
+
 
 print("reaading GRM")
 

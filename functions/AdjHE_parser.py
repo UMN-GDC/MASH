@@ -1,5 +1,6 @@
 import argparse
 from argparse import RawTextHelpFormatter
+
 import timeit
 
 start_time = timeit.default_timer()
@@ -19,21 +20,25 @@ parser.set_defaults(k=0)
 parser.add_argument('--out',type=str, help='Specify the output file name. [required]',required=True)
 parser.add_argument('--std',action='store_true',default=False,help='Run SAdj-HE (i.e., with standardization)')
 parser.add_argument('--covars',nargs="+",type=int, default=None,help='Specify which covariates to control for from the covariate file. Should be a list of the column numbers not including the FID and IID columns')
+parser = argparse.ArgumentParser(description="My program!", formatter_class=argparse.RawTextHelpFormatter)
+# Or accept a file with all arguments
+parser.add_argument("-f", default=None, type=argparse.FileType('r'), help="Filename to be passed")
+args = vars(parser.parse_args())
 
 
-args = parser.parse_args()
-outprefix = args.out
 
-
-
-prefix = args.prefix
-npc = args.npc
-mpheno = args.mpheno
-PC = args.PC
-covar = args.covar
-pheno = args.pheno
-k = args.k
-std = args.std
-out = args.out
-covars = args.covars
-
+args['f'] = '/home/christian/Research/Stat_gen/tools/Basu_herit/Example/Arg_file.txt'
+if args['f'] != None :
+    d= {}
+    with open(args['f']) as f:
+        for line in f:
+           (key, val) = line.split("=")
+           # remove line break
+           d[key] = val[:-1]
+    args.update(**d)
+    
+    # Ensure types 
+    args["npc"] = int(args["npc"])
+    args["k"] = int(args["k"])
+    args["covars"] = int(args["covars"])
+    args['mpheno'] = eval(args['mpheno'])
