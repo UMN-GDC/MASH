@@ -1,5 +1,9 @@
 import numpy as np
-
+import statsmodels.api as sm
+import timeit
+import resource
+import numpy as np
+import pandas as pd
 
 def AdjHE_estimator(A,data, mp, npc=0, std=False):
     # remove identifiers from y for linear algebra 
@@ -87,4 +91,33 @@ def AdjHE_estimator(A,data, mp, npc=0, std=False):
         var_ge = 2/denominator
     return h2,np.sqrt(var_ge)
 
-    
+ 
+
+def load_n_estimate(data, covar_set, pc_set, pheno_number, fit_number, ids, GRM_array_nona, npc, std):
+    result = pd.DataFrame(np.zeros(1, 4))
+    result.columns = ["h2", "SE", "Time for analysis(s)", "Memory Usage"]
+
+    # Save temp with just the phenotype we need (I'm sure this can be written given the hints that python returns
+    id_cols = (data.columns == "FID") + (data.columns == "IID") 
+    pc_cols = data.columns.str.startswith('PC')
+    covar_cols = data.columns.str.startswith('Covar')
+    pheno_col = (data.columns == 'Pheno_'+ str(pheno_number))
+    temp=data.loc[:,id_cols+ pc_cols + covar_cols + pheno_col]
+    # drop missing values from both phenos and covariates
+    temp = temp.dropna()    
+    # Save residuals of selected phenotype after regressing out PCs and covars
+    temp["res" + str(pheno_number)] = sm.OLS(endog= temp.loc[:,"Pheno_" + str(pheno_number)], exog= temp.loc[:,temp.columns.str.startswith('PC')+ temp.columns.str.startswith('Covar')]).fit().resid
+    # keep portion of GRM without missingess
+    nonmissing = ids[ids.IID.isin(temp.IID)].index
+    GRM_nonmissing = GRM_array_nona[nonmissing,:][:,nonmissing]
+    # resutls from mp pheno
+    start_est = timeit.default_timer()
+    # Get heritability and SE estimates
+    result.iloc[fit_number,0], result.iloc[fit_number,1] = AdjHE_estimator(A= GRM_nonmissing, data = temp, mp = pheno_number, npc=npc, std=std)
+    # Get time for each estimate
+    result.iloc[fit_number, 2] = timeit.default_timer() - start_est
+    # Get memory for each step (This is a little sketchy)
+    result.iloc[fit_number, 3] = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
+    # return vector of results
+    return(result)
+   

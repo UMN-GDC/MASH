@@ -7,37 +7,8 @@ import resource
 from functions.AdjHE_estimator import AdjHE_estimator
 #os.chdir("/home/christian/Research/Stat_gen/AdjHE/")
 from functions.load_data import sum_n_vec, ReadGRMBin, multirange, read_datas, load_data
-from functions.AdjHE_parser import args
-
-# from argparse import RawTextHelpFormatter
-print(args)
-
-#################################################
-# %% for troubleshooting Basic example
-# os.chdir("/home/christian/Research/Stat_gen/Basu_herit")
-#prefix = "Example/grm"
-#pheno = "Example/pheno2.phen"
-#covar = "Example/covar.csv"
-#PC = "Example/pcas.eigenvec"
-#k = 0
-#npc = 2
-#mpheno = [1,2,3]
-#std = False
-#out = "Example/results"
-#covars = [1,2]
-###############################
-# TROUBLESHOOT ABCD data
-# prefix= "/panfs/roc/groups/3/rando149/coffm049/ABCD/workflow/01_Gene_QC/filters/filter1/GRMs/EUR_no_rels/EUR_no_rels"
-# covar= "/panfs/roc/groups/3/rando149/coffm049/ABCD/workflow/02_Phenotypes/Covars.csv"
-# pheno= "/panfs/roc/groups/3/rando149/coffm049/ABCD/workflow/02_Phenotypes/Pconns/conn_files_short.files"
-# mpheno= [1, 2, 3]
-# PC= "/panfs/roc/groups/3/rando149/coffm049/ABCD/workflow/01_Gene_QC/filters/filter1/Eigens/EUR_no_rels.eigenvec"
-# npc=4
-# out="delete"
-# std = False
-# k=0
-# covars = 1
-####################################################################
+from functions.AdjHE_parser import args 
+import itertools
 
 prefix= args["prefix"]
 covar= args["covar"]
@@ -50,8 +21,20 @@ std = args["std"]
 k=args["k"]
 covars = args["covars"]
 
+print(prefix)
+print("Reading GRM")
 
-print("reaading GRM")
+#%%
+# prefix="Example/grm"
+# covar="Example/covar.csv"
+# pheno="Example/pheno.phen"
+# mpheno=[1, 2, 3]
+# PC="Example/pcas.eigenvec"
+# npc=[4,5,6,7,8,9,10]
+# out="delete"
+# std=False
+# k=0
+# covars=[1]
 
 
 # %% Read GRM
@@ -99,14 +82,25 @@ print("Calculating heritibility")
 # Empty vectors of heritability SEs, time and memory
 h2s =np.empty; SEs = []; Mems = []; Times = []
 # create empty list to store heritability estimates
-results = pd.DataFrame(np.zeros((len(mpheno), 4)))
-results.columns = ["h2", "SE", "Time for analysis(s)", "Memory Usage"]
+results = pd.DataFrame(np.zeros((len(mpheno) * len(npc), 6)))
+results.columns = ["h2", "SE", "Pheno", "PCs", "Time for analysis(s)", "Memory Usage"]
 
 #%%
-
-for idx, mp in enumerate(mpheno):
-    # Save temp with just the phenotype we need (I'm sure this can be written given the hints that python returns
-    temp=df.loc[:,(df.columns == "FID") + (df.columns == "IID") + df.columns.str.startswith('PC')+ df.columns.str.startswith('Covar')+ (df.columns == 'Pheno_'+ str(mp))]
+# loop over all combinations of pcs and phenotypes
+for idx, (mp, nnpc)in enumerate(itertools.product(mpheno, npc)):
+    # Get indices for ID variables
+    id_cols = (df.columns == "FID") + (df.columns == "IID") 
+    print(idx, mp, nnpc)    
+    # Get the full range of pc columns
+    pc_cols = ["PC_" + str(p) for p in range(1, nnpc +1)]
+    pc_cols = [c in pc_cols for c in df.columns]
+    # grab the covariate columns
+    covar_cols = df.columns.str.startswith('Covar')
+    pheno_col = df.columns == 'Pheno_'+ str(mp)
+    # Combine boolean vectors for all selected columns
+    all_columns = id_cols + pc_cols + covar_cols + pheno_col
+    # select the dataframe
+    temp = df.loc[:,all_columns]
     # drop missing values from both phenos and covariates
     temp = temp.dropna()    
     # Save residuals of selected phenotype after regressing out PCs and covars
@@ -117,11 +111,13 @@ for idx, mp in enumerate(mpheno):
     # resutls from mp pheno
     start_est = timeit.default_timer()
     # Get heritability and SE estimates
-    results.iloc[idx,0], results.iloc[idx,1] = AdjHE_estimator(A= GRM_nonmissing, data = temp, mp = mp, npc=npc, std=std)
+    results.iloc[idx,0], results.iloc[idx,1] = AdjHE_estimator(A= GRM_nonmissing, data = temp, mp = mp, npc=nnpc, std=std)
+    results.iloc[idx, 2] = mp
+    results.iloc[idx, 3] = nnpc
     # Get time for each estimate
-    results.iloc[idx, 2] = timeit.default_timer() - start_est
+    results.iloc[idx, 4] = timeit.default_timer() - start_est
     # Get memory for each step (This is a little sketchy)
-    results.iloc[idx, 3] = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
+    results.iloc[idx, 5] = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
     print(results.iloc[idx,0])
 # %%
 # print("Heritability estimate: " + str(h2[0]))

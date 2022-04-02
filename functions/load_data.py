@@ -59,39 +59,23 @@ def multirange(counts):
 
 
 # Read data function that can load csv pheno and txt file types
-def read_datas(file_path, IDs, covars= 1) :
+def read_datas(file_path, IDs) :
  if(file_path.split(".")[-1] == "csv"):
-  # read csv with write optinos
   # This is expected ot have column names
   dat = pd.read_csv(file_path)
-  # Make list of columns to keep
-  try :
-   # Change indexing from intuitive selection to python 0 based and adjust for first two columns
-   covars_p = [c + 1 for c in covars]
-   selected = [0, 1] + covars_p
-   dat = dat.iloc[:,selected]
-   dat.columns = ["FID", "IID"] + ["Covar_" + str(s) for s in covars]
-  except:
-  # handle case of single integer
-   selected = [0, 1] + [covars+ 1]
-   dat = dat.iloc[:,selected]
-   dat.columns = ["FID", "IID", "Covar_1"]
+  dat.columns = ["FID", "IID"] + ["Covar_" + str(s) for s in range(1, dat.shape[1]-1)]
  elif(file_path.split(".")[-1] == "phen"):
   dat = pd.read_table(file_path, sep = " " , header=None)
-  n = list(range(1, dat.shape[1] -1))
-  dat.columns = ["FID", "IID"] + ["Pheno_" + str(s) for s in n]
+  dat.columns = ["FID", "IID"] + ["Pheno_" + str(s) for s in range(1, dat.shape[1]-1)]
  elif(file_path.split(".")[-1] == "txt"):
   dat = pd.read_table(file_path, sep = " " , header=None)
-  n = list(range(1, dat.shape[1] -1))
-  dat.columns = ["FID", "IID"] + ["Covar_" + str(s) for s in n]
+  dat.columns = ["FID", "IID"] + ["Covar_" + str(s) for s in range(1, dat.shape[1] -1)]
  elif(file_path.split(".")[-1] == "eigenvec"):
   dat = pd.read_table(file_path, sep = " " , header=None)
-  n = list(range(1, dat.shape[1] -1))
-  dat.columns = ["FID", "IID"] + ["PC_" + str(s) for s in n]
+  dat.columns = ["FID", "IID"] + ["PC_" + str(s) for s in range(1, dat.shape[1] -1)]
  elif(file_path.split(".")[-1] == "files"):
   dat = load_extract_niis(file_path, IDs)
-  n = list(range(1, dat.shape[1]-1 ))
-  dat.columns = ["FID", "IID"] + ["Pheno_" + str(s) for s in n]
+  dat.columns = ["FID", "IID"] + ["Pheno_" + str(s) for s in range(1, dat.shape[1]-1 )]
  # remove the unintentional columns that sometimes happen with phenotype and csv filetypes
  dat = dat[dat.columns.drop(list(dat.filter(regex='Unnamed')))]
  # dat = dat.rename(columns={0 : "FID", 1 : "IID"})
@@ -99,25 +83,22 @@ def read_datas(file_path, IDs, covars= 1) :
 
 
 # Read covariates, PC's, and phenotype all at once
-def load_data(pheno_file, IDs, cov_file=None, PC_file=None, npc=-9, covars = None) :
+def load_data(pheno_file, IDs, cov_file=None, PC_file= None, npc=-9, covars = None) :
   # load phenotypes
-  df = read_datas(pheno_file, IDs)
+  df = read_datas(pheno_file, None)
   # read in covariates if nonnull
   try:
-    cov_selected = read_datas(cov_file, IDs, covars = covars)
+    cov_selected = read_datas(cov_file, IDs)
     df = pd.merge(cov_selected, df, on = ["FID", "IID"])
   except:
     print("No covariates file specified or specified file is not found or cannot be loaded.")
-
   # onlyt load pcs if non null
   try:
-    PCs = read_datas(PC_file, IDs)
-    PCs= PCs.iloc[:, list(range(npc + 2))]
+    PCs = read_datas(PC_file, None)
     df = pd.merge(PCs, df, on=["FID", "IID"])
-    
   except:
     print("No PC file specified or specified file is not found or cannot be loaded.")
-  if(npc == -9 and PC != None) :
+  if(npc == -9 and PCs != None) :
     print("You  specified a PC file, without specifying how many PC's, here we assume keeping 0 PC's")
   return(df)
 
