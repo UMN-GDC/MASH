@@ -83,7 +83,7 @@ def read_datas(file_path, IDs) :
 
 
 # Read covariates, PC's, and phenotype all at once
-def load_data(pheno_file, IDs, cov_file=None, PC_file= None, npc=-9, covars = None) :
+def load_data(pheno_file, IDs, cov_file=None, PC_file= None) :
   # load phenotypes
   df = read_datas(pheno_file, None)
   # read in covariates if nonnull
@@ -98,8 +98,8 @@ def load_data(pheno_file, IDs, cov_file=None, PC_file= None, npc=-9, covars = No
     df = pd.merge(PCs, df, on=["FID", "IID"])
   except:
     print("No PC file specified or specified file is not found or cannot be loaded.")
-  if(npc == -9 and PCs != None) :
-    print("You  specified a PC file, without specifying how many PC's, here we assume keeping 0 PC's")
+#  if(PCs != None) :
+#    print("You  specified a PC file, without specifying how many PC's, here we assume keeping 0 PC's")
   return(df)
 
 

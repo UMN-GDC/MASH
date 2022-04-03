@@ -74,7 +74,7 @@ GRM_array_nona[np.diag_indices(n_phen_nona)] = G['diag']
 
 
 print("loading data")
-df = load_data(pheno_file = pheno, IDs= ids, cov_file=covar, PC_file=PC, npc = npc, covars = covars)
+df = load_data(pheno_file = pheno, IDs= ids, cov_file=covar, PC_file=PC)
 print(covars)
 print("Covariates:", df.columns)
 print("Calculating heritibility")
