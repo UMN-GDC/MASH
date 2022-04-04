@@ -10,6 +10,8 @@ from functions.load_data import sum_n_vec, ReadGRMBin, multirange, read_datas, l
 from functions.AdjHE_parser import args 
 import itertools
 
+#%%
+
 prefix= args["prefix"]
 covar= args["covar"]
 pheno= args["pheno"]
@@ -95,7 +97,8 @@ for idx, (mp, nnpc)in enumerate(itertools.product(mpheno, npc)):
     pc_cols = ["PC_" + str(p) for p in range(1, nnpc +1)]
     pc_cols = [c in pc_cols for c in df.columns]
     # grab the covariate columns
-    covar_cols = df.columns.str.startswith('Covar')
+    covar_cols = ["Covar_" + str(c) for c in covars]
+    covar_cols = [c in covar_cols for c in df.columns]
     pheno_col = df.columns == 'Pheno_'+ str(mp)
     # Combine boolean vectors for all selected columns
     all_columns = id_cols + pc_cols + covar_cols + pheno_col
@@ -118,6 +121,7 @@ for idx, (mp, nnpc)in enumerate(itertools.product(mpheno, npc)):
     results.iloc[idx, 4] = timeit.default_timer() - start_est
     # Get memory for each step (This is a little sketchy)
     results.iloc[idx, 5] = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
+    print(temp.columns)
     print(results.iloc[idx,0])
 # %%
 # print("Heritability estimate: " + str(h2[0]))
