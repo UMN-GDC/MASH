@@ -6,7 +6,7 @@ import pandas as pd
 import timeit
 import resource
 import itertools
-from functions.AdjHE_estimator import AdjHE_estimator
+from functions.AdjHE_estimator import AdjHE_estimator, load_n_estimate
 #os.chdir("/home/christian/Research/Stat_gen/AdjHE/")
 from functions.load_data import sum_n_vec, ReadGRMBin, multirange, read_datas, load_data
 from functions.AdjHE_parser import args 
@@ -33,7 +33,7 @@ print("Reading GRM")
 # pheno="Example/pheno.phen"
 # mpheno=[1, 2, 3]
 # PC="Example/pcas.eigenvec"
-# npc=[4,5,6,7,8,9,10]
+# npc=[1,2, 4,5,6, 8,10]
 # out="delete"
 # std=False
 # k=0
@@ -89,41 +89,8 @@ results.columns = ["h2", "SE", "Pheno", "PCs", "Time for analysis(s)", "Memory U
 #%%
 # loop over all combinations of pcs and phenotypes
 for idx, (mp, nnpc)in enumerate(itertools.product(mpheno, npc)):
-    # Get indices for ID variables
-    id_cols = ["FID", "IID"] 
-    print(idx, mp, nnpc)    
-    # Get the full range of pc columns
-    pc_cols = ["PC_" + str(p) for p in range(1, nnpc +1)]
-    # grab the covariate columns
-    covar_cols = ["Covar_" + str(c) for c in covars]
-    # And pheno string
-    pheno_col ='Pheno_'+ str(mp)
-    # Create formula string
-    form = pheno_col + " ~ " + " + ".join(covar_cols) + " + " +  " + ".join(pc_cols)
-    # save a temporary dataframe
-    temp = df[id_cols + [pheno_col] + covar_cols + pc_cols].dropna()
-    # Save residuals of selected phenotype after regressing out PCs and covars
-    temp["res" + str(mp)] = smf.ols(formula = form, data = temp, missing = 'drop').fit().resid
-    # mod = smf.ols(formula='Pheno_' + str(mp) '~ Literacy + Wealth + Region', data=df)
-    # keep portion of GRM without missingess
-    nonmissing = ids[ids.IID.isin(temp.IID)].index
-    GRM_nonmissing = GRM_array_nona[nonmissing,:][:,nonmissing]
-    # resutls from mp pheno
-    start_est = timeit.default_timer()
-    # Get heritability and SE estimates
-    results.iloc[idx,0], results.iloc[idx,1] = AdjHE_estimator(A= GRM_nonmissing, data = temp, mp = mp, npc=nnpc, std=std)
-    results.iloc[idx, 2] = mp
-    results.iloc[idx, 3] = nnpc
-    # Get time for each estimate
-    results.iloc[idx, 4] = timeit.default_timer() - start_est
-    # Get memory for each step (This is a little sketchy)
-    results.iloc[idx, 5] = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
-    # Save the formula for the control variables
-    results.iloc[idx, 6] = form
-    print(temp.columns)
-    print(results.iloc[idx,0])
-# %%
-# print("Heritability estimate: " + str(h2[0]))
-# print("With Standard error: " + str(se))
+    results.iloc[idx,:] = load_n_estimate(df = df, covars =covars, nnpc=nnpc, mp=mp, ids=ids, GRM_array_nona=GRM_array_nona, std = False)
+
+#%%
 print("Writing results")
 results.to_csv(out + ".csv", index = False, na_rep='NA')

@@ -4,6 +4,8 @@ import timeit
 import resource
 import numpy as np
 import pandas as pd
+import statsmodels.api as sm
+import statsmodels.formula.api as smf
 
 def AdjHE_estimator(A,data, mp, npc=0, std=False):
     # remove identifiers from y for linear algebra 
@@ -91,33 +93,56 @@ def AdjHE_estimator(A,data, mp, npc=0, std=False):
         var_ge = 2/denominator
     return h2,np.sqrt(var_ge)
 
+def create_formula(nnpc, covars, mp):
+    # Get indices for ID variables
+    id_cols = ["FID", "IID"] 
+    # Get the full range of pc columns
+    pc_cols = ["PC_" + str(p) for p in range(1, nnpc +1)]
+    # grab the covariate columns
+    covar_cols = ["Covar_" + str(c) for c in covars]
+    # And pheno string
+    pheno_col ='Pheno_'+ str(mp)
+    # Create formula string
+    form = pheno_col + " ~ " + " + ".join(covar_cols) + " + " +  " + ".join(pc_cols)
+    # columns
+    cols = id_cols + [pheno_col] + covar_cols + pc_cols
+    # return the formula and columns
+    return(form, cols)
  
 
-def load_n_estimate(data, covar_set, pc_set, pheno_number, fit_number, ids, GRM_array_nona, npc, std):
-    result = pd.DataFrame(np.zeros(1, 4))
-    result.columns = ["h2", "SE", "Time for analysis(s)", "Memory Usage"]
 
-    # Save temp with just the phenotype we need (I'm sure this can be written given the hints that python returns
-    id_cols = (data.columns == "FID") + (data.columns == "IID") 
-    pc_cols = data.columns.str.startswith('PC')
-    covar_cols = data.columns.str.startswith('Covar')
-    pheno_col = (data.columns == 'Pheno_'+ str(pheno_number))
-    temp=data.loc[:,id_cols+ pc_cols + covar_cols + pheno_col]
-    # drop missing values from both phenos and covariates
-    temp = temp.dropna()    
+def load_n_estimate(df, covars, nnpc, mp, ids, GRM_array_nona, std = False):
+    # seed empty result vector
+    result = pd.DataFrame(np.zeros((1, 7)))
+    result.columns = ["h2", "SE", "Pheno", "PCs", "Time for analysis(s)", "Memory Usage", "formula"]
+    # start clock for fitting 
+    start_est = timeit.default_timer()
+    # create the regression formula and columns for seelcting temporary
+    form, cols  = create_formula(nnpc, covars, mp)
+    # save a temporary dataframe
+    temp = df[cols].dropna()
     # Save residuals of selected phenotype after regressing out PCs and covars
-    temp["res" + str(pheno_number)] = sm.OLS(endog= temp.loc[:,"Pheno_" + str(pheno_number)], exog= temp.loc[:,temp.columns.str.startswith('PC')+ temp.columns.str.startswith('Covar')]).fit().resid
+    temp["res" + str(mp)] = smf.ols(formula = form, data = temp, missing = 'drop').fit().resid
+    # mod = smf.ols(formula='Pheno_' + str(mp) '~ Literacy + Wealth + Region', data=df)
     # keep portion of GRM without missingess
     nonmissing = ids[ids.IID.isin(temp.IID)].index
     GRM_nonmissing = GRM_array_nona[nonmissing,:][:,nonmissing]
-    # resutls from mp pheno
-    start_est = timeit.default_timer()
     # Get heritability and SE estimates
-    result.iloc[fit_number,0], result.iloc[fit_number,1] = AdjHE_estimator(A= GRM_nonmissing, data = temp, mp = pheno_number, npc=npc, std=std)
+    result.iloc[0,0], result.iloc[0,1] = AdjHE_estimator(A= GRM_nonmissing, data = temp, mp = mp, npc=nnpc, std=std)
+    result.iloc[0, 2] = mp
+    result.iloc[0, 3] = nnpc
     # Get time for each estimate
-    result.iloc[fit_number, 2] = timeit.default_timer() - start_est
+    result.iloc[0, 4] = timeit.default_timer() - start_est
     # Get memory for each step (This is a little sketchy)
-    result.iloc[fit_number, 3] = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
-    # return vector of results
+    result.iloc[0, 5] = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
+    # Save the formula for the control variables
+    result.iloc[0, 6] = form
+    print(temp.columns)
+    print(result.iloc[0,0])
+    # Return the fit results
     return(result)
+
+
+
+
    
