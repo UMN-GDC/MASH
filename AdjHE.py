@@ -1,14 +1,15 @@
 import statsmodels.api as sm
+import statsmodels.formula.api as smf
 import os
 import numpy as np
 import pandas as pd
 import timeit
 import resource
+import itertools
 from functions.AdjHE_estimator import AdjHE_estimator
 #os.chdir("/home/christian/Research/Stat_gen/AdjHE/")
 from functions.load_data import sum_n_vec, ReadGRMBin, multirange, read_datas, load_data
 from functions.AdjHE_parser import args 
-import itertools
 
 #%%
 
@@ -81,33 +82,29 @@ print(covars)
 print("Covariates:", df.columns)
 print("Calculating heritibility")
 
-# Empty vectors of heritability SEs, time and memory
-h2s =np.empty; SEs = []; Mems = []; Times = []
 # create empty list to store heritability estimates
-results = pd.DataFrame(np.zeros((len(mpheno) * len(npc), 6)))
-results.columns = ["h2", "SE", "Pheno", "PCs", "Time for analysis(s)", "Memory Usage"]
+results = pd.DataFrame(np.zeros((len(mpheno) * len(npc), 7)))
+results.columns = ["h2", "SE", "Pheno", "PCs", "Time for analysis(s)", "Memory Usage", "formula"]
 
 #%%
 # loop over all combinations of pcs and phenotypes
 for idx, (mp, nnpc)in enumerate(itertools.product(mpheno, npc)):
     # Get indices for ID variables
-    id_cols = (df.columns == "FID") + (df.columns == "IID") 
+    id_cols = ["FID", "IID"] 
     print(idx, mp, nnpc)    
     # Get the full range of pc columns
     pc_cols = ["PC_" + str(p) for p in range(1, nnpc +1)]
-    pc_cols = [c in pc_cols for c in df.columns]
     # grab the covariate columns
     covar_cols = ["Covar_" + str(c) for c in covars]
-    covar_cols = [c in covar_cols for c in df.columns]
-    pheno_col = df.columns == 'Pheno_'+ str(mp)
-    # Combine boolean vectors for all selected columns
-    all_columns = id_cols + pc_cols + covar_cols + pheno_col
-    # select the dataframe
-    temp = df.loc[:,all_columns]
-    # drop missing values from both phenos and covariates
-    temp = temp.dropna()    
+    # And pheno string
+    pheno_col ='Pheno_'+ str(mp)
+    # Create formula string
+    form = pheno_col + " ~ " + " + ".join(covar_cols) + " + " +  " + ".join(pc_cols)
+    # save a temporary dataframe
+    temp = df[id_cols + [pheno_col] + covar_cols + pc_cols].dropna()
     # Save residuals of selected phenotype after regressing out PCs and covars
-    temp["res" + str(mp)] = sm.OLS(endog= temp.loc[:,"Pheno_" + str(mp)], exog= temp.loc[:,temp.columns.str.startswith('PC')+ temp.columns.str.startswith('Covar')]).fit().resid
+    temp["res" + str(mp)] = smf.ols(formula = form, data = temp, missing = 'drop').fit().resid
+    # mod = smf.ols(formula='Pheno_' + str(mp) '~ Literacy + Wealth + Region', data=df)
     # keep portion of GRM without missingess
     nonmissing = ids[ids.IID.isin(temp.IID)].index
     GRM_nonmissing = GRM_array_nona[nonmissing,:][:,nonmissing]
@@ -121,6 +118,8 @@ for idx, (mp, nnpc)in enumerate(itertools.product(mpheno, npc)):
     results.iloc[idx, 4] = timeit.default_timer() - start_est
     # Get memory for each step (This is a little sketchy)
     results.iloc[idx, 5] = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
+    # Save the formula for the control variables
+    results.iloc[idx, 6] = form
     print(temp.columns)
     print(results.iloc[idx,0])
 # %%

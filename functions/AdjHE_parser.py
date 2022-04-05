@@ -54,7 +54,6 @@ except:
 
     
 ## Do the same for specified covariates
-args["covars"] = int(args["covars"])
 try:
     # Convert to    list of integers of agrument is a list
     args["covars"] = eval(args["covars"])
