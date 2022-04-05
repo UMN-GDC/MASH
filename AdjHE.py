@@ -1,14 +1,11 @@
-import statsmodels.api as sm
-import statsmodels.formula.api as smf
 import os
 import numpy as np
 import pandas as pd
 import timeit
-import resource
 import itertools
-from functions.AdjHE_estimator import AdjHE_estimator, load_n_estimate
+from functions.AdjHE_estimator import load_n_estimate
 #os.chdir("/home/christian/Research/Stat_gen/AdjHE/")
-from functions.load_data import sum_n_vec, ReadGRMBin, multirange, read_datas, load_data
+from functions.load_data import ReadGRMBin, multirange, load_data
 from functions.AdjHE_parser import args 
 
 #%%
