@@ -34,7 +34,7 @@ print("Reading GRM")
 # out="delete"
 # std=False
 # k=0
-# covars=[1]
+# covars=[2, 1]
 
 
 # %% Read GRM
@@ -80,13 +80,18 @@ print("Covariates:", df.columns)
 print("Calculating heritibility")
 
 # create empty list to store heritability estimates
-results = pd.DataFrame(np.zeros((len(mpheno) * len(npc), 7)))
+results = pd.DataFrame(np.zeros((len(mpheno) * len(npc) * len(covars), 7)))
 results.columns = ["h2", "SE", "Pheno", "PCs", "Time for analysis(s)", "Memory Usage", "formula"]
 
 #%%
+# list of covar indices
+covs = list(range(0, len(covars)))
 # loop over all combinations of pcs and phenotypes
-for idx, (mp, nnpc)in enumerate(itertools.product(mpheno, npc)):
-    results.iloc[idx,:] = load_n_estimate(df = df, covars =covars, nnpc=nnpc, mp=mp, ids=ids, GRM_array_nona=GRM_array_nona, std = False)
+for idx, (mp, nnpc, cov)in enumerate(itertools.product(mpheno, npc, covs)):
+    c = pd.Series(covars)
+    
+    selected_covs = list(c[list(range(0,cov+1))])
+    results.iloc[idx,:] = load_n_estimate(df = df, covars =selected_covs, nnpc=nnpc, mp=mp, ids=ids, GRM_array_nona=GRM_array_nona, std = False)
 
 #%%
 print("Writing results")

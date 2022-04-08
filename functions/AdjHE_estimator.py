@@ -123,6 +123,8 @@ def load_n_estimate(df, covars, nnpc, mp, ids, GRM_array_nona, std = False):
     temp = df[cols].dropna()
     # Save residuals of selected phenotype after regressing out PCs and covars
     temp["res" + str(mp)] = smf.ols(formula = form, data = temp, missing = 'drop').fit().resid
+    # Potentially could use this to control for random effects
+    # smf.mixedlm(formula= form, data = temp, groups=temp["scan_site"])
     # mod = smf.ols(formula='Pheno_' + str(mp) '~ Literacy + Wealth + Region', data=df)
     # keep portion of GRM without missingess
     nonmissing = ids[ids.IID.isin(temp.IID)].index
@@ -133,8 +135,8 @@ def load_n_estimate(df, covars, nnpc, mp, ids, GRM_array_nona, std = False):
     result.iloc[0, 3] = nnpc
     # Get time for each estimate
     result.iloc[0, 4] = timeit.default_timer() - start_est
-    # Get memory for each step (This is a little sketchy)
-    result.iloc[0, 5] = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
+    # Get memory for each step (in Mb) (This is a little sketchy)
+    result.iloc[0, 5] = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss/1000
     # Save the formula for the control variables
     result.iloc[0, 6] = form
     print(temp.columns)
