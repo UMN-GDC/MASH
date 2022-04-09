@@ -37,7 +37,13 @@ def ReadGRMBin(prefix, AllN = False):
             N = unpack(entry_format, record)[0]
             N = int(N)
     i = sum_n_vec(n)
-    val = {'diag': grm[i], 'off': np.delete(grm, i),'id': ids,'N':N}
+    ids = ids.rename(columns={0: "FID", 1: "IID"})
+    ids = ids.dropna()
+    # ids["FID"] = ids.FID.astype(int)
+    n_phen_nona = ids.shape[0]
+    n_phen_nona = grm[i].size
+    GRM_array_nona = np.zeros((n_phen_nona, n_phen_nona))
+    val = {'diag': grm[i], 'off': np.delete(grm, i),'id': ids,'N':N, "n_phen_nona" : n_phen_nona}
     return(val)
 
 
@@ -60,46 +66,48 @@ def multirange(counts):
 
 # Read data function that can load csv pheno and txt file types
 def read_datas(file_path, IDs) :
- if(file_path.split(".")[-1] == "csv"):
-  # This is expected ot have column names
-  dat = pd.read_csv(file_path)
-  dat.columns = ["FID", "IID"] + ["Covar_" + str(s) for s in range(1, dat.shape[1]-1)]
- elif(file_path.split(".")[-1] == "phen"):
-  dat = pd.read_table(file_path, sep = " " , header=None)
-  dat.columns = ["FID", "IID"] + ["Pheno_" + str(s) for s in range(1, dat.shape[1]-1)]
- elif(file_path.split(".")[-1] == "txt"):
-  dat = pd.read_table(file_path, sep = " " , header=None)
-  dat.columns = ["FID", "IID"] + ["Covar_" + str(s) for s in range(1, dat.shape[1] -1)]
- elif(file_path.split(".")[-1] == "eigenvec"):
-  dat = pd.read_table(file_path, sep = " " , header=None)
-  dat.columns = ["FID", "IID"] + ["PC_" + str(s) for s in range(1, dat.shape[1] -1)]
- elif(file_path.split(".")[-1] == "files"):
-  dat = load_extract_niis(file_path, IDs)
-  dat.columns = ["FID", "IID"] + ["Pheno_" + str(s) for s in range(1, dat.shape[1]-1 )]
- # remove the unintentional columns that sometimes happen with phenotype and csv filetypes
- dat = dat[dat.columns.drop(list(dat.filter(regex='Unnamed')))]
- # dat = dat.rename(columns={0 : "FID", 1 : "IID"})
- return(dat)
+    if(file_path.split(".")[-1] == "csv"):
+        # This is expected ot have column names
+        dat = pd.read_csv(file_path)
+        # dat.columns = ["FID", "IID"] + ["Covar_" + str(s) for s in range(1, dat.shape[1]-1)]
+    elif(file_path.split(".")[-1] == "txt"):
+        dat = pd.read_table(file_path, sep = " ")
+        # dat.columns = ["FID", "IID"] + ["Covar_" + str(s) for s in range(1, dat.shape[1] -1)]
+    elif(file_path.split(".")[-1] == "phen"):
+        dat = pd.read_table(file_path, sep = " " , header=None)
+        dat.columns = ["FID", "IID"] + ["Pheno_" + str(s) for s in range(1, dat.shape[1]-1)]
+    elif(file_path.split(".")[-1] == "eigenvec"):
+        dat = pd.read_table(file_path, sep = " " , header=None)
+        dat.columns = ["FID", "IID"] + ["PC_" + str(s) for s in range(1, dat.shape[1] -1)]
+    elif(file_path.split(".")[-1] == "files"):
+        dat = load_extract_niis(file_path, IDs)
+        dat.columns = ["FID", "IID"] + ["Pheno_" + str(s) for s in range(1, dat.shape[1]-1 )]
+        # remove the unintentional columns that sometimes happen with phenotype and csv filetypes
+        dat = dat[dat.columns.drop(list(dat.filter(regex='Unnamed')))]
+        # dat = dat.rename(columns={0 : "FID", 1 : "IID"})
+    return(dat)
 
 
 # Read covariates, PC's, and phenotype all at once
 def load_data(pheno_file, IDs, cov_file=None, PC_file= None) :
-  # load phenotypes
-  df = read_datas(pheno_file, None)
-  # read in covariates if nonnull
-  try:
-    cov_selected = read_datas(cov_file, IDs)
-    df = pd.merge(cov_selected, df, on = ["FID", "IID"])
-  except:
-    print("No covariates file specified or specified file is not found or cannot be loaded.")
-  # onlyt load pcs if non null
-  try:
-    PCs = read_datas(PC_file, None)
-    df = pd.merge(PCs, df, on=["FID", "IID"])
-  except:
-    print("No PC file specified or specified file is not found or cannot be loaded.")
-#  if(PCs != None) :
-#    print("You  specified a PC file, without specifying how many PC's, here we assume keeping 0 PC's")
-  return(df)
+    # load phenotypes
+    df = read_datas(pheno_file, None)
+    phenotypes = df.columns
+    # read in covariates if nonnull
+    try:
+        cov_selected = read_datas(cov_file, IDs)
+        df = pd.merge(cov_selected, df, on = ["FID", "IID"])
+    except:
+        print("No covariates file specified or specified file is not found or cannot be loaded.")
+        # onlyt load pcs if non null
+    try:
+        PCs = read_datas(PC_file, None)
+        df = pd.merge(PCs, df, on=["FID", "IID"])
+    except:
+        print("No PC file specified or specified file is not found or cannot be loaded.")
+        #  if(PCs != None) :
+            #    print("You  specified a PC file, without specifying how many PC's, here we assume keeping 0 PC's")
+    # return the full dataframe as well as names for covariates and phenotypes
+    return(df, cov_selected.columns[2:], phenotypes[2:] )
 
 

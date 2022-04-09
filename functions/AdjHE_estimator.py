@@ -98,14 +98,12 @@ def create_formula(nnpc, covars, mp):
     id_cols = ["FID", "IID"] 
     # Get the full range of pc columns
     pc_cols = ["PC_" + str(p) for p in range(1, nnpc +1)]
-    # grab the covariate columns
-    covar_cols = ["Covar_" + str(c) for c in covars]
     # And pheno string
     pheno_col ='Pheno_'+ str(mp)
     # Create formula string
-    form = pheno_col + " ~ " + " + ".join(covar_cols) + " + " +  " + ".join(pc_cols)
+    form = pheno_col + " ~ " + " + ".join(covars) + " + " +  " + ".join(pc_cols)
     # columns
-    cols = id_cols + [pheno_col] + covar_cols + pc_cols
+    cols = id_cols + [pheno_col] + covars + pc_cols
     # return the formula and columns
     return(form, cols)
  

@@ -4,27 +4,30 @@ import pandas as pd
 import timeit
 import itertools
 from functions.AdjHE_estimator import load_n_estimate
-#os.chdir("/home/christian/Research/Stat_gen/AdjHE/")
+# os.chdir("/home/christian/Research/Stat_gen/AdjHE/")
 from functions.load_data import ReadGRMBin, multirange, load_data
-from functions.AdjHE_parser import args 
+from functions.AdjHE_parser import args
+from pathlib import Path
 
-#%%
 
-prefix= args["prefix"]
-covar= args["covar"]
-pheno= args["pheno"]
-mpheno= args["mpheno"]
-PC= args["PC"]
-npc=args["npc"]
-out=args["out"]
+# %%
+
+# Get arguments from the argparser
+prefix = args["prefix"]
+covar = args["covar"]
+pheno = args["pheno"]
+mpheno = args["mpheno"]
+PC = args["PC"]
+npc = args["npc"]
+out = args["out"]
 std = args["std"]
-k=args["k"]
+k = args["k"]
 covars = args["covars"]
 
 print(prefix)
 print("Reading GRM")
 
-#%%
+# %%
 # prefix="Example/grm"
 # covar="Example/covar.csv"
 # pheno="Example/pheno.phen"
@@ -38,18 +41,17 @@ print("Reading GRM")
 
 
 # %% Read GRM
-G = ReadGRMBin(prefix)
-ids = G['id']
-ids = ids.rename(columns = {0:"FID", 1:"IID"})
-ids = ids.dropna()
-ids["FID"] = ids.FID.astype(int)
-n_phen_nona = ids.shape[0]
-
+# Time reading the GRM and other data
 start_read = timeit.default_timer()
-nmarkers = G['N']
-x = G['diag'].astype('float64')
-n_phen_nona = G['diag'].size
+
+# Read in grm
+G = ReadGRMBin(prefix)
+# Get specific detials about the GRM
+ids = G['id']
+n_phen_nona = G['n_phen_nona']
 GRM_array_nona = np.zeros((n_phen_nona, n_phen_nona))
+GRM_array_nona[np.diag_indices(n_phen_nona)] = G['diag']
+
 temp_i = 0
 temp = 0
 # k= args.k
@@ -68,31 +70,32 @@ for i in l:
     del(cor)
     temp_i = i
 
-GRM_array_nona[np.diag_indices(n_phen_nona)] = G['diag']
-#%%
+# %%
 
 
+df, covariates, phenotypes = load_data(pheno_file=pheno, IDs=ids, cov_file=covar, PC_file=PC)
+end_read = timeit.default_timer()
+read_time = end_read - start_read
 
-print("loading data")
-df = load_data(pheno_file = pheno, IDs= ids, cov_file=covar, PC_file=PC)
-print(covars)
-print("Covariates:", df.columns)
+print("It took " + str(read_time) + " (s) to read GRM, covariates, and phenotypes")
+print("Phenos + Covars:", df.columns)
 print("Calculating heritibility")
 
 # create empty list to store heritability estimates
 results = pd.DataFrame(np.zeros((len(mpheno) * len(npc) * len(covars), 7)))
-results.columns = ["h2", "SE", "Pheno", "PCs", "Time for analysis(s)", "Memory Usage", "formula"]
+results.columns = ["h2", "SE", "Pheno", "PCs",
+                   "Time for analysis(s)", "Memory Usage", "formula"]
 
+# %%
+# Create the sets of covarates over which we can loop
+cov_combos = [covars[0:idx+1] for idx, c in enumerate(covars)]
+cov_combos = [list(covariates[cov_combo]) for cov_combo in cov_combos]
 #%%
-# list of covar indices
-covs = list(range(0, len(covars)))
 # loop over all combinations of pcs and phenotypes
-for idx, (mp, nnpc, cov)in enumerate(itertools.product(mpheno, npc, covs)):
-    c = pd.Series(covars)
-    
-    selected_covs = list(c[list(range(0,cov+1))])
-    results.iloc[idx,:] = load_n_estimate(df = df, covars =selected_covs, nnpc=nnpc, mp=mp, ids=ids, GRM_array_nona=GRM_array_nona, std = False)
+for idx, (mp, nnpc, covs) in enumerate(itertools.product(mpheno, npc, cov_combos)):
+    results.iloc[idx, :] = load_n_estimate(
+        df=df, covars=covs, nnpc=nnpc, mp=mp, ids=ids, GRM_array_nona=GRM_array_nona, std=False)
 
-#%%
+# %%
 print("Writing results")
-results.to_csv(out + ".csv", index = False, na_rep='NA')
+results.to_csv(out + ".csv", index=False, na_rep='NA')
