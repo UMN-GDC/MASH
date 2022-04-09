@@ -39,7 +39,6 @@ print("Reading GRM")
 # k=0
 # covars=[2, 1]
 
-
 # %% Read GRM
 # Time reading the GRM and other data
 start_read = timeit.default_timer()
@@ -70,7 +69,6 @@ for i in l:
     del(cor)
     temp_i = i
 
-# %%
 
 
 df, covariates, phenotypes = load_data(pheno_file=pheno, IDs=ids, cov_file=covar, PC_file=PC)
@@ -82,19 +80,20 @@ print("Phenos + Covars:", df.columns)
 print("Calculating heritibility")
 
 # create empty list to store heritability estimates
-results = pd.DataFrame(np.zeros((len(mpheno) * len(npc) * len(covars), 7)))
-results.columns = ["h2", "SE", "Pheno", "PCs",
-                   "Time for analysis(s)", "Memory Usage", "formula"]
+results = pd.DataFrame()
 
-# %%
 # Create the sets of covarates over which we can loop
 cov_combos = [covars[0:idx+1] for idx, c in enumerate(covars)]
 cov_combos = [list(covariates[cov_combo]) for cov_combo in cov_combos]
+# get list of phenotype names to regress
+mpheno = [phenotypes[i-1] for i in mpheno]
 #%%
 # loop over all combinations of pcs and phenotypes
 for idx, (mp, nnpc, covs) in enumerate(itertools.product(mpheno, npc, cov_combos)):
-    results.iloc[idx, :] = load_n_estimate(
+    r = load_n_estimate(
         df=df, covars=covs, nnpc=nnpc, mp=mp, ids=ids, GRM_array_nona=GRM_array_nona, std=False)
+    results = pd.concat([results, r])
+    
 
 # %%
 print("Writing results")

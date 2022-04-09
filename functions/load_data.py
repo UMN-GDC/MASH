@@ -74,8 +74,8 @@ def read_datas(file_path, IDs) :
         dat = pd.read_table(file_path, sep = " ")
         # dat.columns = ["FID", "IID"] + ["Covar_" + str(s) for s in range(1, dat.shape[1] -1)]
     elif(file_path.split(".")[-1] == "phen"):
-        dat = pd.read_table(file_path, sep = " " , header=None)
-        dat.columns = ["FID", "IID"] + ["Pheno_" + str(s) for s in range(1, dat.shape[1]-1)]
+        dat = pd.read_table(file_path, sep = " ")
+        # dat.columns = ["FID", "IID"] + ["Pheno_" + str(s) for s in range(1, dat.shape[1]-1)]
     elif(file_path.split(".")[-1] == "eigenvec"):
         dat = pd.read_table(file_path, sep = " " , header=None)
         dat.columns = ["FID", "IID"] + ["PC_" + str(s) for s in range(1, dat.shape[1] -1)]
