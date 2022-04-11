@@ -11,7 +11,7 @@ def AdjHE_estimator(A,data, mp, npc=0, std=False):
     # remove identifiers from y for linear algebra 
     y = data[mp]
     # select PC columns 
-    PC_cols = [ col.startswith("PC")   for col in data ]
+    PC_cols = [ col.startswith("pc")   for col in data ]
     PCs = data.iloc[:, PC_cols]
     # If standardized AdjHE is chosen 
     if (std == True) :
@@ -95,9 +95,9 @@ def AdjHE_estimator(A,data, mp, npc=0, std=False):
 
 def create_formula(nnpc, covars, mp):
     # Get indices for ID variables
-    id_cols = ["FID", "IID"] 
+    id_cols = ["fid", "iid"] 
     # Get the full range of pc columns
-    pc_cols = ["PC_" + str(p) for p in range(1, nnpc +1)]
+    pc_cols = ["pc_" + str(p) for p in range(1, nnpc +1)]
     # Create formula string
     form = mp + " ~ " + " + ".join(covars) + " + " +  " + ".join(pc_cols)
     # columns
@@ -121,7 +121,7 @@ def load_n_estimate(df, covars, nnpc, mp, ids, GRM_array_nona, std = False):
     # Potentially could use this to control for random effects
     # smf.mixedlm(formula= form, data = temp, groups=temp["scan_site"])
     # keep portion of GRM without missingess for the phenotypes or covariates
-    nonmissing = ids[ids.IID.isin(temp.IID)].index
+    nonmissing = ids[ids.iid.isin(temp.iid)].index
     GRM_nonmissing = GRM_array_nona[nonmissing,:][:,nonmissing]
     # Get heritability and SE estimates
     h2, se = AdjHE_estimator(A= GRM_nonmissing, data = temp, mp = mp, npc=nnpc, std=std)

@@ -15,7 +15,7 @@ parser.add_argument('--k',type=int,help='Specify the number of rows in restoring
 parser.add_argument('--out',type=str, help='Specify the output file name. [required]',required=False)
 parser.add_argument('--std',action='store_true',default=False,help='Run SAdj-HE (i.e., with standardization)')
 parser.add_argument('--covars',nargs="+",type=int, default=1,help='Specify which covariates to control for from the covariate file. Should be a list of the column numbers not including the FID and IID columns')
-parser.set_defaults(PC="None", npc=0, covar="None", mpheno=1, k=0, prefix = "None", pheno = "None", out = "None")
+parser.set_defaults(PC="None", npc=None, covar="None", mpheno=1, k=0, prefix = "None", pheno = "None", out = "None")
 
 # Or accept a file with all arguments
 parser.add_argument("--argfile", default=None, type=str, help="Filename to be passed containing all information for PC's, covariates, phenotypes, and grm")
@@ -23,8 +23,8 @@ parser.add_argument("--argfile", default=None, type=str, help="Filename to be pa
 
 args = vars(parser.parse_args())
 
-
-#args['f'] = '/home/christian/Research/Stat_gen/tools/Basu_herit/Example/Arg_file.txt'
+#%%
+# args['argfile'] = '/home/christian/Research/Stat_gen/tools/Basu_herit/Example/Arg_file.txt'
 if args['argfile'] != None :
     d= {}
     with open(args['argfile']) as f:
@@ -36,7 +36,7 @@ if args['argfile'] != None :
     
 # Ensure types 
 args["k"] = int(args["k"])
-
+#%%
 try:
     # convert a string of arugments sto a list
     args['mpheno'] = eval(args['mpheno'])

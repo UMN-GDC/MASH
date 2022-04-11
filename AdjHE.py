@@ -27,18 +27,6 @@ covars = args["covars"]
 print(prefix)
 print("Reading GRM")
 
-# %%
-# prefix="Example/grm"
-# covar="Example/covar.txt"
-# pheno="Example/pheno.phen"
-mpheno=[1, 2, 3]
-# PC="Example/pcas.eigenvec"
-# npc=[1,2, 4,5,6, 8,10]
-# out="delete"
-# std=False
-# k=0
-# covars=[2, 1]
-
 # %% Read GRM
 # Time reading the GRM and other data
 start_read = timeit.default_timer()
@@ -82,11 +70,13 @@ print("Calculating heritibility")
 # create empty list to store heritability estimates
 results = pd.DataFrame()
 
+covars = [covar-1 for covar in covars]
+
 # Create the sets of covarates over which we can loop
 cov_combos = [covars[0:idx+1] for idx, c in enumerate(covars)]
 cov_combos = [list(covariates[cov_combo]) for cov_combo in cov_combos]
 # get list of phenotype names to regress
-mpheno = [phenotypes[i-1] for i in mpheno]
+mpheno = [phenotypes[i] for i in mpheno]
 #%%
 # loop over all combinations of pcs and phenotypes
 for idx, (mp, nnpc, covs) in enumerate(itertools.product(mpheno, npc, cov_combos)):

@@ -1,7 +1,9 @@
 import pandas as pd
 import numpy as np
+import janitor
 from struct import unpack, calcsize
 from functions.loading_extracting_niis import load_extract_niis
+
 #%%
 
 
@@ -37,7 +39,7 @@ def ReadGRMBin(prefix, AllN = False):
             N = unpack(entry_format, record)[0]
             N = int(N)
     i = sum_n_vec(n)
-    ids = ids.rename(columns={0: "FID", 1: "IID"})
+    ids = ids.rename(columns={0: "fid", 1: "iid"})
     ids = ids.dropna()
     # ids["FID"] = ids.FID.astype(int)
     n_phen_nona = ids.shape[0]
@@ -94,19 +96,19 @@ def multirange(counts):
 # Read covariates, PC's, and phenotype all at once
 def load_data(pheno_file, cov_file=None, PC_file= None) :
     # load phenotypes
-    df = pd.read_table(pheno_file, sep = " ", header = 0)
+    df = pd.read_table(pheno_file, sep = " ", header = 0).clean_names()
     phenotypes = df.columns
     # read in covariates if nonnull
     try:
-        cov_selected = pd.read_table(cov_file, sep = " ", header=0)
-        df = pd.merge(cov_selected, df, on = ["FID", "IID"])
+        cov_selected = pd.read_table(cov_file, sep = " ", header=0).clean_names()
+        df = pd.merge(cov_selected, df, on = ["fid", "iid"])
     except:
         print("No covariates file specified or specified file is not found or cannot be loaded.")
         # onlyt load pcs if non null
     try:
         PCs = pd.read_table(PC_file, sep= " ", header=0)
-        PCs.columns = ["FID", "IID"] + ["PC_" + str(s) for s in range(1, PCs.shape[1]-1)]
-        df = pd.merge(PCs, df, on=["FID", "IID"])
+        PCs.columns = ["fid", "iid"] + ["pc_" + str(s) for s in range(1, PCs.shape[1]-1)]
+        df = pd.merge(PCs, df, on=["fid", "iid"])
     except:
         print("No PC file specified or specified file is not found or cannot be loaded.")
         #  if(PCs != None) :
