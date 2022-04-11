@@ -1,5 +1,5 @@
 prefix=Example/grm
-covar=Example/covar.csv
+covar=Example/covar.txt
 pheno=Example/pheno.phen
 mpheno=[1, 2]
 npc=[5, 10]

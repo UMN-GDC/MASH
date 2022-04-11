@@ -29,9 +29,9 @@ print("Reading GRM")
 
 # %%
 # prefix="Example/grm"
-# covar="Example/covar.csv"
+# covar="Example/covar.txt"
 # pheno="Example/pheno.phen"
-# mpheno=[1, 2, 3]
+mpheno=[1, 2, 3]
 # PC="Example/pcas.eigenvec"
 # npc=[1,2, 4,5,6, 8,10]
 # out="delete"
@@ -71,7 +71,7 @@ for i in l:
 
 
 
-df, covariates, phenotypes = load_data(pheno_file=pheno, IDs=ids, cov_file=covar, PC_file=PC)
+df, covariates, phenotypes = load_data(pheno_file=pheno, cov_file=covar, PC_file=PC)
 end_read = timeit.default_timer()
 read_time = end_read - start_read
 
