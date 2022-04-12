@@ -99,7 +99,7 @@ def create_formula(nnpc, covars, mp):
     # Get the full range of pc columns
     pc_cols = ["pc_" + str(p) for p in range(1, nnpc +1)]
     # Create formula string
-    form = mp + " ~ " + " + ".join(covars) + " + " +  " + ".join(pc_cols)
+    form = mp + "~ " + " + ".join(covars) + " + " +  " + ".join(pc_cols)
     # columns
     cols = id_cols + [mp] + covars + pc_cols
     # return the formula and columns
