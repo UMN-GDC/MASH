@@ -53,6 +53,21 @@ Note that this is running the same example method as the previous example, only 
 # Creating Batch scripts (Coming soon)
 
 ### SLURM script example 
+The SLURM script contains two portions: the first request resources from the supercomputer, the second contains the code you actually want to run. In order to make sure your code runs properly, make sure you are changing to the proper working direcotry with the "cd" command. Then simply call the function you want to run. In this case, we are simply running the previous example utilizing the "argfile". For information on the anatomy of SLURM scripts please see information from [MSI](https://www.msi.umn.edu/content/job-submission-and-scheduling-slurm).
+```
+#!/bin/bash -l        
+#SBATCH --time=0:10:00
+#SBATCH --ntasks=1
+#SBATCH --mem=10g
+#SBATCH --tmp=10g
+#SBATCH --mail-type=ALL  
+#SBATCH --mail-user=sample_email@umn.edu 
+
+cd ~/PATH/TO/DIR/
+module load python 
+python AdjHE.py --argfile Example/Arg_file.txt
+```
+
 
 
 # UNDER CONSTRUCTION
