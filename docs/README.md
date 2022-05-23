@@ -52,6 +52,7 @@ Note that this is running the same example method as the previous example, only 
 
 # Creating Batch scripts (Coming soon)
 
+### SLURM script example 
 
 
 # UNDER CONSTRUCTION
@@ -104,7 +105,6 @@ Arguments
 | --covar COVAR| OPTIONAL. This should be consistent with ```--covar``` in ```AdjHE_reg_s1.py```.|
 | --std | OPTIONAL. This should be consistent with ```--std``` in ```AdjHE_reg_s1.py```|
 
-### PBS script example 
 Portable Batch System (or simply PBS) is the name of computer software that performs job scheduling. Its primary task is to allocate computational tasks, i.e., batch jobs, among the available computing resources. It is often used in conjunction with UNIX cluster environments.
 
 Here we give an example of running regression adjusted-HE for large sample size in parallel using PBS scripts.
