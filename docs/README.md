@@ -44,6 +44,12 @@ python AdjHE.py --prefix ${prefix} --PC ${PC} --npc 10  --covar ${covar} --pheno
 ```
 This should result in estimates for heritability stored in a .csv with the estimated heritability. For this dataset, you should the simulated heritability was 70%. Notice that the estimate is sensitive to the number of Prinicipal components included in the model since the data was simulated to have population stratification. The covariates don't have much of an influence on the estimates since they were not included in the simulation of this dataset.
 
+## Running with included example data 
+```
+python AdjHE.py --argfile Example/Arg_file.txt
+```
+Note that this is running the same example method as the previous example, only in this case, all of the arguments are contained within the Arg_file.txt file. This helps with reproducibility and creating batch scripts.
+
 
 
 # UNDER CONSTRUCTION
