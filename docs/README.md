@@ -21,14 +21,16 @@ Arguments
 | --PC PC| OPTIONAL. The name of PCs file, following GCTA (space delimited, no column names) ```--pca``` file (same as plink ```--pca```). The third column is the first PC, the forth column is the second PC...|
 | --npc n| OPTIONAL. You can specify top n PCs to be adjusted by ```--npc n```. Otherwise, all PCs in the PC file will be used.|
 | --covar COVAR| OPTIONAL. The name of covariate file, following GCTA ```--qcovar``` file format or .csv file format. It may contain sex, age, etc. *Note that this file does not include principal components, which need to be include seperately by ```--PC PC```*.|
+|--covars COVARS| OPTIONAL. List of integers specifying which covariates to control for from the covariate file. column numbering does not include the FID and IID columns|
 | --k k| OPTIONAL. You can specify the number of rows in restoring the GCTA GRM binary file into matrix each time. If not provide, it will process the whole GRM at one time. When you have a relative large sample size, specifying ```--k k``` can speed up the computation and save the memory. |
 | --std | OPTIONAL. Run SAdj-HE by specifying ```--std```. Otherwise, UAdj-HE will be computed.  (There are potential bugs with the standardized version, so it is reccommended to use unstandardized for now).|
-
+| --argfile ARGFILE |Filename to be passed containing all information for PC's, covariates, phenotypes, and grm. This takes priority over all other arguments.|
 
 
 The output of ```AdjHE.py``` contains heritability estimation and its standard error in a .csv file. Computational time and peak memory are also provided.
 
-
+## Running with included example data 
+First, change into the "Basu_herit" directory then run the following commands that specify the arguments
 ```
 module load python
 prefix='EXAMPLE/grm' #We partitioned the GRM into 200 parts.
@@ -36,10 +38,16 @@ id='/EXAMPLE/ukbiobank.grm.id'
 pheno='Example/phen.pheno'
 PC='Example/pcas.eigenvec'
 covar='Example/covar.csv'
-out='/PATH/TO/RESULT/DIRECTORY'
+out='Example/results.csv'
 
 python AdjHE.py --prefix ${prefix} --PC ${PC} --npc 10  --covar ${covar} --pheno ${pheno} --mpheno 1 --out ${out}
 ```
+This should result in estimates for heritability stored in a .csv with the estimated heritability. For this dataset, you should the simulated heritability was 70%. Notice that the estimate is sensitive to the number of Prinicipal components included in the model since the data was simulated to have population stratification. The covariates don't have much of an influence on the estimates since they were not included in the simulation of this dataset.
+
+
+
+# UNDER CONSTRUCTION
+
 
 ## Adjusted-HE with regression version (Still being tested)
 
