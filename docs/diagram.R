@@ -13,29 +13,27 @@ library(rsvg)
 
 analysis <- grViz(diagram = "digraph flowchart {
   node[shape=parallelogram]
-  in1[label='File paths']
-  in2[label='Pheno specification']
-  out[label='Store results', shape = ellipse]
-  
-  node[shape=rectangle, color = Black, style = filled, fontcolor=  White]
-  load[label='load Phenos and \\n PCs/covars if specified']
-  subset[label='subset to 1 pheno \\n remove missing']
-  predlmm[label='PredLMM']
-  adjhe[label='AdjHE']
-  
+  Covs[label='Covariates \\n (.csv)']
+  Phens[label='Phenotypes \\n (.phen)']
+  Eigs[label='Eigenvectors \\n (.eigenvec)']
+  Estimator[label='Select Estimator']
+  Selector[label='PC + cov + mpheno \\n
+  choice ']
 
-  select[label='select estimator', shape= diamond]
+  node[shape=rectangle]
+  load[label='load Phenos and \\n PCs/covars if specified \\n 
+  O: Joined dataframe',color = Black, style = filled, fontcolor=  White]
+
+
+  Loop[label='Loop over Covs?']
+  List[label='List of feature sets (X,y) \\n to estimate over']
+  Features[label='X, y']
+  Estimate[label='Estimate heritability \\n O: h2, SE, computer resrouces, X ,y']
   
   
-  
-  in1 -> load
-  in2 -> load
-  
-  load -> subset -> select -> predlmm -> out
-  select->adjhe -> out -> subset
-  
-  
-  
+  Covs, Phens, Eigs -> load 
+  load, Estimator, Selector -> Loop -> List-> Features -> Estimate
+  Estimate -> List
 }
 ")
 
@@ -49,10 +47,6 @@ analysis %>% export_svg %>% charToRaw %>% rsvg_png("analysis.png")
 loading <- grViz(diagram = "digraph flowchart {
   node[shape=parallelogram]
   infiles[label='Input files']
-
-  
-
-  node[shape=parallelogram]
   infile[label='Input file']
 
   node[shape=diamond, color = Black, style = filled, fontcolor=  White]
