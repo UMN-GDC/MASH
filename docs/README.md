@@ -29,6 +29,19 @@ Arguments
 
 The output of ```AdjHE.py``` contains heritability estimation and its standard error in a .csv file. Computational time and peak memory are also provided.
 
+# Data description
+Example data is included from [the paper](https://journals.plos.org/plosgenetics/article?id=10.1371/journal.pgen.1010151) with the following files
+
+    a phenotype file: pheno.phen
+    a covariate file: covar.txt
+    PLINK Binary files: geno (.bed, .bim, .fam)
+    GCTA GRM files: grm (.grm.id, .grm.bin, .grm.N.bin)
+    eigenvector files: pcas (.eigenval, .eigenvec, .log)
+
+There are 5000 individuals and 10,000 SNPs. The first two columns of the phenotype and the covariate files have the family ID (FID) and individual ID (IID) of each individual. The phenotype file has a single phenotype and the covariate file has a single covariate. With the binary files, the GRM files have been computed using GCTA. It is to be craefully noted that the order of the individuals in all the files (phenotype, covariate, GRM) have to be the same.
+The example dataset includes simulated phenotypes from the linked paper with a true heritability of 0.8.
+
+
 ## Running with included example data 
 First, change into the "Basu_herit" directory then run the following commands that specify the arguments
 ```
