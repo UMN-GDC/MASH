@@ -25,11 +25,11 @@ Arguments
 | --std | OPTIONAL. Run SAdj-HE by specifying ```--std```. Otherwise, UAdj-HE will be computed.  (There are potential bugs with the standardized version, so it is reccommended to use unstandardized for now).|
 | --argfile ARGFILE |Filename to be passed containing all information for PC's, covariates, phenotypes, and grm. This takes priority over all other arguments.|
 
-
-The output of ```AdjHE.py``` contains heritability estimation and its standard error in a .csv file. Computational time and peak memory are also provided.
+### Output
+heritability estimation and its standard error in a .csv file. Computational time and peak memory are also provided.
 
 # Data description
-Example data is included from [the paper](https://journals.plos.org/plosgenetics/article?id=10.1371/journal.pgen.1010151) with the following files
+Example data is included from [this paper](https://journals.plos.org/plosgenetics/article?id=10.1371/journal.pgen.1010151) with the following files
 
     a phenotype file: pheno.phen
     a covariate file: covar.txt
