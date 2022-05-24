@@ -5,7 +5,7 @@ import timeit
 import itertools
 from functions.AdjHE_estimator import load_n_estimate
 from functions.load_data import ReadGRMBin, multirange, load_data
-from functions.AdjHE_parser import prefix, covar, pheno, mpheno, PC, npc, out, k, covars, loop_covs #, std
+from functions.parser import prefix, covar, pheno, mpheno, PC, npc, out, k, covars, loop_covs #, std
 # from pathlib import Path
 
 

@@ -10,8 +10,7 @@ from copy import copy
 import pandas as pd 
 from functions.load_data import sum_n_vec, ReadGRMBin, multirange, read_datas, load_data
 from functions.PredLMM_estimator import derivative_minim_sub, derivative_minim_full
-from functions.PredLMM_parser import *
-from functions.PredLMM_parser import *
+from functions.parser import *
 
 
 
@@ -116,7 +115,7 @@ for mp in mpheno:
     results.iloc[(mp-1),3] = result_full["Time taken"]
     print(result_full)
 
-results.to_csv(outprefix+ ".csv", index= False)
+results.to_csv(out + ".csv", index= False)
 
 # #%%
 # GREML_sub_est = result_subsample['Heritability estimate'][0,0]
