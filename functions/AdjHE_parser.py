@@ -3,6 +3,11 @@ from argparse import RawTextHelpFormatter
 
 import timeit
 
+# Email 
+# Amanda rueter 
+# Gregory conan about standard for command line inputs
+# :: record meeting with Conan about the standard
+
 start_time = timeit.default_timer()
 parser = argparse.ArgumentParser(prog='Running adjusted HE regression',description='This program gives estimation in formula fashion.\n Make sure you have enough memory to store GRM matrix in python.',formatter_class=RawTextHelpFormatter)
 parser.add_argument('--PC', type=str, help='Read PLINK format covariate file contains the PCs \nPCs should be generated using the same set of individuals in GRM files.\nIf --npc is not specified then all PCs in the file will be used.')
@@ -15,16 +20,19 @@ parser.add_argument('--k',type=int,help='Specify the number of rows in restoring
 parser.add_argument('--out',type=str, help='Specify the output file name. [required]',required=False)
 parser.add_argument('--std',action='store_true',default=False,help='Run SAdj-HE (i.e., with standardization)')
 parser.add_argument('--covars',nargs="+",type=int, default=1,help='Specify which covariates to control for from the covariate file. Should be a list of the column numbers not including the FID and IID columns')
+# Set defaults
 parser.set_defaults(PC="None", npc=None, covar="None", mpheno=1, k=0, prefix = "None", pheno = "None", out = "None")
 
 # Or accept a file with all arguments
 parser.add_argument("--argfile", default=None, type=str, help="Filename to be passed containing all information for PC's, covariates, phenotypes, and grm")
-# Set defaults
+# Flag to loop over covariates or just do it once with all covariates
+parser.add_argument('--loop_covars', action='store_true', default=False, help='Loop over the ordered list of covariates and retain all results.')
+
 
 args = vars(parser.parse_args())
 
 #%%
-# args['argfile'] = '/home/christian/Research/Stat_gen/tools/Basu_herit/Example/Arg_file.txt'
+args['argfile'] = '/home/christian/Research/Stat_gen/tools/Basu_herit/Example/Arg_file.txt'
 if args['argfile'] != None :
     d= {}
     with open(args['argfile']) as f:
@@ -67,9 +75,21 @@ except:
 # except:
 #     args["npc"] = eval(args["npc"])
 
-
-
 print(args)
+# %%
+
+# Get arguments from the argparser
+prefix = args["prefix"]
+covar = args["covar"]
+pheno = args["pheno"]
+mpheno = args["mpheno"]
+PC = args["PC"]
+npc = args["npc"]
+out = args["out"]
+std = args["std"]
+k = args["k"]
+covars = args["covars"]
+loop_covs = args["loop_covars"]
 
 
 

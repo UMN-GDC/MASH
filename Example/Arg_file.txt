@@ -8,3 +8,4 @@ out=delete
 std=False
 k=0
 covars=[2,1]
+loop_covs=False

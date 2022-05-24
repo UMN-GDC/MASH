@@ -1,33 +1,18 @@
-import os
+# import os
 import numpy as np
 import pandas as pd
 import timeit
 import itertools
 from functions.AdjHE_estimator import load_n_estimate
-# os.chdir("/home/christian/Research/Stat_gen/AdjHE/")
 from functions.load_data import ReadGRMBin, multirange, load_data
-from functions.AdjHE_parser import args
-from pathlib import Path
+from functions.AdjHE_parser import prefix, covar, pheno, mpheno, PC, npc, out, k, covars, loop_covs #, std
+# from pathlib import Path
 
 
-# %%
-
-# Get arguments from the argparser
-prefix = args["prefix"]
-covar = args["covar"]
-pheno = args["pheno"]
-mpheno = args["mpheno"]
-PC = args["PC"]
-npc = args["npc"]
-out = args["out"]
-std = args["std"]
-k = args["k"]
-covars = args["covars"]
-
-print(prefix)
-print("Reading GRM")
 
 # %% Read GRM
+print("Reading GRM: ", prefix)
+
 # Time reading the GRM and other data
 start_read = timeit.default_timer()
 
@@ -71,10 +56,15 @@ print("Calculating heritibility")
 results = pd.DataFrame()
 
 covars = [covar-1 for covar in covars]
-
+#%%
 # Create the sets of covarates over which we can loop
 cov_combos = [covars[0:idx+1] for idx, c in enumerate(covars)]
 cov_combos = [list(covariates[cov_combo]) for cov_combo in cov_combos]
+
+# If we don't want to loop, just grab the last item of the generated list assuming the user wants all of those variables included 
+if (loop_covs != True) : 
+    cov_combos = [cov_combos[-1]]
+
 # get list of phenotype names to regress
 mpheno = [phenotypes[i] for i in mpheno]
 #%%
