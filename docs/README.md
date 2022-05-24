@@ -5,7 +5,7 @@ Adj-HE (Adjusted HE) is a computational efficient method to estimate SNP-heritab
  
 Lin, Z., Seal, S., & Basu, S. (2020). Estimating SNP heritability in presence of population substructure in large biobank-scale data. bioRxiv. https://doi.org/10.1101/2020.08.05.236901
 
-## Adjusted-HE with closed form formula version
+## Adjusted-HE with closed form formula
 
 ```AdjHE.py```  estimates SNP-heritability via closed form formula with single GRM as input. It is suggested to use this version on a server with sufficient memory when sample size is less than 100k. In our paper, analyzing a 45k sample only used less than 2 minutes and about 40 GB memory.
 
