@@ -1,5 +1,4 @@
 # adjustedHE
-## Description
 
 Adj-HE (Adjusted HE) is a computational efficient method to estimate SNP-heritability in presence of population substructure for biobank-scale data. For details of this statistical method, please refer/cite:
  
