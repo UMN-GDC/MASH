@@ -15,7 +15,7 @@ Arguments
 |&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; Input &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;| Description
 :-------|-------------------
 | --prefix PREFIX|  REQUIRED. The prefix of GRM file with GCTA binary GRM format. (```PREFIX.grm.bin```, ```PREFIX.grm.N.bin``` and ```PREFIX.grm.id```)|
-| --pheno PHENO|  REQUIRED. The name of phenotype file, following GCTA phenotype file format (space delimited, no column names). The first two columns are FID and IID and phenotypes start from the third column. |
+| --pheno PHENO|  REQUIRED. The name of phenotype file, following GCTA phenotype file format (space delimited text file) but with column names). The first two columns are FID and IID and phenotypes start from the third column. |
 | --mpheno m| OPTIONAL. If you have multiple phenotypes in the file, you can specify by ```--mpheno m```. Otherwise, the first phenotype will be used.|
 | --PC PC| OPTIONAL. The name of PCs file, following GCTA (space delimited, no column names) ```--pca``` file (same as plink ```--pca```). The third column is the first PC, the forth column is the second PC...|
 | --npc n| OPTIONAL. You can specify top n PCs to be adjusted by ```--npc n```. Otherwise, all PCs in the PC file will be used.|
@@ -25,8 +25,26 @@ Arguments
 | --std | OPTIONAL. Run SAdj-HE by specifying ```--std```. Otherwise, UAdj-HE will be computed.  (There are potential bugs with the standardized version, so it is reccommended to use unstandardized for now).|
 | --argfile ARGFILE |Filename to be passed containing all information for PC's, covariates, phenotypes, and grm. This takes priority over all other arguments.|
 
+### Examples of input formats
+Here are illustrative examples of what files might look like
+
+| Input file | Example format |
+|------------|----------|
+| --pheno | FID IID PHENO1 PHENO2  <br> 1 1 0.7 0.89 <br> 2 2 0.34 0.53 |
+| --covar | FID IID Inter Inter_miss Tidyness Happy_camper Like_of_levis <br> 1 1 1 0 -0.0521411423320655 -4.15319103327111 -0.69160400719928 <br> 2 2 NA 1 0.324902022208628 -0.133292724029327 -6.81345421584963 |
+| --PC | 1 1 0.01 0.00 -0.02 0.01 -0.00 -0.01 0.00 -0.00 0.02 -0.00 <br> 2 2 0.01 0.00 -0.01 0.00 -0.01 0.01 0.01 0.02 -0.01 -0.01 |
+
+
 ### Output
-heritability estimation and its standard error in a .csv file. Computational time and peak memory are also provided.
+A .csv with heritability estimate, standard error, phenotype used, number of prinicpal components controlled for, list of covariates controled for separated by a "+", computational time and peak memory are also provided. Here is a table of outputs from the included simulation data
+
+```
+h2,SE,Pheno,PCs,Covariates,Time for analysis(s),Memory Usage
+0.7726129620284446,0.028460363706282417,liver_purity,5,inter_miss,1.1118594159997883,826.892
+0.7685585779700934,0.028471934661566427,liver_purity,5,inter_miss+inter,0.7169463489990449,831.0
+```
+
+### Examples of output formats
 
 # Data description
 Example data is included from [this paper](https://journals.plos.org/plosgenetics/article?id=10.1371/journal.pgen.1010151) with the following files
@@ -79,6 +97,19 @@ cd ~/PATH/TO/DIR/
 module load python 
 python AdjHE.py --argfile Example/Arg_file.txt
 ```
+
+### Example of computing GRM and eigenvectors from .bed files
+In your own data analysis, you may need to computed the grm and eigenvectors yourself so here are the steps to do that so that you will just be able to run the above examples afterward. Great resrources are [here](https://yanglab.westlake.edu.cn/software/gcta/#PCA) and [here](https://ibg.colorado.edu/cdrom2021/Day04-yengo/Day4_practical_Boulder2021_v4.pdf).
+```
+
+# Starting with .bed files
+# 1. Calculate the GRM (note you can filter for alleles with unacceptably low MAF's at this step if not already done in Plink)
+gcta64 --bfile Example/geno --maf 0.05 --make-grm-bin --out Example/grm
+
+# 2. Calculate eigenvectors
+gcta64  --grm Example/grm --pca 20  --out Example/pcas
+```
+Then follow the examples above directly.
 
 
 
