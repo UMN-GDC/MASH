@@ -24,6 +24,7 @@ Arguments
 | --k k| OPTIONAL. You can specify the number of rows in restoring the GCTA GRM binary file into matrix each time. If not provide, it will process the whole GRM at one time. When you have a relative large sample size, specifying ```--k k``` can speed up the computation and save the memory. |
 | --std | OPTIONAL. Run SAdj-HE by specifying ```--std```. Otherwise, UAdj-HE will be computed.  (There are potential bugs with the standardized version, so it is reccommended to use unstandardized for now).|
 | --argfile ARGFILE |Filename to be passed containing all information for PC's, covariates, phenotypes, and grm. This takes priority over all other arguments.|
+| --loop_covs| Required: Default= False. If True, loop over the ORDERED set of user defined covariates including all previous covariates in each iteration.|
 
 ### Examples of input formats
 Here are illustrative examples of what files might look like
