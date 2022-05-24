@@ -14,10 +14,6 @@ from functions.PredLMM_parser import *
 from functions.PredLMM_parser import *
 
 
-# logging.basicConfig(format='%(asctime)s - %(pathname)s[line:%(lineno)d] - %(levelname)s: %(message)s',
-#                     level=logging.DEBUG,filename=outprefix+'.log',filemode='a')
-# for arg, value in sorted(vars(args).items()):
-#     logging.info("Argument %s: %r", arg, value)
 
 # %% for troubleshooting
 # os.chdir("/home/christian/Scripts/Basu_herit")

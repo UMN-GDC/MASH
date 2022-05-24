@@ -27,6 +27,9 @@ parser.set_defaults(PC="None", npc=None, covar="None", mpheno=1, k=0, prefix = "
 parser.add_argument("--argfile", default=None, type=str, help="Filename to be passed containing all information for PC's, covariates, phenotypes, and grm")
 # Flag to loop over covariates or just do it once with all covariates
 parser.add_argument('--loop_covars', action='store_true', default=False, help='Loop over the ordered list of covariates and retain all results.')
+# Flag for using adjHE or PredLMM
+parser.add_argument('--PredLMM', action='store_true', default=False, help='Specify whether to use PredLMM method of estimation. Default is to use AdjHE.')
+
 
 
 args = vars(parser.parse_args())
@@ -90,6 +93,7 @@ std = args["std"]
 k = args["k"]
 covars = args["covars"]
 loop_covs = args["loop_covars"]
+PredLMM = args["PredLMM"]
 
 
 
