@@ -8,28 +8,16 @@ from numpy.linalg import inv
 from scipy.linalg.blas import sgemm
 from copy import copy
 import pandas as pd 
-from functions.load_data import sum_n_vec, ReadGRMBin, multirange, read_datas, load_data
+from functions.load_data import ReadGRMBin, multirange, load_data
 from functions.PredLMM_estimator import derivative_minim_sub, derivative_minim_full
-from functions.parser import *
+from functions.parser import prefix, covar, pheno, out, PC, args, mpheno
 
 
 
-# %% for troubleshooting
-# os.chdir("/home/christian/Scripts/Basu_herit")
-# prefix = "Example/grm"
-# pheno = "Example/pheno.phen"
-# covar = "Example/covar.csv"
-# PC = "Example/pcas.eigenvec"
-# k = 0
-# npc = 2
-# mpheno = 1
-# std = False
-# out = "Example/results"
-# print(args)
+#%%
 
 print("Reading GRM")
 start_read = timeit.default_timer()
-#%%
 G = ReadGRMBin(prefix)
 N = len(G['diag'])
 GRM = csr_matrix((N, N));GRM_array = GRM.todense().A1.reshape(N, N)
@@ -50,38 +38,22 @@ GRM_array = np.float32(GRM_array)
 
 
 print("Reading covariate and phenotype data")
-df = load_data(pheno_file = pheno, cov_file=covar, PC_file=None, npc = 0)
-y = df[["FID", "IID"]+ ["Pheno_" + str(mp) for mp in mpheno]]
+df, covariates, phenotypes = load_data(pheno_file=pheno, cov_file=covar, PC_file=PC)
 #%%
-cov_cols = [ col.startswith("Covar")   for col in df ]
-cov_cols = list(df.columns[cov_cols])
-n = ["FID", "IID"] + cov_cols
-X = df[n]
-
 #----------------------Knot selection and selecting corresponding vectors----------------------------
 print("selecting knots")
 subsample_size = 500;
-sub_sample = sorted(np.random.choice(range(0,N),subsample_size,replace=False))
-non_subsample = np.setdiff1d(range(0,N),sub_sample)
-indices = np.hstack((sub_sample,non_subsample))
-GRM_array = np.float32(GRM_array[np.ix_(indices,indices)].T)
-y = y.iloc[indices,:]; X=X.iloc[indices]; X_T = X.T;
-#%%
-G_selected = GRM_array[range(0,subsample_size),:][:,range(0,subsample_size)]
-
-# phen_sub = df.Pheno_1.iloc[sub_sample]
-# cov_sub = df.iloc[sub_sample, cov_cols]
-phen_sub = np.array(y.iloc[range(0,subsample_size)].drop(["FID", "IID"], axis = 1))
-cov_sub = np.array(X.iloc[range(0,subsample_size)].drop(["FID","IID"], axis =1))
-#%%
-# logging.info('knot selection and corresponding vectors seleected: '+str(timeit.default_timer() - start_read)+' seconds.')
+sub_sample = np.random.choice(range(0,N),subsample_size,replace=False)
+df_sub = df.iloc[sub_sample, ]
+G_selected = GRM_array[sub_sample,:][:,sub_sample]
 Knot_sel_time = timeit.default_timer() - start_read
 #%%
 #------------------Fitting LMM using only the selected subsample (set of knots)-------------------------
 print("fitting subsample")
 A_selc = np.copy(G_selected)-np.identity(subsample_size)
 for mp in mpheno :
-    result_subsample = derivative_minim_sub(phen_sub[:,(mp-1)], cov_sub, cov_sub.T, G_selected, A_selc, subsample_size)
+    result_subsample = derivative_minim_sub(df_sub[phenotypes[mp]], df_sub[list(covariates)], df_sub[list(covariates)].T, G_selected, 
+                                            A_selc, subsample_size)
     print(result_subsample)
 
 #%%
