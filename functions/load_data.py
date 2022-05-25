@@ -106,7 +106,7 @@ def load_data(pheno_file, cov_file=None, PC_file= None) :
         print("No covariates file specified or specified file is not found or cannot be loaded.")
         # onlyt load pcs if non null
     try:
-        PCs = pd.read_table(PC_file, sep= " ", header=0)
+        PCs = pd.read_table(PC_file, sep= " ", header=None)
         PCs.columns = ["fid", "iid"] + ["pc_" + str(s) for s in range(1, PCs.shape[1]-1)]
         df = pd.merge(PCs, df, on=["fid", "iid"])
     except:
