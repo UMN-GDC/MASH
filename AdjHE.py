@@ -1,3 +1,18 @@
+#! /usr/bin/env python3
+
+"""
+AdjHE estimator
+Christian Coffman: coffm049@umn.edu
+Created 2022-05-26
+Last Updated 2022-05-26
+"""
+
+##############################################################
+# The main file of the AdjHE estimator: loads, cleans, selects
+# , loops, and store heritability estimates 
+##############################################################
+
+
 # import os
 import numpy as np
 import pandas as pd
@@ -5,8 +20,29 @@ import timeit
 import itertools
 from functions.AdjHE_estimator import load_n_estimate
 from functions.load_data import ReadGRMBin, multirange, load_data
-from functions.parser import prefix, covar, pheno, mpheno, PC, npc, out, k, covars, loop_covs #, std
+from functions.parser import get_args, read_flags
 # from pathlib import Path
+
+#%%
+# Get command line arguments
+c_args = get_args()
+# convert the arguments to usable Python objects in a dictionary
+args = read_flags(c_args)
+print(args)
+
+# Save each dictionary item as it's own object to make it easier to reference in the code below
+prefix = args["prefix"]
+covar = args["covar"]
+pheno = args["pheno"]
+mpheno = args["mpheno"]
+PC = args["PC"]
+npc = args["npc"]
+out = args["out"]
+std = args["std"]
+k = args["k"]
+covars = args["covars"]
+loop_covs = args["loop_covars"]
+PredLMM = args["PredLMM"]
 
 
 
@@ -24,13 +60,13 @@ n_phen_nona = G['n_phen_nona']
 GRM_array_nona = np.zeros((n_phen_nona, n_phen_nona))
 GRM_array_nona[np.diag_indices(n_phen_nona)] = G['diag']
 
+###############################
+# Don't know what this is doing
+if(k == 0):
+    k = n_phen_nona
 temp_i = 0
 temp = 0
 # k= args.k
-
-
-if(k == 0):
-    k = n_phen_nona
 
 l = list(range(k, n_phen_nona, k))
 l.append(n_phen_nona)
@@ -41,7 +77,7 @@ for i in l:
     temp = temp + len(cor['b'])
     del(cor)
     temp_i = i
-
+################################
 
 
 df, covariates, phenotypes = load_data(pheno_file=pheno, cov_file=covar, PC_file=PC)
