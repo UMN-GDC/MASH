@@ -1,0 +1,14 @@
+PC=Example/pcas.eigenvec
+covar=Example/covar.txt
+prefix=Example/grm
+pheno=Example/pheno.phen
+out=Example/AdjHE_results
+npc=[5, 10]
+mpheno=[1, 2, 3]
+k=0
+std=False
+covars=[2, 1]
+argfile=/home/christian/Research/Stat_gen/tools/Basu_herit/Example/Arg_file.txt
+loop_covars=False
+PredLMM=False
+loop_covs=False

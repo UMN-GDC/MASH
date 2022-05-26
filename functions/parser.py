@@ -114,12 +114,17 @@ def get_args() :
     # return the arguments as a dictionary
     args = vars(parser.parse_args())
     # ForTroubleshooting  uncomment the next line
-    # args['argfile'] = '/home/christian/Research/Stat_gen/tools/Basu_herit/Example/Arg_file.txt'
+    args['argfile'] = '/home/christian/Research/Stat_gen/tools/Basu_herit/Example/Arg_file.txt'
     return(args)
 
 def read_flags(raw_args):
     """
     Takes the raw command line arguments and converts them to objects usable in Python.
+
+    Parameters
+    ----------
+    raw_args : list
+        raw arguments from the command line parser
 
     Returns
     -------
