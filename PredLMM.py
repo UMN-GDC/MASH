@@ -51,10 +51,15 @@ Knot_sel_time = timeit.default_timer() - start_read
 #------------------Fitting LMM using only the selected subsample (set of knots)-------------------------
 print("fitting subsample")
 A_selc = np.copy(G_selected)-np.identity(subsample_size)
-for mp in mpheno :
-    result_subsample = derivative_minim_sub(df_sub[phenotypes[mp]], df_sub[list(covariates)], df_sub[list(covariates)].T, G_selected, 
-                                            A_selc, subsample_size)
-    print(result_subsample)
+
+#%% 
+# Temporary
+y_sub = np.array(df_sub[phenotypes[0]])
+X_sub = np.array(df_sub[covariates[0]])
+#%%
+
+result_subsample = derivative_minim_sub(df_sub, G_selected, A_selc, ["inter"], "head_size")
+print(result_subsample)
 
 #%%
 #------------------Running PredLMM----------------------------------------------------------------------
@@ -71,16 +76,23 @@ GRM_array[np.ix_(range(subsample_size,N),range(subsample_size,N))] = sgemm(alpha
 add = copy(-GRM_array[id_diag] + diag_G_sub) ## diagonal adjustment
 np.fill_diagonal(GRM_array, - 1 + diag_G_sub)
 #%%
-Xnew = X.drop(["FID", "IID"], axis =1)
-ynew = y.drop(["FID", "IID"], axis =1)
+Xnew = X.drop(["fid", "iid"], axis =1)
+ynew = y.drop(["fid", "iid"], axis =1)
+#%%
+Xnew = df["liver_purity"]
+ynew = df["inter_miss"]
+#%%
+
+result_full = derivative_minim_full(ynew, Xnew, Xnew.T, Ct, id_diag, add, G_selected, GRM_array, N)
+
 #%%
 
 results = pd.DataFrame(np.zeros((len(mpheno), 4)))
 results.columns = ["h2", "SE", "Var", "Time"]
 
-
+Xnew = X.iloc[:,0]
 for mp in mpheno:
-    result_full = derivative_minim_full(ynew["Pheno_" + str(mp)], Xnew, Xnew.T, Ct, id_diag, add, G_selected, GRM_array, N)
+    result_full = derivative_minim_full(ynew[phenotypes[mp]], Xnew, Xnew.T, Ct, id_diag, add, G_selected, GRM_array, N)
     results.iloc[(mp-1),0] = result_full["Heritability estimate"][0,0]
     results.iloc[(mp-1),1] = result_full["SD of heritability estimate"]
     results.iloc[(mp-1),2] = result_full["Variance estimate"][0,0]

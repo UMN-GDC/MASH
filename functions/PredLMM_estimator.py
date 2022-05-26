@@ -3,9 +3,37 @@ import time
 from numpy.linalg import inv
 from scipy.optimize import newton
 from scipy.linalg.blas import dgemm,sgemm,sgemv
+from scipy.sparse import csr_matrix
 
 
-def derivative_minim_sub(y_sub, X_sub, X_subT, G_selected, A_selc, subsample_size):
+def Compute_blocks(Genotype, sub_sample, weights):
+    X = Genotype; N = Genotype.shape[0]; p = Genotype.shape[1]
+    p_allele = np.mean(X, axis=0)/2
+    X = (X - 2*p_allele) / np.sqrt(2*p_allele*(1-p_allele))
+    weights_star = weights*p/np.sum(weights)
+    X =  np.multiply(np.sqrt(weights_star)[np.newaxis,:], X)
+    subsample_size = len(sub_sample)
+    non_subsample = np.setdiff1d(range(0,N),sub_sample)
+    indices = np.hstack((sub_sample,non_subsample))
+    X = X[indices, :]
+    X_1 =X[range(0,subsample_size),]
+    X_2 =X[range(subsample_size, N),]
+    G_1 = sgemm(alpha=1,a=X_1,b=X, trans_b = 1)/p
+    diag_22 = np.sum(np.square(X_2), axis = 1)/p
+    GRM_array = csr_matrix((N, N)); GRM_array = GRM_array.todense().A1.reshape(N, N)
+    GRM_array[np.ix_(range(0,subsample_size), range(subsample_size, N))] = G_1[:, range(subsample_size, N)]; 
+    GRM_array = GRM_array + GRM_array.T
+    GRM_array[np.ix_(range(0,subsample_size), range(0, subsample_size))] = G_1[:, range(0,subsample_size)]
+    np.fill_diagonal(GRM_array, np.hstack((np.diag(GRM_array[np.ix_(range(0,subsample_size), range(0, subsample_size))]), diag_22)))
+    return GRM_array
+
+
+
+def derivative_minim_sub(df_sub, G_selected, A_selc, covars, pheno):
+ y_sub = df_sub[pheno]
+ X_sub = df_sub[covars]
+ X_subT = X_sub.T
+ subsample_size = df_sub.shape[0]
  def smaller_predproc_exponential(param):
   h = param
   C_inv = inv(h*G_selected+(1-h)*np.identity(subsample_size))

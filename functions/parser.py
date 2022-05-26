@@ -110,12 +110,11 @@ def get_args() :
                         default=False,
                         help='Specify whether to use PredLMM method of estimation. Default is to use AdjHE.')
     
-    # ForTroubleshooting 
-    # args['argfile'] = '/home/christian/Research/Stat_gen/tools/Basu_herit/Example/Arg_file.txt'
-
     
     # return the arguments as a dictionary
     args = vars(parser.parse_args())
+    # ForTroubleshooting  uncomment the next line
+    # args['argfile'] = '/home/christian/Research/Stat_gen/tools/Basu_herit/Example/Arg_file.txt'
     return(args)
 
 def read_flags(raw_args):
@@ -164,12 +163,12 @@ def read_flags(raw_args):
     
     return(raw_args)
 
+
 # # try:
 # #     args["npc"] = int(args["npc"])
 # # except:
 # #     args["npc"] = eval(args["npc"])
 
-# print(args)
 
 
 
