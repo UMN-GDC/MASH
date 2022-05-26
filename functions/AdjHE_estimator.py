@@ -1,3 +1,17 @@
+#! /usr/bin/env python3
+
+"""
+AdjHE estimator guts
+Christian Coffman: coffm049@umn.edu
+Created 2022-05-26
+Last Updated 2022-05-26
+"""
+
+##############################################################
+# These helpers stores all of the functions necessary for the 
+# guts of the AdjHE estimator
+##############################################################
+
 import numpy as np
 import statsmodels.api as sm
 import timeit
