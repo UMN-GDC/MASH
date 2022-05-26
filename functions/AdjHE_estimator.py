@@ -8,6 +8,29 @@ import statsmodels.api as sm
 import statsmodels.formula.api as smf
 
 def AdjHE_estimator(A,data, mp, npc=0, std=False):
+    """
+    Fucntion for generating heritability estimates from an Adjusted HE standpoint in closed form.
+
+    Parameters
+    ----------
+    A : numpy array  
+        n x n array containing the GRM values.
+    data : pandas dataframe
+        A dataframe containing all covariates, principal components, and phenotype that has been residualized if necessary.
+    mp : int
+        1 based index specifying the phenotype to be estimated on.
+    npc : int, optional
+        number of prinicpal components to adjust for. The default is 0.
+    std : bool, optional
+        Specify whether or not to standaridize the variables before estimation. The default is False.
+
+    Returns
+    -------
+    scalar, scalar
+        h2 - heritability estimate.
+        standard error estimate
+
+    """
     # remove identifiers from y for linear algebra 
     y = data[mp]
     # select PC columns 
@@ -94,6 +117,24 @@ def AdjHE_estimator(A,data, mp, npc=0, std=False):
     return h2,np.sqrt(var_ge)
 
 def create_formula(nnpc, covars, mp):
+    """
+    Creates a formula for the mean to residualize against. In other words describes the projection space and by extension the residual space.
+
+    Parameters
+    ----------
+    nnpc : int
+        number of PC's included in the projection.
+    covars : list of integers
+        the covariates to be included in the projection.
+    mp : int
+        phenotype to be projected.
+
+    Returns
+    -------
+    (form, cols) where form is the formual exceptabule by smf.ols procedure and cols specifies the columns necessary for the projection
+    (PCs, covariates, and phenotype).
+
+    """
     # Get indices for ID variables
     id_cols = ["fid", "iid"] 
     # Get the full range of pc columns
@@ -108,6 +149,38 @@ def create_formula(nnpc, covars, mp):
 
 
 def load_n_estimate(df, covars, nnpc, mp, ids, GRM_array_nona, std = False):
+    """
+    Takes a dataframe, selects only the necessary columns (so that when we do complete cases it doesnt exclude too many samples)
+    residualizes the phenotype, then documents the heritability, standard error and some computer usage metrics.
+
+    Parameters
+    ----------
+    df : pandas dataframe
+        dataframe contianing phenotype, covariates, an prinicpal components.
+    covars : list of int
+        list of integers specifying which covariates to include in the resiudalization.
+    nnpc : int
+        number of pcs to include.
+    mp : int
+        which phenotype to estiamte on.
+    ids : np array
+        np array of subject ids.
+    GRM_array_nona : np array
+        the GRM with missingness removed.
+    std : bool, optional
+        specifying whether standarization happens before heritability estimation. The default is False.
+
+    Returns
+    -------
+    pandas dataframe containing:
+        - heritability estimate
+        - standard error the estimate
+        - the phenotype
+        - the number of pcs included
+        - The covarites included 
+        - time for analysis
+        - maximum memory usage
+    """
     # seed empty result vector
     # result.columns = ["h2", "SE", "Pheno", "PCs", "Time for analysis(s)", "Memory Usage", "formula"]
     # start clock for fitting 
