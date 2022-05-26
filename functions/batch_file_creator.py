@@ -7,6 +7,9 @@ Created 2022-05-26
 Last Updated 2022-05-26
 """
 
+##### TODO 
+# Still need to decide where it will put these files after making them, and then if it will delete them after use in a slurm script
+
 ##############################################################
 # this creates batch files for parallel processing with 
 # AdjHE estimator
@@ -102,15 +105,12 @@ def all_batches(args, nbatches) :
     temp = args.copy()
     
     # loop over the desired number of batches
-    for i in range(1, nbatches) :
+    for i in range(0, nbatches) :
         temp["mpheno"] = pheno_splits[i]
-        single_batch(args = temp, batch_out= args["out"] +"_" + str(i) + "of" + str(nbatches))
+        single_batch(args = temp, batch_out= args["out"] +"_" + str(i + 1) + "of" + str(nbatches))
         
         
     
 
-#%%
-
-all_batches(args, 9)
 
 
