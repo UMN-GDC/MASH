@@ -15,8 +15,9 @@ Last Updated 2022-06-06
 
 import argparse
 import json 
+from functions.types_n_valids import readable_file_or_none
 
-
+#%%
 
 def get_args() :
     """
@@ -27,7 +28,7 @@ def get_args() :
     dictionary of user arguments from command line
 
     """
-    # Create arge parser
+    # Create arg parser
     parser = argparse.ArgumentParser(
         prog='Running adjusted HE regression',description="This program gives estimation in formula fashion." 
         "Make sure you have enough memory to store GRM matrix in python.")
@@ -36,15 +37,14 @@ def get_args() :
     # Required arguments: file paths for phenotypes, covariates, prinicpal components, GRM, and results output, 
     parser.add_argument(
         '--PC',
-        type=str,
+        type=readable_file_or_none,
         metavar= "EIGENVECTOR_FILE_PATH", 
         help='Read PLINK format covariate file contains the PCs'
         'PCs should be generated using the same set of individuals in GRM files.'
         'If --npc is not specified then all PCs in the file will be used.')
     
     parser.add_argument('--covar',
-                        #type=argparse.FileType('r'),
-                        type=str,
+                        type=readable_file_or_none,
                         metavar= "COVARIATE_FILE_PATH", 
                         help='Read PLINK format covariate file contains covariates besides PCs to be adjusted')
 
@@ -55,7 +55,7 @@ def get_args() :
 
     parser.add_argument('--pheno',
                         #type=argparse.FileType('r'),
-                        type=str,
+                        type=readable_file_or_none,
                         metavar= "PHENOTYPE_FILE_PATH", 
                         help='Read PLINK format phenotype file [required]'
                         'If --mpheno is not specified then then 3rd column (the 1st phenotype) will be used.')
@@ -102,7 +102,7 @@ def get_args() :
     # Or accept a file with all arguments
     parser.add_argument("--argfile", 
                         default=None,
-                        type=str,
+                        type=readable_file_or_none,
                         metavar= "ARGFILE_FILE_PATH", 
                         help="Filename to be passed containing all information for PC's, covariates, phenotypes, and grm")
     
