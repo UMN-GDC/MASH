@@ -15,7 +15,8 @@ Last Updated 2022-05-26
 
 import argparse
 from argparse import RawTextHelpFormatter
-import timeit
+import json 
+
 
 
 def get_args() :
@@ -38,6 +39,7 @@ def get_args() :
     parser.add_argument(
         '--PC',
         type=str,
+        metavar= "EIGENVECTOR_FILE_PATH", 
         help='Read PLINK format covariate file contains the PCs'
         'PCs should be generated using the same set of individuals in GRM files.'
         'If --npc is not specified then all PCs in the file will be used.')
@@ -45,32 +47,38 @@ def get_args() :
     parser.add_argument('--covar',
                         #type=argparse.FileType('r'),
                         type=str,
+                        metavar= "COVARIATE_FILE_PATH", 
                         help='Read PLINK format covariate file contains covariates besides PCs to be adjusted')
 
     parser.add_argument('--prefix',
                         type=str,
+                        metavar= "GRM_FILE_PREFIX", 
                         help='prefix for GCTA format GRM files, including PREFIX.grm.bin, PREFIX.grm.N.bin, and PREFIX.grm.id')
 
     parser.add_argument('--pheno',
                         #type=argparse.FileType('r'),
                         type=str,
+                        metavar= "PHENOTYPE_FILE_PATH", 
                         help='Read PLINK format phenotype file [required]'
                         'If --mpheno is not specified then then 3rd column (the 1st phenotype) will be used.')
 
     parser.add_argument('--out',
                         type=str,
+                        metavar= "OUTPUT_FILE_PATH", 
                         help='Specify the output file name.')
 
     # Optional
     parser.add_argument('--npc', 
                         nargs="+",
                         type=int,
+                        metavar= "#_PCs", 
                         help='Specify the number of PCs to be adjusted')
     
     parser.add_argument('--mpheno',
                         nargs="+",
                         type=int,
                         default=1,
+                        metavar= "DESIRED_PHEN_INDEX", 
                         help='Specify which phenotype to use from phenotype file (Can be a list)')
     
     parser.add_argument('--k',
@@ -86,6 +94,7 @@ def get_args() :
     parser.add_argument('--covars',
                         nargs="+",
                         type=int,
+                        metavar= "ORDERED_INDICES_OF_USEFUL_COVARS", 
                         default=1,
                         help='Specify which covariates to control for from the covariate file. Should be a list of the column numbers not including the FID and IID columns')
     
@@ -96,6 +105,7 @@ def get_args() :
     parser.add_argument("--argfile", 
                         default=None,
                         type=str,
+                        metavar= "ARGFILE_FILE_PATH", 
                         help="Filename to be passed containing all information for PC's, covariates, phenotypes, and grm")
     
     # Flag to loop over covariates or just do it once with all covariates
@@ -114,7 +124,7 @@ def get_args() :
     # return the arguments as a dictionary
     args = vars(parser.parse_args())
     # ForTroubleshooting  uncomment the next line
-    args['argfile'] = '/home/christian/Research/Stat_gen/tools/Basu_herit/Example/Arg_file.txt'
+    # args['argfile'] = '/home/christian/Research/Stat_gen/tools/Basu_herit/Example/Arg_file.txt'
     return(args)
 
 def read_flags(raw_args):
@@ -132,49 +142,39 @@ def read_flags(raw_args):
 
     """
     if raw_args['argfile'] != None :
-        d= {}
+        # Read data from standard json format
         with open(raw_args['argfile']) as f:
-            for line in f:
-                (key, val) = line.split("=")
-                # remove line break
-                d[key] = val[:-1]
-        raw_args.update(**d)
-        
-    # Ensure types 
-    raw_args["k"] = int(raw_args["k"])
-    try:
-        # convert a string of arugments sto a list
-        raw_args['mpheno'] = eval(raw_args['mpheno'])
-    except:
-        # Convert a single integer value to a list
-        raw_args['mpheno'] = list(raw_args['mpheno'])
-      
-    try:
-        # convert a string of arugments sto a list
-        raw_args['npc'] = eval(raw_args['npc'])
-    except:
-        # Convert a single integer value to a list
-        raw_args['npc'] = list(raw_args['npc'])
-        
+            raw_args = json.load(f)
     
+    else : # Read each individual flag
         
-    ## Do the same for specified covariates
-    try:
-        # Convert to    list of integers of agrument is a list
-        raw_args["covars"] = eval(raw_args["covars"])
-    except: 
-        # convert single integer to integer list 
-        raw_args["covars"] = raw_args["covars"]
+        # Ensure types 
+        raw_args["k"] = int(raw_args["k"])
+        try:
+            # convert a string of arugments sto a list
+            raw_args['mpheno'] = eval(raw_args['mpheno'])
+        except:
+            # Convert a single integer value to a list
+            raw_args['mpheno'] = list(raw_args['mpheno'])
+          
+        try:
+            # convert a string of arugments sto a list
+            raw_args['npc'] = eval(raw_args['npc'])
+        except:
+            # Convert a single integer value to a list
+            raw_args['npc'] = list(raw_args['npc'])
+            
+        
+            
+        ## Do the same for specified covariates
+        try:
+            # Convert to    list of integers of agrument is a list
+            raw_args["covars"] = eval(raw_args["covars"])
+        except: 
+            # convert single integer to integer list 
+            raw_args["covars"] = raw_args["covars"]
     
     return(raw_args)
-
-
-# # try:
-# #     args["npc"] = int(args["npc"])
-# # except:
-# #     args["npc"] = eval(args["npc"])
-
-
 
 
 
