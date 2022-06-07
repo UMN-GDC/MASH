@@ -4,7 +4,7 @@
 AdjHE estimator
 Christian Coffman: coffm049@umn.edu
 Created 2022-05-26
-Last Updated 2022-05-26
+Last Updated 2022-06-06
 """
 
 ##############################################################
