@@ -102,7 +102,7 @@ if (loop_covs != True) :
     cov_combos = [cov_combos[-1]]
 
 # get list of phenotype names to regress
-mpheno = [phenotypes[i] for i in mpheno]
+mpheno = [phenotypes[i-1] for i in mpheno]
 #%%
 # loop over all combinations of pcs and phenotypes
 for idx, (mp, nnpc, covs) in enumerate(itertools.product(mpheno, npc, cov_combos)):
