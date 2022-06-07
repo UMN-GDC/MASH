@@ -20,10 +20,10 @@ covar = "/home/christian/Research/Stat_gen/tools/Basu_herit/Example/covar.txt"
 
 #%%
 
-def readable_file(path):
+def three_col_file(path):
     """
     Throw argparse exception unless parameter is a valid readable filename 
-    string. This is used instead of argparse.FileType("r") because the latter 
+    string with more than three columns. This is used instead of argparse.FileType("r") because the latter 
     leaves an open file handle, which has caused problems.
     :param 
     :return: 
@@ -40,10 +40,18 @@ def readable_file(path):
     try :
         assert os.access(path, os.R_OK)
         return os.path.abspath(path)
+        df = pd.read_table(path, sep = " ", header=0,  nrow=3) 
+        # if fewer than 3 columns raise an error
+        if df.shape[1] < 3 :
+            raise argparse.ArgumentTypeError(
+                "File at {} has fewer than three columns. Are you sure this file contians FID, IID, and then hte rest of the data?".format(path))
+        else :
+            return None
     except (AssertionError, OSError, TypeError) :
         raise argparse.ArgumentTypeError("Cannot read file at {}".format(path))
-        
-        
+#%%        
+
+
 def readable_file_or_none(path):
     """
     Throw argparse exception unless path either is "none" or points to a 
@@ -51,7 +59,8 @@ def readable_file_or_none(path):
     :param path: Parameter to check if it represents a valid filename
     :return: String representing a valid filename, or the string "none"
     """
-    return path if path == "None" else readable_file(path)
-        
+    return path if path == "None" else three_col_file(path)
+
+
 
 
