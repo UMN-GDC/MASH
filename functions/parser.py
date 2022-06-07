@@ -14,7 +14,6 @@ Last Updated 2022-05-26
 ##############################################################
 
 import argparse
-from argparse import RawTextHelpFormatter
 import json 
 
 
@@ -31,8 +30,7 @@ def get_args() :
     # Create arge parser
     parser = argparse.ArgumentParser(
         prog='Running adjusted HE regression',description="This program gives estimation in formula fashion." 
-        "Make sure you have enough memory to store GRM matrix in python.",
-        formatter_class=RawTextHelpFormatter)
+        "Make sure you have enough memory to store GRM matrix in python.")
     
     
     # Required arguments: file paths for phenotypes, covariates, prinicpal components, GRM, and results output, 
