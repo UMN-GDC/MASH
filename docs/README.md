@@ -211,3 +211,11 @@ out='/PATH/TO/RESULT/DIRECTORY'
 python AdjHE_reg_s2.py --PC ${PC} --npc 10  --covar ${covar} --pheno ${pheno} --mpheno 1 --job ${PBS_ARRAYID} --Npart 200 --id ${id} --out ${out}
 ```
 The result will be saved in /PATH/TO/RESULT/DIRECTORY/pheno1.log .
+
+
+# Building docker  
+
+sudo docker build -f Dockerfile -t adjhe:1.1 .
+sudo docker run -it [most recent build]
+
+
