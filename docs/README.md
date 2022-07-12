@@ -214,8 +214,28 @@ The result will be saved in /PATH/TO/RESULT/DIRECTORY/pheno1.log .
 
 
 # Building docker  
-
+```
 sudo docker build -f Dockerfile -t adjhe:1.1 .
-sudo docker run -it [most recent build]
+sudo docker save adjhe:1.1 > AdjHE_1.1.tar
+```
+
+
+Start an interactive job on mesabi that you will use to build the container. The size of the /tmp directory allocated with the –tmp flag will be dependent on the size of the container you are trying to build. A rule of thumb that has seemed to work okay is to request at least twice the size of the container you are trying to build. 
+
+```
+srun -N 1 --ntasks-per-node=1  --tmp=100g --mem-per-cpu=30g -t 3:00:00 -p interactive --pty bash
+```
+
+Load singularity, go to the directory where you have the .tar file for the image, and build it as a singularity image:
+
+```
+module load singularity
+cd ~/tools/Basu_herit
+singularity build AdjHE.sif docker-archive://AdjHE_1.1.tar
+```
+
+
+
+
 
 
