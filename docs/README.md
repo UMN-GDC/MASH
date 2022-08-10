@@ -6,7 +6,7 @@ Lin, Z., Seal, S., & Basu, S. (2020). Estimating SNP heritability in presence of
 
 ## Adjusted-HE with closed form formula
 
-```AdjHE.py```  estimates SNP-heritability via closed form formula with single [Genetic Relatedness Matrix (GRM)](https://ibg.colorado.edu/cdrom2020/medland/tuesday1/Tuesday1.pdf) as input. It is suggested to use this version on a server with sufficient memory when sample size is less than 100k. In our paper, analyzing a 45k sample only used less than 2 minutes and about 40 GB memory.
+```AdjHE.py```  estimates SNP-heritability via closed form formula with single [Genetic Relatedness Matrix (GRM)](https://ibg.colorado.edu/cdrom2020/medland/tuesday1/Tuesday1.pdf) as input. It is suggested to use this version on a server with sufficient memory when sample size is less than 100k. In our paper, analyzing a 45k sample took less than 2 minutes and about 40 GB memory.
 
 Please check the input description with ```./AdjHE.py --help```.
 
@@ -15,7 +15,7 @@ It is reccomended that users define a .json file containing all of the arguments
 
 |&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; Input &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;| Description
 :-------|-------------------
-| --argfile ARGFILE.json | COND REQUIRED. ARGFILE.json, *string*, is the filename to be passed containing all information for PC's, covariates, phenotypes, and grm. This takes priority over all other arguments. [See the example arfile included under the Example directory.](https://github.com/coffm049/Basu_herit/blob/master/Example/Argfile.json). |
+| --argfile ARGFILE.json | COND REQUIRED. ARGFILE.json, *string*, is the filename to be passed containing all information for PC's, covariates, phenotypes, and GRM. This takes priority over all other arguments. [See the example arfile included under the Example directory.](https://github.com/coffm049/Basu_herit/blob/master/Example/Argfile.json). |
 | --prefix PREFIX|  REQUIRED. *string* PREFIX is the prefix of GRM file with GCTA binary GRM format. (```PREFIX.grm.bin```, ```PREFIX.grm.N.bin``` and ```PREFIX.grm.id```)|
 | --pheno PHENO.phen |  REQUIRED. PHENO.phen, *string*, is the name of phenotype file, following GCTA phenotype file format (space delimited text file) but with column names). The first two columns are FID and IID and phenotypes start from the third column. |
 | --mpheno m| OPTIONAL. *integer*, Default=1. If you have multiple phenotypes in the file, you can specify by ```--mpheno m```. Otherwise, the first phenotype will be used.|
@@ -25,7 +25,7 @@ It is reccomended that users define a .json file containing all of the arguments
 |--covars COVARS| OPTIONAL. COVARS is the *list of integers* specifying which covariates to control for from the covariate file. column numbering does not include the FID and IID columns. **Note that this is an ordered list if used in conjunction with the ```--loop_covs``` flag.**|
 | --k k| OPTIONAL. *integer*. You can specify the number of rows in restoring the GCTA GRM binary file into matrix each time. If not provide, it will process the whole GRM at one time. When you have a relative large sample size, specifying ```--k k``` can speed up the computation and save the memory. |
 | --std | OPTIONAL. Run SAdj-HE by specifying ```--std```. Otherwise, UAdj-HE will be computed.  (There are potential bugs with the standardized version, so it is reccommended to use unstandardized for now).|
-| --loop_covs| OPTIONAL: Default= False. If True, loop over the ORDERED set of user defined covariates including all previous covariates in each iteration.|
+| --loop_covs| OPTIONAL: Default= False. If True, loop over the ORDERED set of user defined covariates including all previous covariates in each iteration. **Note: The order in which the covrariates are controlled for is based upon the researchers best judjements. In other words, include the most likely **|
 
 ## Descrtiption of Inputs
 Here are illustrative examples of what files might look like. All three file types containing data for analysis have the first two columns that are the Family ID (FID) and the Individuals ID (IID). They are then followed by values specific to each file type (phenotypes for the phenotype file, covariates for the covaraiates file, and PC loadings for the PC file. **Note: Both the phenotype and covariates files should have column headers, whereas the PC file should not.** See the example [pheno](https://github.com/coffm049/Basu_herit/blob/master/Example/pheno.phen), [covariate](https://github.com/coffm049/Basu_herit/blob/master/Example/covar.txt), and [PC](https://github.com/coffm049/Basu_herit/blob/master/Example/pcas.eigenvec) file in the examples folder.
