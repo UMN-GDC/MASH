@@ -64,4 +64,23 @@ def readable_file_or_none(path):
 
 
 
+def readable_json(path):
+    """
+    Throw argparse exception unless path either is "none" or points to a 
+    readable file.
+    :param path: Parameter to check if it represents a valid filename
+    :return: String representing a valid filename, or the string "none"
+    """
 
+    try :
+        assert os.access(path, os.R_OK)
+    except (AssertionError, OSError, TypeError) :
+        raise argparse.ArgumentTypeError("Cannot read file at {}".format(path))
+
+    try :
+        base, ext =  os.path.splitext(path)
+        assert ext == ".json"
+    except (AssertionError, OSError, TypeError) :
+        raise argparse.ArgumentTypeError("File at {} is not a .json file".format(path))
+
+ 

@@ -15,7 +15,7 @@ Last Updated 2022-06-06
 
 import argparse
 import json 
-from functions.types_n_valids import readable_file_or_none
+from functions.types_n_valids import readable_file_or_none, readable_json
 
 #%%
 
@@ -102,7 +102,7 @@ def get_args() :
     # Or accept a file with all arguments
     parser.add_argument("--argfile", 
                         default=None,
-                        type=readable_file_or_none,
+                        # type=readable_json,
                         metavar= "ARGFILE_FILE_PATH", 
                         help="Filename to be passed containing all information for PC's, covariates, phenotypes, and grm")
     
