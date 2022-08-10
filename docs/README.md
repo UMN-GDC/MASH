@@ -1,53 +1,51 @@
 # adjustedHE
 
-Adj-HE (Adjusted HE) is a computational efficient method to estimate SNP-heritability in presence of population substructure for biobank-scale data. For details of this statistical method, please refer/cite:
+Adj-HE (Adjusted HE) is a computational efficient method to estimate [Single Nucleotide Polymorphism (SNP)](https://www.cancer.gov/publications/dictionaries/genetics-dictionary/def/single-nucleotide-polymorphism)-heritability in presence of population substructure for biobank-scale data. It is a simplification of the [Haseman- Elston regression (HE)](https://pubmed.ncbi.nlm.nih.gov/4157472/). For details of this statistical method, please refer/cite:
  
 Lin, Z., Seal, S., & Basu, S. (2020). Estimating SNP heritability in presence of population substructure in large biobank-scale data. bioRxiv. https://doi.org/10.1101/2020.08.05.236901
 
 ## Adjusted-HE with closed form formula
 
-```AdjHE.py```  estimates SNP-heritability via closed form formula with single GRM as input. It is suggested to use this version on a server with sufficient memory when sample size is less than 100k. In our paper, analyzing a 45k sample only used less than 2 minutes and about 40 GB memory.
+```AdjHE.py```  estimates SNP-heritability via closed form formula with single [Genetic Relatedness Matrix (GRM)](https://ibg.colorado.edu/cdrom2020/medland/tuesday1/Tuesday1.pdf) as input. It is suggested to use this version on a server with sufficient memory when sample size is less than 100k. In our paper, analyzing a 45k sample only used less than 2 minutes and about 40 GB memory.
 
 Please check the input description with ```./AdjHE.py --help```.
 
-Arguments
+## Arguments
+It is reccomended that users define a .json file containing all of the arguments for analysis. This will help both with organization and with reproducibility. This means that the **argfile would be the only argument**. Users can also define all filepaths and variable selections manually using command line flags if desired. 
 
 |&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; Input &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;| Description
 :-------|-------------------
-| --prefix PREFIX|  REQUIRED. The prefix of GRM file with GCTA binary GRM format. (```PREFIX.grm.bin```, ```PREFIX.grm.N.bin``` and ```PREFIX.grm.id```)|
-| --pheno PHENO|  REQUIRED. The name of phenotype file, following GCTA phenotype file format (space delimited text file) but with column names). The first two columns are FID and IID and phenotypes start from the third column. |
-| --mpheno m| OPTIONAL. If you have multiple phenotypes in the file, you can specify by ```--mpheno m```. Otherwise, the first phenotype will be used.|
-| --PC PC| OPTIONAL. The name of PCs file, following GCTA (space delimited, no column names) ```--pca``` file (same as plink ```--pca```). The third column is the first PC, the forth column is the second PC...|
-| --npc n| OPTIONAL. You can specify top n PCs to be adjusted by ```--npc n```. Otherwise, all PCs in the PC file will be used.|
-| --covar COVAR| OPTIONAL. The name of covariate file, following GCTA ```--qcovar``` file format or .csv file format. It may contain sex, age, etc. *Note that this file does not include principal components, which need to be include seperately by ```--PC PC```*.|
-|--covars COVARS| OPTIONAL. List of integers specifying which covariates to control for from the covariate file. column numbering does not include the FID and IID columns. Note that this is an ordered list if used in conjunction with the ```--loop_covs``` flag.|
-| --k k| OPTIONAL. You can specify the number of rows in restoring the GCTA GRM binary file into matrix each time. If not provide, it will process the whole GRM at one time. When you have a relative large sample size, specifying ```--k k``` can speed up the computation and save the memory. |
+| --argfile ARGFILE.json | COND REQUIRED. ARGFILE.json, *string*, is the filename to be passed containing all information for PC's, covariates, phenotypes, and grm. This takes priority over all other arguments. [See the example arfile included under the Example directory.] (https://github.com/coffm049/Basu_herit/blob/master/Example/Argfile.json). |
+| --prefix PREFIX|  REQUIRED. *string* PREFIX is the prefix of GRM file with GCTA binary GRM format. (```PREFIX.grm.bin```, ```PREFIX.grm.N.bin``` and ```PREFIX.grm.id```)|
+| --pheno PHENO.phen |  REQUIRED. PHENO.phen, *string*, is the name of phenotype file, following GCTA phenotype file format (space delimited text file) but with column names). The first two columns are FID and IID and phenotypes start from the third column. |
+| --mpheno m| OPTIONAL. *integer*, Default=1. If you have multiple phenotypes in the file, you can specify by ```--mpheno m```. Otherwise, the first phenotype will be used.|
+| --PC PC | OPTIONAL. PC, *string*, is the name of PCs file, following GCTA (space delimited, no column names) ```--pca``` file (same as plink ```--pca```). The third column is the first PC, the forth column is the second PC...|
+| --npc n | OPTIONAL. *integer*, Default = all PCs in the PC file will be used. You can specify top n PCs to be adjusted by ```--npc n```.|
+| --covar COVAR | OPTIONAL. COVAR, *string*, is the name of covariate file, following GCTA ```--qcovar``` file format or .csv file format. It may contain sex, age, etc. *Note that this file does not include principal components, which need to be include seperately by ```--PC PC```*.|
+|--covars COVARS| OPTIONAL. COVARS is the *list of integers* specifying which covariates to control for from the covariate file. column numbering does not include the FID and IID columns. **Note that this is an ordered list if used in conjunction with the ```--loop_covs``` flag.**|
+| --k k| OPTIONAL. *integer*. You can specify the number of rows in restoring the GCTA GRM binary file into matrix each time. If not provide, it will process the whole GRM at one time. When you have a relative large sample size, specifying ```--k k``` can speed up the computation and save the memory. |
 | --std | OPTIONAL. Run SAdj-HE by specifying ```--std```. Otherwise, UAdj-HE will be computed.  (There are potential bugs with the standardized version, so it is reccommended to use unstandardized for now).|
-| --argfile ARGFILE |Filename to be passed containing all information for PC's, covariates, phenotypes, and grm. This takes priority over all other arguments.|
-| --loop_covs| Required: Default= False. If True, loop over the ORDERED set of user defined covariates including all previous covariates in each iteration.|
+| --loop_covs| OPTIONAL: Default= False. If True, loop over the ORDERED set of user defined covariates including all previous covariates in each iteration.|
 
-### Examples of input formats
-Here are illustrative examples of what files might look like
+## Descrtiption of Inputs
+Here are illustrative examples of what files might look like. All three file types containing data for analysis have the first two columns that are the Family ID (FID) and the Individuals ID (IID). They are then followed by values specific to each file type (phenotypes for the phenotype file, covariates for the covaraiates file, and PC loadings for the PC file. **Note: Both the phenotype and covariates files should have column headers, whereas the PC file should not.** See the example [pheno](https://github.com/coffm049/Basu_herit/blob/master/Example/pheno.phen), [covariate](https://github.com/coffm049/Basu_herit/blob/master/Example/covar.txt), and [PC](https://github.com/coffm049/Basu_herit/blob/master/Example/pcas.eigenvec) file in the examples folder.
 
-| Input file | Example format |
+| Column | Column Contents |
 |------------|----------|
-| --pheno | FID IID PHENO1 PHENO2  <br> 1 1 0.7 0.89 <br> 2 2 0.34 0.53 |
-| --covar | FID IID Inter Inter_miss Tidyness Happy_camper Like_of_levis <br> 1 1 1 0 -0.0521411423320655 -4.15319103327111 -0.69160400719928 <br> 2 2 NA 1 0.324902022208628 -0.133292724029327 -6.81345421584963 |
-| --PC | 1 1 0.01 0.00 -0.02 0.01 -0.00 -0.01 0.00 -0.00 0.02 -0.00 <br> 2 2 0.01 0.00 -0.01 0.00 -0.01 0.01 0.01 0.02 -0.01 -0.01 |
+| 1 | FID,*string*, Unique family identifier for each family in the study. |
+| 2 | IID, *string*, Unique individual identifier for each individual in the study.|
+| 3-infinite | *numeric*, measurements for PC loading, phenotype, or covariate measures depending on file type |
+
+**Note: All files need the first two columns to be FID and IID, respectively. Also any missing values will remove the observation from the given analysis. **
 
 
-### Output
-A .csv with heritability estimate, standard error, phenotype used, number of prinicpal components controlled for, list of covariates controled for separated by a "+", computational time and peak memory are also provided. Here is a table of outputs from the included simulation data
+## Output
+A .csv with heritability estimate (h2), standard error (SE), phenotype used (Pheno), number of prinicpal components controlled for (PCs), list of covariates controled for separated by a "+" (Covariates), computational time (Time for analysis(s)), and peak memory (Memory Usage (Mb)) are also provided. See the [results](https://github.com/coffm049/Basu_herit/blob/master/Example/results.csv) included in the Example folder.
 
-```
-h2,SE,Pheno,PCs,Covariates,Time for analysis(s),Memory Usage
-0.7726129620284446,0.028460363706282417,liver_purity,5,inter_miss,1.1118594159997883,826.892
-0.7685585779700934,0.028471934661566427,liver_purity,5,inter_miss+inter,0.7169463489990449,831.0
-```
+# Example
+Included in this repo is an example dataset for users to practice with and check results to the included results file.
 
-### Examples of output formats
-
-# Data description
+## Data description
 Example data is included from [this paper](https://journals.plos.org/plosgenetics/article?id=10.1371/journal.pgen.1010151) with the following files
 
     a phenotype file: pheno.phen
@@ -56,7 +54,7 @@ Example data is included from [this paper](https://journals.plos.org/plosgenetic
     GCTA GRM files: grm (.grm.id, .grm.bin, .grm.N.bin)
     eigenvector files: pcas (.eigenval, .eigenvec, .log)
 
-There are 5000 individuals and 10,000 SNPs. The first two columns of the phenotype and the covariate files have the family ID (FID) and individual ID (IID) of each individual. The phenotype file has a single phenotype and the covariate file has a single covariate. With the binary files, the GRM files have been computed using GCTA. It is to be craefully noted that the order of the individuals in all the files (phenotype, covariate, GRM) have to be the same.
+There are 5000 individuals and 10,000 SNPs. The first two columns of the phenotype and the covariate files have the FID and individual ID IID of each individual. The phenotype file has a single phenotype and the covariate file has a single covariate. With the binary files, the GRM files have been computed using GCTA. It is to be craefully noted that the order of the individuals in all the files (phenotype, covariate, GRM) have to be the same.
 The example dataset includes simulated phenotypes from the linked paper with a true heritability of 0.8.
 
 
@@ -73,13 +71,13 @@ out='Example/results.csv'
 
 python AdjHE.py --prefix ${prefix} --PC ${PC} --npc 10  --covar ${covar} --pheno ${pheno} --mpheno 1 --out ${out}
 ```
-This should result in estimates for heritability stored in a .csv with the estimated heritability. For this dataset, you should the simulated heritability was 70%. Notice that the estimate is sensitive to the number of Prinicipal components included in the model since the data was simulated to have population stratification. The covariates don't have much of an influence on the estimates since they were not included in the simulation of this dataset.
+This should result in estimates for heritability stored in a .csv with the estimated heritability. For this dataset, the simulated heritability was 70%. Notice that the estimate is sensitive to the number of Prinicipal components included in the model since the data was simulated to have population stratification. The covariates don't have much of an influence on the estimates since they were not included in the simulation of this dataset. Compare your results with the [results included in the Example folder](https://github.com/coffm049/Basu_herit/blob/master/Example/results.csv.
 
 ## Running Example with argfile
 ```
 python AdjHE.py --argfile Example/Arg_file.txt
 ```
-Note that this is running the same example method as the previous example, only in this case, all of the arguments are contained within the Arg_file.txt file. This helps with reproducibility and creating batch scripts.
+**Note that this is running the same example method as the previous example, only in this case, all of the arguments are contained within the Arg_file.txt file. This helps with reproducibility and creating batch scripts.**
 
 # Creating Batch scripts (Coming soon)
 
