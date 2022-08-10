@@ -67,7 +67,8 @@ def readable_file_or_none(path):
 def readable_json(path):
     """
     Throw argparse exception unless path either is "none" or points to a 
-    readable file.
+    readable file. Loading the json automatically detects if it is the right
+    format so we don't need to check that here.
     :param path: Parameter to check if it represents a valid filename
     :return: String representing a valid filename, or the string "none"
     """
