@@ -1,10 +1,10 @@
 # adjustedHE
 
-Adj-HE (Adjusted HE) is a computational efficient method to estimate [Single Nucleotide Polymorphism (SNP)](https://www.cancer.gov/publications/dictionaries/genetics-dictionary/def/single-nucleotide-polymorphism)-heritability in presence of population substructure for biobank-scale data. It is a simplification of the [Haseman- Elston regression (HE)](https://pubmed.ncbi.nlm.nih.gov/4157472/). For details of this statistical method, please refer/cite:
+Adj-HE (Adjusted HE) is a computationally efficient method to estimate [Single Nucleotide Polymorphism (SNP)](https://www.cancer.gov/publications/dictionaries/genetics-dictionary/def/single-nucleotide-polymorphism)-heritability in presence of population substructure for biobank-scale data. It is a simplification of the [Haseman- Elston regression (HE)](https://pubmed.ncbi.nlm.nih.gov/4157472/). For details of this statistical method, please refer/cite:
  
 Lin, Z., Seal, S., & Basu, S. (2020). Estimating SNP heritability in presence of population substructure in large biobank-scale data. bioRxiv. https://doi.org/10.1101/2020.08.05.236901
 
-## Adjusted-HE with closed form formula
+## Adjusted-HE with closed form
 
 ```AdjHE.py```  estimates SNP-heritability via closed form formula with single [Genetic Relatedness Matrix (GRM)](https://ibg.colorado.edu/cdrom2020/medland/tuesday1/Tuesday1.pdf) as input. It is suggested to use this version on a server with sufficient memory when sample size is less than 100k. In our paper, analyzing a 45k sample took less than 2 minutes and about 40 GB memory.
 
@@ -28,7 +28,7 @@ It is reccomended that users define a .json file containing all of the arguments
 | --loop_covs| OPTIONAL: Default= False. If True, loop over the ORDERED set of user defined covariates including all previous covariates in each iteration. **Note: The order in which the covrariates are controlled for is based upon the researchers best judjements. In other words, include the most likely **|
 
 ## Descrtiption of Inputs
-Here are illustrative examples of what files might look like. All three file types containing data for analysis have the first two columns that are the Family ID (FID) and the Individuals ID (IID). They are then followed by values specific to each file type (phenotypes for the phenotype file, covariates for the covaraiates file, and PC loadings for the PC file. **Note: Both the phenotype and covariates files should have column headers, whereas the PC file should not.** See the example [pheno](https://github.com/coffm049/Basu_herit/blob/master/Example/pheno.phen), [covariate](https://github.com/coffm049/Basu_herit/blob/master/Example/covar.txt), and [PC](https://github.com/coffm049/Basu_herit/blob/master/Example/pcas.eigenvec) file in the examples folder.
+Here are illustrative examples of what files might look like. The phenotyp, covariates, and principal componet files have the first two columns that are the Family ID (FID) and the Individuals ID (IID). They are then followed by values specific to each file type (phenotypes for the phenotype file, covariates for the covaraiates file, and PC loadings for the PC file (An exmaple explaining how to compute PC's is given in the section "Example of computing GRM and eigenvectors from .bed files" below). **Note: Both the phenotype and covariates files should have column headers, whereas the PC file should not.** See the example [pheno](https://github.com/coffm049/Basu_herit/blob/master/Example/pheno.phen), [covariate](https://github.com/coffm049/Basu_herit/blob/master/Example/covar.txt), and [PC](https://github.com/coffm049/Basu_herit/blob/master/Example/pcas.eigenvec) file in the examples folder.
 
 | Column | Column Contents |
 |------------|----------|
@@ -38,6 +38,19 @@ Here are illustrative examples of what files might look like. All three file typ
 
 **Note: All files need the first two columns to be FID and IID, respectively. Also any missing values will remove the observation from the given analysis. **
 
+### Example of computing GRM and eigenvectors from .bed files
+In your own data analysis, you may need to computed the grm and eigenvectors yourself so here are the steps to do that so that you will just be able to run the above examples afterward. Great resrources are [here](https://yanglab.westlake.edu.cn/software/gcta/#PCA) and [here](https://ibg.colorado.edu/cdrom2021/Day04-yengo/Day4_practical_Boulder2021_v4.pdf).
+```
+
+# Starting with .bed files
+# 1. Calculate the GRM (note you can filter for alleles with unacceptably low MAF's at this step if not already done in Plink)
+gcta64 --bfile Example/geno --maf 0.05 --make-grm-bin --out Example/grm
+
+# 2. Calculate eigenvectors
+gcta64  --grm Example/grm --pca 20  --out Example/pcas
+```
+
+
 
 ## Output
 A .csv with heritability estimate (h2), standard error (SE), phenotype used (Pheno), number of prinicpal components controlled for (PCs), list of covariates controled for separated by a "+" (Covariates), computational time (Time for analysis(s)), and peak memory (Memory Usage (Mb)) are also provided. See the [results](https://github.com/coffm049/Basu_herit/blob/master/Example/results.csv) included in the Example folder.
@@ -46,16 +59,19 @@ A .csv with heritability estimate (h2), standard error (SE), phenotype used (Phe
 Included in this repo is an example dataset for users to practice with and check results to the included results file.
 
 ## Data description
-Example data is included from [this paper](https://journals.plos.org/plosgenetics/article?id=10.1371/journal.pgen.1010151) with the following files
+Example data is included from [this paper](https://journals.plos.org/plosgenetics/article?id=10.1371/journal.pgen.1010151) which simulated 10,000 SNP's for 5,000 individuals with the following files
 
-    a phenotype file: pheno.phen
-    a covariate file: covar.txt
-    PLINK Binary files: geno (.bed, .bim, .fam)
-    GCTA GRM files: grm (.grm.id, .grm.bin, .grm.N.bin)
-    eigenvector files: pcas (.eigenval, .eigenvec, .log)
+| File Name | Brief description | File contents|
+|-----------|-------------------|--------------|
+| pheno.phen| phenotype file | First two columns contain FID, IID, one phenotype column (though there can be more) |
+| covar.txt | covariate file | First two columns contain FID, IID, one covariate column (though there can be more) |
+| geno (.bed, .bim, .fam) | suite of files containing genotypes in PLINK format | For more info see [PLINK](https://www.cog-genomics.org/plink/) |
+| grm (.grm.id, .grm.bin, .grm.N.bin) | suite of files GRM's.| For more info see [Making a GRM](https://yanglab.westlake.edu.cn/software/gcta/#MakingaGRM) |
+| pcas (.eigenval, .eigenvec, .log) | suite of files containing PC's. | For more info see [GCTA PCA](https://yanglab.westlake.edu.cn/software/gcta/#PCA) |
 
-There are 5000 individuals and 10,000 SNPs. The first two columns of the phenotype and the covariate files have the FID and individual ID IID of each individual. The phenotype file has a single phenotype and the covariate file has a single covariate. With the binary files, the GRM files have been computed using GCTA. It is to be craefully noted that the order of the individuals in all the files (phenotype, covariate, GRM) have to be the same.
-The example dataset includes simulated phenotypes from the linked paper with a true heritability of 0.8.
+
+It is to be carefully noted that the order of the individuals in all the files (phenotype, covariate, GRM) have to be the same.
+The example dataset includes simulated phenotypes from the linked paper with a true heritability of 0.8. Also note that the phenotypes in the .fam file are not used.
 
 
 ## Running with included example data 
@@ -96,20 +112,6 @@ cd ~/PATH/TO/DIR/
 module load python 
 python AdjHE.py --argfile Example/Arg_file.txt
 ```
-
-### Example of computing GRM and eigenvectors from .bed files
-In your own data analysis, you may need to computed the grm and eigenvectors yourself so here are the steps to do that so that you will just be able to run the above examples afterward. Great resrources are [here](https://yanglab.westlake.edu.cn/software/gcta/#PCA) and [here](https://ibg.colorado.edu/cdrom2021/Day04-yengo/Day4_practical_Boulder2021_v4.pdf).
-```
-
-# Starting with .bed files
-# 1. Calculate the GRM (note you can filter for alleles with unacceptably low MAF's at this step if not already done in Plink)
-gcta64 --bfile Example/geno --maf 0.05 --make-grm-bin --out Example/grm
-
-# 2. Calculate eigenvectors
-gcta64  --grm Example/grm --pca 20  --out Example/pcas
-```
-Then follow the examples above directly.
-
 
 
 # UNDER CONSTRUCTION
