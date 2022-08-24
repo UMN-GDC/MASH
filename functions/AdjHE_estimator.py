@@ -21,6 +21,8 @@ import numpy as np
 import pandas as pd
 import statsmodels.api as sm
 import statsmodels.formula.api as smf
+from functions.eigenvector_outters import multiple_outer
+
 
 def AdjHE_estimator(A,data, mp, npc=0, std=False):
     """
@@ -165,8 +167,9 @@ def create_formula(nnpc, covars, mp):
 
 def load_n_estimate(df, covars, nnpc, mp, ids, GRM_array_nona, std = False):
     """
-    Takes a dataframe, selects only the necessary columns (so that when we do complete cases it doesnt exclude too many samples)
-    residualizes the phenotype, then documents the heritability, standard error and some computer usage metrics.
+    Estimates heritability using the efficient AdjHE closed form solution. Takes a dataframe, selects only the
+    necessary columns (so that when we do complete cases it doesnt exclude too many samples) residualizes the 
+    phenotype, then documents the heritability, standard error and some computer usage metrics.
 
     Parameters
     ----------
@@ -231,6 +234,87 @@ def load_n_estimate(df, covars, nnpc, mp, ids, GRM_array_nona, std = False):
     return(pd.DataFrame(result))
 
 
+#%%
 
 
-   
+def load_n_estimate_no_assumpts(df, covars, nnpc, mp, ids, GRM_array_nona, std = False):
+    """
+    Estimates heritability, but solves a full OLS problem making it slower than the closed form solution. Takes 
+    a dataframe, selects only the necessary columns (so that when we do complete cases it doesnt exclude too many samples)
+    residualizes the phenotype, then documents the heritability, standard error and some computer usage metrics.
+
+    Parameters
+    ----------
+    df : pandas dataframe
+        dataframe contianing phenotype, covariates, an prinicpal components.
+    covars : list of int
+        list of integers specifying which covariates to include in the resiudalization.
+    nnpc : int
+        number of pcs to include.
+    mp : int
+        which phenotype to estiamte on.
+    ids : np array
+        np array of subject ids.
+    GRM_array_nona : np array
+        the GRM with missingness removed.
+    std : bool, optional
+        specifying whether standarization happens before heritability estimation. The default is False.
+
+    Returns
+    -------
+    pandas dataframe containing:
+        - heritability estimate
+        - standard error the estimate
+        - the phenotype
+        - the number of pcs included
+        - The covarites included 
+        - time for analysis
+        - maximum memory usage
+    """
+    # seed empty result vector
+    # result.columns = ["h2", "SE", "Pheno", "PCs", "Time for analysis(s)", "Memory Usage", "formula"]
+    # start clock for fitting 
+    start_est = timeit.default_timer()
+    # create the regression formula and columns for seelcting temporary
+    form, cols  = create_formula(nnpc, covars, mp)
+    # save a temporary dataframe
+    temp = df[cols].dropna()
+    # Save residuals of selected phenotype after regressing out PCs and covars
+    temp[mp] = smf.ols(formula = form, data = temp, missing = 'drop').fit().resid
+    # Potentially could use this to control for random effects
+    # smf.mixedlm(formula= form, data = temp, groups=temp["scan_site"])
+    # keep portion of GRM without missingess for the phenotypes or covariates
+    nonmissing = ids[ids.iid.isin(temp.iid)].index
+    GRM_nonmissing = GRM_array_nona[nonmissing,:][:,nonmissing]
+    # Get heritability and SE estimates
+    # Create a matrix of the second order terms
+    temp2 = pd.DataFrame({
+        # get dependent from outter product of residualized phenotypes
+        #"yyt" : np.outer(temp[mp], temp[mp])[np.triu_indices(len(temp[mp]))].flatten(),
+        # get GRM
+        "A" : GRM_nonmissing[np.triu_indices(len(temp[mp]))].flatten(),
+        # get I matrix
+        "I" : np.identity(len(temp[mp]))[np.triu_indices(len(temp[mp]))].flatten()})
+    
+    # Get outer product of eigen loadings
+    temp2 = pd.concat([temp2,
+                       multiple_outer(temp, nnpc)], axis = 1)
+        
+    
+    # Get time for each estimate
+    t = timeit.default_timer() - start_est
+    # Get memory for each step (in Mb) (This is a little sketchy)
+    mem = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss/1000
+    # Save the formula for the control variables and results
+    result = {"h2" : h2,
+              "SE" : se,
+              "Pheno" : mp,
+              "PCs" : nnpc,
+              "Covariates" : "+".join(covars),
+              "Time for analysis(s)" : t,
+              "Memory Usage" : mem}
+    print(list(temp.columns))
+    print(result["h2"])
+    # Return the fit results
+    return(pd.DataFrame(result))
+

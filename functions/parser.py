@@ -112,6 +112,13 @@ def get_args() :
                         default=False,
                         help='Loop over the ordered list of covariates and retain all results.')
     
+    # Flag to generate diagnostic plots w.r.t the assumptions required for the model
+    parser.add_argument('--covar_relates',
+                        action='store_true', 
+                        default=True,
+                        help='Create and save diagnostic plots w.r.t the assumptions made in this model.')
+
+    
     # Flag for using adjHE or PredLMM
     parser.add_argument('--PredLMM', 
                         action='store_true',
