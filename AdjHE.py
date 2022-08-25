@@ -12,11 +12,6 @@ Last Updated 2022-06-06
 # , loops, and store heritability estimates 
 ##############################################################
 
-#%% For troubleshooting 
-import os
-os.chdir("/home/christian/Research/Stat_gen/tools/Basu_herit")
-c_args= {}
-c_args['argfile'] = "Example/Argfile.json"
 
 #%%
 
@@ -25,10 +20,17 @@ import pandas as pd
 import timeit
 import itertools
 from functions.AdjHE_estimator import load_n_estimate
-from functions.load_data import ReadGRMBin, multirange, load_data
+from functions.load_data import ReadGRMBin, multirange, load_data, load_everything
 from functions.parser import get_args, read_flags
 from functions.traits_visualizer import covs_vs_cov_of_interest
+import os
+
 # from pathlib import Path
+
+#%% For troubleshooting 
+# os.chdir("/home/christian/Research/Stat_gen/tools/Basu_herit")
+# c_args= {}
+# c_args['argfile'] = "Example/Argfile.json"
 
 
 #%%
@@ -54,48 +56,14 @@ PredLMM = args["PredLMM"]
 RV = args["RV"]
 
 
-# %% Read GRM
-print("Reading GRM: ", prefix)
+# %% Read in all data
 
-# Time reading the GRM and other data
-start_read = timeit.default_timer()
-
-# Read in grm
-G = ReadGRMBin(prefix)
-# Get specific detials about the GRM
-ids = G['id']
-n_phen_nona = G['n_phen_nona']
-GRM_array_nona = np.zeros((n_phen_nona, n_phen_nona))
-GRM_array_nona[np.diag_indices(n_phen_nona)] = G['diag']
-
-###############################
-# Don't know what this is doing
-if(k == 0):
-    k = n_phen_nona
-temp_i = 0
-temp = 0
-# k= args.k
-
-l = list(range(k, n_phen_nona, k))
-l.append(n_phen_nona)
-for i in l:
-    cor = multirange(range(temp_i, i))
-    GRM_array_nona[cor['b'], cor['a']] = G['off'][temp:temp+len(cor['b'])]
-    GRM_array_nona.T[cor['b'], cor['a']] = G['off'][temp:temp+len(cor['b'])]
-    temp = temp + len(cor['b'])
-    del(cor)
-    temp_i = i
-################################
-
-
-df, covariates, phenotypes = load_data(pheno_file=pheno, cov_file=covar, PC_file=PC)
-end_read = timeit.default_timer()
-read_time = end_read - start_read
-
-print("It took " + str(read_time) + " (s) to read GRM, covariates, and phenotypes")
-print("Phenos + Covars:", df.columns)
-#%%
-# Save images of covariate relations
+(df, covariates, phenotypes, GRM_array_nona, ids) = load_everything(prefix = prefix,
+                                                                    pheno_file = pheno, 
+                                                                    cov_file= covar, 
+                                                                    PC_file=PC,
+                                                                    k=0)
+#%% Save images of covariate relations
 covs_vs_cov_of_interest(df, RV, covars, out)
 
 #%%
