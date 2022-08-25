@@ -11,12 +11,15 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
+import os
 
 #%% Create a small test dataframe for trouble shooting
 
-# df = pd.DataFrame({"d1" : ["a", "b", "c"] * 10,
-#                     "d2" : np.repeat(["a", "b", "c"], 10),
-#                     "c1" : np.random.rand(30,)})
+df = pd.DataFrame({"d1" : ["a", "b", "c"] * 10,
+                    "d2" : np.repeat(["a", "b", "c"], 10),
+                    "d3" : np.repeat("a", 30),
+                    "c1" : np.random.rand(30,),
+                    "c2" : np.random.rand(30,)})
 
 
 #%%
@@ -99,7 +102,7 @@ def cont_plot(df, d1, c, out) :
     fig.savefig(out + c + "_vs_" + d1)
     plt.close()
     
-    
+
     
 
 
@@ -111,3 +114,51 @@ plt.close()
 cont_plot(df, "d1", "c1", "/home/christian/")
 plt.close()
 
+#%%
+d1 = "d1"
+d2=  "d2"
+c1 = "c1"
+c2 = "c2"
+#%%
+
+def covs_vs_cov_of_interest(df, xvar, other_vars, out) :
+    """
+    Plot relationship of variables to variable of interest (xvar), boxplots for continouosu variables, and stacked bargrpahs for discrete.
+    This will be especially valuable once 
+
+    Parameters
+    ----------
+    df : pandas DataFrame
+        Dataframe containing all necessary variables with one observation per row (long format).
+    xvar : string
+        Variable of interest to compare to all other variables.
+    other_vars: list of integers
+        Specifies which covariates are of interest
+    out : string
+        specifies file path for analysis directory.
+
+    Returns
+    -------
+    None.
+
+    """
+    # Make a directory for var relations if it doesn't already exist
+    os.makedirs(out + "/Results/Var_relations", exist_ok=True)
+    
+    for col in df.columns:
+    #for col in df.columns[[np.array(other_vars) + 2]]:
+        # test if column is the random variable the user specified
+        if col == xvar : (
+                # This is the random variable
+                )
+        # test if column is FID or IID
+        elif col in ["fid", "iid"] : (
+                # These are unique identifiers
+                )
+        else :
+                # test if data has more than 30 unique values. If so consider it continuous, 
+            if len(set(df[col])) >= 30 :
+                cont_plot(df, xvar, col, out + "/Results/Var_relations/")
+            # else treat it as discrete
+            else :
+                disc_plot(df, xvar, col, out + "/Results/Var_relations/")

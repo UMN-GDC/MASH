@@ -108,7 +108,7 @@ def load_data(pheno_file, cov_file=None, PC_file= None) :
     try:
         PCs = pd.read_table(PC_file, sep= " ", header=None)
         PCs.columns = ["fid", "iid"] + ["pc_" + str(s) for s in range(1, PCs.shape[1]-1)]
-        df = pd.merge(PCs, df, on=["fid", "iid"])
+        df = pd.merge(df, PCs, on=["fid", "iid"])
     except:
         print("No PC file specified or specified file is not found or cannot be loaded.")
         #  if(PCs != None) :

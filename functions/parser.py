@@ -120,10 +120,17 @@ def get_args() :
 
     
     # Flag for using adjHE or PredLMM
+    parser.add_argument('--RV', 
+                        type=str,
+                        default=None,
+                        help='Specify the random variable of interest')
+    
+    # Flag for using adjHE or PredLMM
     parser.add_argument('--PredLMM', 
                         action='store_true',
                         default=False,
                         help='Specify whether to use PredLMM method of estimation. Default is to use AdjHE.')
+
     
     
     # return the arguments as a dictionary

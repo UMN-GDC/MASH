@@ -12,8 +12,14 @@ Last Updated 2022-06-06
 # , loops, and store heritability estimates 
 ##############################################################
 
+#%% For troubleshooting 
+import os
+os.chdir("/home/christian/Research/Stat_gen/tools/Basu_herit")
+c_args= {}
+c_args['argfile'] = "Example/Argfile.json"
 
-# import os
+#%%
+
 import numpy as np
 import pandas as pd
 import timeit
@@ -21,7 +27,9 @@ import itertools
 from functions.AdjHE_estimator import load_n_estimate
 from functions.load_data import ReadGRMBin, multirange, load_data
 from functions.parser import get_args, read_flags
+from functions.traits_visualizer import covs_vs_cov_of_interest
 # from pathlib import Path
+
 
 #%%
 # Get command line arguments
@@ -43,7 +51,7 @@ k = args["k"]
 covars = args["covars"]
 loop_covs = args["loop_covars"]
 PredLMM = args["PredLMM"]
-
+RV = args["RV"]
 
 
 # %% Read GRM
@@ -86,6 +94,11 @@ read_time = end_read - start_read
 
 print("It took " + str(read_time) + " (s) to read GRM, covariates, and phenotypes")
 print("Phenos + Covars:", df.columns)
+#%%
+# Save images of covariate relations
+covs_vs_cov_of_interest(df, RV, covars, out)
+
+#%%
 print("Calculating heritibility")
 
 # create empty list to store heritability estimates
@@ -113,4 +126,4 @@ for idx, (mp, nnpc, covs) in enumerate(itertools.product(mpheno, npc, cov_combos
 
 # %%
 print("Writing results")
-results.to_csv(out + ".csv", index=False, na_rep='NA')
+results.to_csv(out + "/Results/AdjHE.csv", index=False, na_rep='NA')
