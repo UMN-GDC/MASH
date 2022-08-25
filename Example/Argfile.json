@@ -5,7 +5,7 @@
   "pheno" : "Example/Input_files/pheno.phen",
   "out" : "Example/AdjHE_results",
   "npc"  : [5, 10],
-  "mpheno" : [1, 2, 3],
+  "mpheno" : [1, 4,5,6],
   "k" : 0,
   "std" :  false,
   "covars" : [2, 1],
@@ -13,5 +13,6 @@
   "loop_covars" : false,
   "PredLMM" :  false,
   "loop_covs" : false,
-  "RV" : "inter_miss"
+  "RV" : "inter_miss",
+  "fast" : false
 }

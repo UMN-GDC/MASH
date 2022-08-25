@@ -15,11 +15,11 @@ import os
 
 #%% Create a small test dataframe for trouble shooting
 
-df = pd.DataFrame({"d1" : ["a", "b", "c"] * 10,
-                    "d2" : np.repeat(["a", "b", "c"], 10),
-                    "d3" : np.repeat("a", 30),
-                    "c1" : np.random.rand(30,),
-                    "c2" : np.random.rand(30,)})
+# df = pd.DataFrame({"d1" : ["a", "b", "c"] * 10,
+#                     "d2" : np.repeat(["a", "b", "c"], 10),
+#                     "d3" : np.repeat("a", 30),
+#                     "c1" : np.random.rand(30,),
+#                     "c2" : np.random.rand(30,)})
 
 
 #%%
@@ -102,24 +102,6 @@ def cont_plot(df, d1, c, out) :
     fig.savefig(out + c + "_vs_" + d1)
     plt.close()
     
-
-    
-
-
-
-
-#%%
-disc_plot(df, "d1", "d2", "/home/christian/")
-plt.close()
-cont_plot(df, "d1", "c1", "/home/christian/")
-plt.close()
-
-#%%
-d1 = "d1"
-d2=  "d2"
-c1 = "c1"
-c2 = "c2"
-#%%
 
 def covs_vs_cov_of_interest(df, xvar, other_vars, out) :
     """

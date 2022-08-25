@@ -107,7 +107,7 @@ def get_args() :
                         help="Filename to be passed containing all information for PC's, covariates, phenotypes, and grm")
     
     # Flag to loop over covariates or just do it once with all covariates
-    parser.add_argument('--loop_covars',
+    parser.add_argument('--loop_covs',
                         action='store_true', 
                         default=False,
                         help='Loop over the ordered list of covariates and retain all results.')
@@ -125,11 +125,19 @@ def get_args() :
                         default=None,
                         help='Specify the random variable of interest')
     
-    # Flag for using adjHE or PredLMM
+    # Flag for using PredLMM
     parser.add_argument('--PredLMM', 
                         action='store_true',
                         default=False,
-                        help='Specify whether to use PredLMM method of estimation. Default is to use AdjHE.')
+                        help='Specify whether to use PredLMM method of estimation. Default is not to use PredLMM.')
+    
+    # Flag for using AdjHE simplification
+    parser.add_argument('--fast', 
+                        action='store_true',
+                        default=False,
+                        help='Specify whether to use AdjHE estimation which is faster. Default is to use AdjHE method.')
+
+
 
     
     

@@ -131,7 +131,7 @@ def AdjHE_estimator(A,data, mp, npc=0, std=False):
             denominator = trA2 - 2*trA + n - np.sum(b**2)
         h2 = sigg/(sigg+sige)
         var_ge = 2/denominator
-    return h2,np.sqrt(var_ge)
+    return h2,np.sqrt(abs(var_ge))
 
 def create_formula(nnpc, covars, mp):
     """
@@ -165,7 +165,7 @@ def create_formula(nnpc, covars, mp):
  
 
 
-def load_n_estimate(df, covars, nnpc, mp, ids, GRM_array_nona, std = False):
+def load_n_AdjHE(df, covars, nnpc, mp, ids, GRM_array_nona, std = False):
     """
     Estimates heritability using the efficient AdjHE closed form solution. Takes a dataframe, selects only the
     necessary columns (so that when we do complete cases it doesnt exclude too many samples) residualizes the 
@@ -237,7 +237,7 @@ def load_n_estimate(df, covars, nnpc, mp, ids, GRM_array_nona, std = False):
 #%%
 
 
-def load_n_estimate_no_assumpts(df, covars, nnpc, mp, ids, GRM_array_nona, std = False):
+def load_n_MOM(df, covars, nnpc, mp, ids, GRM_array_nona, std = False):
     """
     Estimates heritability, but solves a full OLS problem making it slower than the closed form solution. Takes 
     a dataframe, selects only the necessary columns (so that when we do complete cases it doesnt exclude too many samples)
@@ -295,12 +295,18 @@ def load_n_estimate_no_assumpts(df, covars, nnpc, mp, ids, GRM_array_nona, std =
         "A" : GRM_nonmissing[np.triu_indices(len(temp[mp]))].flatten(),
         # get I matrix
         "I" : np.identity(len(temp[mp]))[np.triu_indices(len(temp[mp]))].flatten()})
-    
     # Get outer product of eigen loadings
     temp2 = pd.concat([temp2,
                        multiple_outer(temp, nnpc)], axis = 1)
-        
-    
+    temp2[mp] = np.outer(temp[mp], temp[mp])[np.triu_indices(len(temp[mp]))].flatten()
+    # Fit the model
+    model = sm.OLS(endog = temp2[mp], exog = temp2.drop(mp, axis = 1)).fit()
+    sg = model.params["A"]
+    stot = model.params.sum()
+    h2 = sg / stot
+    se = (sg**2/ stot**2) * ((model.bse["A"]**2 / sg**2) + (model.bse ** 2 / stot**2))
+    # botom_var = (model.bse**2).sum()
+
     # Get time for each estimate
     t = timeit.default_timer() - start_est
     # Get memory for each step (in Mb) (This is a little sketchy)
@@ -318,3 +324,55 @@ def load_n_estimate_no_assumpts(df, covars, nnpc, mp, ids, GRM_array_nona, std =
     # Return the fit results
     return(pd.DataFrame(result))
 
+
+
+#%%
+
+def load_n_estimate(df, covars, nnpc, mp, ids, GRM_array_nona, std = False, fast=True):
+    """
+    Estimates heritability, but solves a full OLS problem making it slower than the closed form solution. Takes 
+    a dataframe, selects only the necessary columns (so that when we do complete cases it doesnt exclude too many samples)
+    residualizes the phenotype, then documents the heritability, standard error and some computer usage metrics.
+
+    Parameters
+    ----------
+    df : pandas dataframe
+        dataframe contianing phenotype, covariates, an prinicpal components.
+    covars : list of int
+        list of integers specifying which covariates to include in the resiudalization.
+    nnpc : int
+        number of pcs to include.
+    mp : int
+        which phenotype to estiamte on.
+    ids : np array
+        np array of subject ids.
+    GRM_array_nona : np array
+        the GRM with missingness removed.
+    std : bool, optional
+        specifying whether standarization happens before heritability estimation. The default is False.
+
+    Returns
+    -------
+    pandas dataframe containing:
+        - heritability estimate
+        - standard error the estimate
+        - the phenotype
+        - the number of pcs included
+        - The covarites included 
+        - time for analysis
+        - maximum memory usage
+    """
+    
+    # Select method of estimation
+    if fast == True: 
+        print("AdjHE")
+        result = load_n_AdjHE(df, covars, nnpc, mp, ids, GRM_array_nona, std = False)
+
+    else: 
+        print("OLS")
+        result = load_n_MOM(df, covars, nnpc, mp, ids, GRM_array_nona, std = False)
+    
+    return(pd.DataFrame(result))
+
+#%%
+# d = load_n_all_estimate(df, covars, nnpc, "first3000", ids, GRM_array_nona, std = False, fast=False)

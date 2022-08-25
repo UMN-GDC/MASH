@@ -188,6 +188,3 @@ def load_everything(prefix, pheno_file, cov_file=None, PC_file=None, k=0):
     print("Phenos + Covars:", df.columns)
     
     return(df, covariates, phenotypes, GRM_array_nona, ids)
-
-
-
