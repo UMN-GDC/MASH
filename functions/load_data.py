@@ -72,33 +72,6 @@ def multirange(counts):
 
 
 
-# Read data function that can load csv pheno and txt file types
-# def read_datas(file_path, IDs) :
-#     if(file_path.split(".")[-1] == "csv"):
-#         # This is expected ot have column names
-#         dat = pd.read_csv(file_path)
-#         # dat.columns = ["FID", "IID"] + ["Covar_" + str(s) for s in range(1, dat.shape[1]-1)]
-#     elif(file_path.split(".")[-1] == "txt"):
-#         dat = pd.read_table(file_path, sep = " ")
-#         # dat.columns = ["FID", "IID"] + ["Covar_" + str(s) for s in range(1, dat.shape[1] -1)]
-#     elif(file_path.split(".")[-1] == "phen"):
-#         dat = pd.read_table(file_path, sep = " ")
-#         # dat.columns = ["FID", "IID"] + ["Pheno_" + str(s) for s in range(1, dat.shape[1]-1)]
-#     elif(file_path.split(".")[-1] == "eigenvec"):
-#         dat = pd.read_table(file_path, sep = " " , header=None)
-#         dat.columns = ["FID", "IID"] + ["PC_" + str(s) for s in range(1, dat.shape[1] -1)]
-#     elif(file_path.split(".")[-1] == "files"):
-#         dat = load_extract_niis(file_path, IDs)
-#         dat.columns = ["FID", "IID"] + ["Pheno_" + str(s) for s in range(1, dat.shape[1]-1 )]
-#         # remove the unintentional columns that sometimes happen with phenotype and csv filetypes
-#         dat = dat[dat.columns.drop(list(dat.filter(regex='Unnamed')))]
-#         # dat = dat.rename(columns={0 : "FID", 1 : "IID"})
-#     return(dat)
-
-# def read_datas(file_path, IDs) :
-#     pd.read_csv(file_path)
-
-
 # Read covariates, PC's, and phenotype all at once
 def load_data(pheno_file, cov_file=None, PC_file= None) :
     # load phenotypes
