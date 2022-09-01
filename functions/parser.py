@@ -96,9 +96,6 @@ def get_args() :
                         default=1,
                         help='Specify which covariates to control for from the covariate file. Should be a list of the column numbers not including the FID and IID columns')
     
-    # Set defaults
-    parser.set_defaults(PC="None", npc=None, covar="None", mpheno=1, k=0, prefix = "None", pheno = "None", out = "None")
-
     # Or accept a file with all arguments
     parser.add_argument("--argfile", 
                         default=None,
@@ -136,6 +133,11 @@ def get_args() :
                         action='store_true',
                         default=False,
                         help='Specify whether to use AdjHE estimation which is faster. Default is to use AdjHE method.')
+
+    
+    # Set defaults
+    parser.set_defaults(PC="None", npc=None, covar="None", mpheno=1, k=0, prefix = "None", pheno = "None", out = "None")
+
 
 
 
