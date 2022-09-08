@@ -35,10 +35,11 @@ from functions.traits_visualizer import covs_vs_cov_of_interest
 #%% Get command line arguments
 # Get CL arguments and convert them to usable Python objects in a dictionary
 args = read_flags(get_args())
+print("These are the list of arguments that were input:")
 print(args)
 
 
-# %% Read in all data
+#%% Read in all data
 (df, covariates, phenotypes, GRM_array_nona, ids) = load_everything(prefix = args["prefix"],
                                                                     pheno_file = args["pheno"], 
                                                                     cov_file= args["covar"], 
@@ -56,7 +57,9 @@ results = pd.DataFrame()
 covars = [covar-1 for covar in args["covars"]]
 #%%
 # Create the sets of covarates over which we can loop
+# This will return a list of lists of indices for the sets of covaraites to use
 cov_combos = [covars[0:idx+1] for idx, c in enumerate(covars)]
+# This will create a list of lists of the actually covariate names to control for
 cov_combos = [list(covariates[cov_combo]) for cov_combo in cov_combos]
 
 # If we don't want to loop, just grab the last item of the generated list assuming the user wants all of those variables included 

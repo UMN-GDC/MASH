@@ -17,7 +17,6 @@ import numpy as np
 import statsmodels.api as sm
 import timeit
 import resource
-import numpy as np
 import pandas as pd
 import statsmodels.api as sm
 import statsmodels.formula.api as smf
@@ -43,10 +42,9 @@ def AdjHE_estimator(A,data, mp, npc=0, std=False):
 
     Returns
     -------
-    scalar, scalar
+    tumple(scalar, scalar)
         h2 - heritability estimate.
         standard error estimate
-
     """
     # remove identifiers from y for linear algebra 
     y = data[mp]
@@ -59,8 +57,8 @@ def AdjHE_estimator(A,data, mp, npc=0, std=False):
         std_y = (y-np.mean(y))/np.std(y)
         
         
-        trA = np.sum(np.diag(A))
-        trA2 = np.sum(np.multiply(A,A))
+        trA = np.trace(A)
+        trA2 = np.trace(A**2)
         n = A.shape[1]
         yay = np.dot(std_y.T, np.dot(A,std_y)).flatten()
         yty = np.dot(std_y.T, std_y).flatten()

@@ -70,14 +70,13 @@ def get_args() :
                         nargs="+",
                         type=int,
                         metavar= "#_PCs", 
-                        help='Specify the number of PCs to be adjusted')
+                        help='Specify the number of PCs to be adjusted for. Can be a list for model comparison')
     
     parser.add_argument('--mpheno',
                         nargs="+",
                         type=int,
-                        default=1,
                         metavar= "DESIRED_PHEN_INDEX", 
-                        help='Specify which phenotype to use from phenotype file (Can be a list)')
+                        help='Specify which phenotype to use from phenotype file (Can be a list). The index starts after the FID and IID columns')
     
     parser.add_argument('--k',
                         type=int,
@@ -86,19 +85,16 @@ def get_args() :
     
     parser.add_argument('--std',
                         action='store_true',
-                        default=False,
                         help='Run SAdj-HE (i.e., with standardization)')
     
     parser.add_argument('--covars',
                         nargs="+",
                         type=int,
                         metavar= "ORDERED_INDICES_OF_USEFUL_COVARS", 
-                        default=1,
                         help='Specify which covariates to control for from the covariate file. Should be a list of the column numbers not including the FID and IID columns')
     
     # Or accept a file with all arguments
     parser.add_argument("--argfile", 
-                        default=None,
                         # type=readable_json,
                         metavar= "ARGFILE_FILE_PATH", 
                         help="Filename to be passed containing all information for PC's, covariates, phenotypes, and grm")
@@ -106,41 +102,37 @@ def get_args() :
     # Flag to loop over covariates or just do it once with all covariates
     parser.add_argument('--loop_covs',
                         action='store_true', 
-                        default=False,
                         help='Loop over the ordered list of covariates and retain all results.')
     
     # Flag to generate diagnostic plots w.r.t the assumptions required for the model
     parser.add_argument('--covar_relates',
                         action='store_true', 
-                        default=True,
                         help='Create and save diagnostic plots w.r.t the assumptions made in this model.')
 
     
     # Flag for using adjHE or PredLMM
     parser.add_argument('--RV', 
                         type=str,
-                        default=None,
                         help='Specify the random variable of interest')
     
     # Flag for using PredLMM
     parser.add_argument('--PredLMM', 
                         action='store_true',
-                        default=False,
                         help='Specify whether to use PredLMM method of estimation. Default is not to use PredLMM.')
     
     # Flag for using AdjHE simplification
     parser.add_argument('--fast', 
                         action='store_true',
-                        default=False,
                         help='Specify whether to use AdjHE estimation which is faster. Default is to use AdjHE method.')
 
     
     # Set defaults
-    parser.set_defaults(PC="None", npc=None, covar="None", mpheno=1, k=0, prefix = "None", pheno = "None", out = "None")
-
-
-
-
+    parser.set_defaults(PC="None", fast = False, npc=None,
+                        covar="None", mpheno=1, k=0,
+                        prefix = "None", pheno = "None", out = "None",
+                        PredLMM = False, RV = None, covar_relates = True,
+                        loop_covs=False, argfile = None, covars =1,
+                        std=  False)
     
     
     # return the arguments as a dictionary
@@ -148,6 +140,9 @@ def get_args() :
     # ForTroubleshooting  uncomment the next line
     # args['argfile'] = '/home/christian/Research/Stat_gen/tools/Basu_herit/Example/Arg_file.txt'
     return(args)
+
+
+
 
 def read_flags(raw_args):
     """

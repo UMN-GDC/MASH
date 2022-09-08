@@ -9,6 +9,9 @@ from functions.loading_extracting_niis import load_extract_niis
 
 
 
+# The following code was adapted from the GCTA creators website for loading binary GRM's
+# https://yanglab.westlake.edu.cn/software/gcta/#MakingaGRM
+
 def sum_n_vec(n):
     s = [int(0)] * n
     for i in range(n):
@@ -55,6 +58,7 @@ def ReadGRMBin(prefix, AllN = False):
     return(val)
 
 
+# This allows us to read in multiple partial GRM's into one full GRM
 def multirange(counts):
     counts = np.asarray(counts)
     # Remove the following line if counts is always strictly positive.
