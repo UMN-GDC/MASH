@@ -14,5 +14,5 @@
   "PredLMM" :  false,
   "loop_covs" : false,
   "RV" : "inter_miss",
-  "fast" : false
+  "fast" : true
 }

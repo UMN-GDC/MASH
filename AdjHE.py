@@ -13,8 +13,8 @@ Last Updated 2022-06-06
 ##############################################################
 
 #%% For troubleshootingg
-import os
-os.chdir("/home/christian/Research/Stat_gen/tools/Basu_herit")
+#import os
+#os.chdir("/home/christian/Research/Stat_gen/tools/Basu_herit")
 
 #%%
 import pandas as pd
@@ -51,24 +51,34 @@ covs_vs_cov_of_interest(df, args["RV"], args["covars"], args["out"])
 #%%
 print("Calculating heritibility")
 
+# Grab covariate names if covariates specified
+if (args["covars"] != None) and (len(covariates) > 0) :
+    covars = [covar-1 for covar in args["covars"]]
+    # Create the sets of covarates over which we can loop
+    # This will return a list of lists of indices for the sets of covaraites to use
+    cov_combos = [covars[0:idx+1] for idx, c in enumerate(covars)]
+    # This will create a list of lists of the actually covariate names to control for
+    cov_combos = [list(covariates[cov_combo]) for cov_combo in cov_combos]
+    # If we don't want to loop, just grab the last item of the generated list assuming the user wants all of those variables included 
+    if (args["loop_covs"] != True) : 
+        cov_combos = [cov_combos[-1]]
+
+else :
+    covars = None
+    
+#%% get list of phenotype names to regress
+if (args["pheno"] != None) :
+    # if separate phenotype file is specified, grab from that
+    mpheno = [phenotypes[i-1] for i in args["mpheno"]] 
+else :
+    # if separate pheno file is not specified grab from the covariates file
+    mpheno = [covariates[i-1] for i in args["mpheno"]]
+
+#%%
+
 # create empty list to store heritability estimates
 results = pd.DataFrame()
 
-covars = [covar-1 for covar in args["covars"]]
-#%%
-# Create the sets of covarates over which we can loop
-# This will return a list of lists of indices for the sets of covaraites to use
-cov_combos = [covars[0:idx+1] for idx, c in enumerate(covars)]
-# This will create a list of lists of the actually covariate names to control for
-cov_combos = [list(covariates[cov_combo]) for cov_combo in cov_combos]
-
-# If we don't want to loop, just grab the last item of the generated list assuming the user wants all of those variables included 
-if (args["loop_covs"] != True) : 
-    cov_combos = [cov_combos[-1]]
-
-# get list of phenotype names to regress
-mpheno = [phenotypes[i-1] for i in args["mpheno"]]
-#%%
 # loop over all combinations of pcs and phenotypes
 for idx, (mp, nnpc, covs) in enumerate(itertools.product(mpheno, args["npc"], cov_combos)):
     r = load_n_estimate(
