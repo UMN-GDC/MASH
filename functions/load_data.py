@@ -1,6 +1,5 @@
 import pandas as pd
 import numpy as np
-import janitor
 from struct import unpack, calcsize
 import timeit
 from functions.loading_extracting_niis import load_extract_niis
@@ -90,7 +89,8 @@ def load_data(pheno_file=None, cov_file=None, PC_file= None) :
         
     else:        
         try:
-            df = pd.read_table(pheno_file, sep = " ", header = 0).clean_names()
+            df = pd.read_table(pheno_file, sep = " ", header = 0)
+            df.columns = [col_name.lower() for col_name in df.columns]
             phenotypes = df.columns[2:]
             
         except FileNotFoundError:
@@ -105,7 +105,8 @@ def load_data(pheno_file=None, cov_file=None, PC_file= None) :
         
     else: 
         try:
-            cov_selected = pd.read_table(cov_file, sep = " ", header=0).clean_names()
+            cov_selected = pd.read_table(cov_file, sep = " ", header=0)
+            cov_selected.columns = [col_name.lower() for col_name in cov_selected.columns]
             covariates = cov_selected.columns[2:]
             try:
                 df = pd.merge(cov_selected, df, on = ["fid", "iid"])
