@@ -80,7 +80,7 @@ def AdjHE_estimator(A,data, mp, npc=0, std=False):
         pc = PCs
         s = np.diag(np.dot(pc.T,np.dot(A,pc)))
         b = s - 1
-        c = np.dot(std_y.T, pc)**2 - 1
+        c = np.dot(y.T, pc)**2 - 1
         nominator = n - trA + yay - yty - np.sum(b*c)
         
         # remove identifiers for linear algebra
