@@ -86,6 +86,7 @@ def load_data(pheno_file=None, cov_file=None, PC_file= None) :
     # load phenotypes
     if pheno_file == None:
         print("No separate phenotype file specified.")
+        phenotypes =[]
         
     else:        
         try:
@@ -99,14 +100,17 @@ def load_data(pheno_file=None, cov_file=None, PC_file= None) :
         
     # read in covariates if nonnull
     if cov_file == None:
-        print("No PC file specified.")
+        print("No covariates file specified.")
+        covariates = []
         
     else: 
         try:
             cov_selected = pd.read_table(cov_file, sep = " ", header=0).clean_names()
-            df = pd.merge(cov_selected, df, on = ["fid", "iid"])
             covariates = cov_selected.columns[2:]
-            
+            try:
+                df = pd.merge(cov_selected, df, on = ["fid", "iid"])
+            except :
+                df = cov_selected
         except FileNotFoundError:
             print("Specified covariate file is not found or cannot be loaded")
             # create empty list of covariates to return
