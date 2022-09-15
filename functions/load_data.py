@@ -82,20 +82,25 @@ def load_data(pheno_file, cov_file=None, PC_file= None) :
     df = pd.read_table(pheno_file, sep = " ", header = 0).clean_names()
     phenotypes = df.columns
     # read in covariates if nonnull
-    try:
-        cov_selected = pd.read_table(cov_file, sep = " ", header=0).clean_names()
-        df = pd.merge(cov_selected, df, on = ["fid", "iid"])
-    except:
-        print("No covariates file specified or specified file is not found or cannot be loaded.")
-        # onlyt load pcs if non null
-    try:
-        PCs = pd.read_table(PC_file, sep= " ", header=None)
-        PCs.columns = ["fid", "iid"] + ["pc_" + str(s) for s in range(1, PCs.shape[1]-1)]
-        df = pd.merge(df, PCs, on=["fid", "iid"])
-    except:
-        print("No PC file specified or specified file is not found or cannot be loaded.")
-        #  if(PCs != None) :
-            #    print("You  specified a PC file, without specifying how many PC's, here we assume keeping 0 PC's")
+    if cov_file !=None:
+        try:
+            cov_selected = pd.read_table(cov_file, sep = " ", header=0).clean_names()
+            df = pd.merge(cov_selected, df, on = ["fid", "iid"])
+        except:
+            print("Specified covariate file is not or cannot be loaded")
+    else: 
+        print("No PC file specified.")
+
+    if PC_file !=None:
+        try:
+            PCs = pd.read_table(PC_file, sep= " ", header=None)
+            PCs.columns = ["fid", "iid"] + ["pc_" + str(s) for s in range(1, PCs.shape[1]-1)]
+            df = pd.merge(df, PCs, on=["fid", "iid"])
+        except:
+            print("Specified PC file is not found or cannot be loaded")
+    else: 
+        print("No PC file specified.")
+    
     # return the full dataframe as well as names for covariates and phenotypes
     return(df, cov_selected.columns[2:], phenotypes[2:] )
 
