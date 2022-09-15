@@ -80,10 +80,17 @@ else :
 results = pd.DataFrame()
 
 # loop over all combinations of pcs and phenotypes
-for idx, (mp, nnpc, covs) in enumerate(itertools.product(mpheno, args["npc"], cov_combos)):
-    r = load_n_estimate(
-        df=df, covars=covs, nnpc=nnpc, mp=mp, ids=ids, GRM_array_nona=GRM_array_nona, std= False, fast = args["fast"])
-    results = pd.concat([results, r])
+if covars == None:
+    for idx, (mp, nnpc) in enumerate(itertools.product(mpheno, args["npc"])):
+        r = load_n_estimate(
+            df=df, covars=[], nnpc=nnpc, mp=mp, ids=ids, GRM_array_nona=GRM_array_nona, std= False, fast = args["fast"])
+        results = pd.concat([results, r])
+else:
+    
+    for idx, (mp, nnpc, covs) in enumerate(itertools.product(mpheno, args["npc"], cov_combos)):
+        r = load_n_estimate(
+            df=df, covars=covs, nnpc=nnpc, mp=mp, ids=ids, GRM_array_nona=GRM_array_nona, std= False, fast = args["fast"])
+        results = pd.concat([results, r])
     
 
 # %%
