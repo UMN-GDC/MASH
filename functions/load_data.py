@@ -16,7 +16,7 @@ def sum_n_vec(n):
     s = [int(0)] * n
     for i in range(n):
         s[i] = int(((i + 1) * (i + 2) / 2) - 1)
-    return(s)
+    return s
 
 
 def ReadGRMBin(prefix, AllN = False):
@@ -55,7 +55,7 @@ def ReadGRMBin(prefix, AllN = False):
     n_phen_nona = grm[i].size
     GRM_array_nona = np.zeros((n_phen_nona, n_phen_nona))
     val = {'diag': grm[i], 'off': np.delete(grm, i),'id': ids,'N':N, "n_phen_nona" : n_phen_nona}
-    return(val)
+    return val
 
 
 # This allows us to read in multiple partial GRM's into one full GRM
@@ -71,16 +71,21 @@ def multirange(counts):
     # Reuse the incr array for the final result.
     incr.cumsum(out=incr)
     val = {'a':incr,'b':np.repeat(counts,counts)}
-    return(val)
+    return val
 
 
 
 
 # Read covariates, PC's, and phenotype all at once
-def load_data(pheno_file, cov_file=None, PC_file= None) :
+def load_data(pheno_file=None, cov_file=None, PC_file= None) :
     # load phenotypes
     df = pd.read_table(pheno_file, sep = " ", header = 0).clean_names()
     phenotypes = df.columns
+    
+    # Need to specify at least one of pheno or cov files
+    if (pheno_file == None) and (cov_file == None):
+        raise Exception("Sorry, you need to specify at least one of either the phenotype file or covariate file") 
+    
     # read in covariates if nonnull
     if cov_file !=None:
         try:
@@ -102,7 +107,7 @@ def load_data(pheno_file, cov_file=None, PC_file= None) :
         print("No PC file specified.")
     
     # return the full dataframe as well as names for covariates and phenotypes
-    return(df, cov_selected.columns[2:], phenotypes[2:] )
+    return df, cov_selected.columns[2:], phenotypes[2:]  
 
 
 # %% Read GRM
@@ -169,4 +174,4 @@ def load_everything(prefix, pheno_file, cov_file=None, PC_file=None, k=0):
     print("It took " + str(read_time) + " (s) to read GRM, covariates, and phenotypes")
     print("Phenos + Covars:", df.columns)
     
-    return(df, covariates, phenotypes, GRM_array_nona, ids)
+    return df, covariates, phenotypes, GRM_array_nona, ids 
