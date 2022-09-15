@@ -78,36 +78,56 @@ def multirange(counts):
 
 # Read covariates, PC's, and phenotype all at once
 def load_data(pheno_file=None, cov_file=None, PC_file= None) :
-    # load phenotypes
-    df = pd.read_table(pheno_file, sep = " ", header = 0).clean_names()
-    phenotypes = df.columns
     
     # Need to specify at least one of pheno or cov files
     if (pheno_file == None) and (cov_file == None):
         raise Exception("Sorry, you need to specify at least one of either the phenotype file or covariate file") 
-    
+
+    # load phenotypes
+    if pheno_file == None:
+        print("No separate phenotype file specified.")
+        
+    else:        
+        try:
+            df = pd.read_table(pheno_file, sep = " ", header = 0).clean_names()
+            phenotypes = df.columns[2:]
+            
+        except FileNotFoundError:
+            print("Specified phenotype file is not found or cannot be loaded")
+            # create empty list of phenotypes 
+            phenotypes = []
+        
     # read in covariates if nonnull
-    if cov_file !=None:
+    if cov_file == None:
+        print("No PC file specified.")
+        
+    else: 
         try:
             cov_selected = pd.read_table(cov_file, sep = " ", header=0).clean_names()
             df = pd.merge(cov_selected, df, on = ["fid", "iid"])
-        except:
-            print("Specified covariate file is not or cannot be loaded")
-    else: 
+            covariates = cov_selected.columns[2:]
+            
+        except FileNotFoundError:
+            print("Specified covariate file is not found or cannot be loaded")
+            # create empty list of covariates to return
+            covariates= []
+            
+    # read in pcs if nonnull
+    if PC_file == None:
         print("No PC file specified.")
 
-    if PC_file !=None:
+    else: 
         try:
             PCs = pd.read_table(PC_file, sep= " ", header=None)
             PCs.columns = ["fid", "iid"] + ["pc_" + str(s) for s in range(1, PCs.shape[1]-1)]
             df = pd.merge(df, PCs, on=["fid", "iid"])
-        except:
+            
+        except FileNotFoundError:
             print("Specified PC file is not found or cannot be loaded")
-    else: 
-        print("No PC file specified.")
+            
     
     # return the full dataframe as well as names for covariates and phenotypes
-    return df, cov_selected.columns[2:], phenotypes[2:]  
+    return df, covariates, phenotypes  
 
 
 # %% Read GRM
