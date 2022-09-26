@@ -100,12 +100,12 @@ def AdjHE_estimator(A,data, mp, npc=0, std=False):
         sige = sige.flatten()-tn*a11 # add 1's
         denominator = trA2 - 2*trA + n - np.sum(b**2)
         
-        if std :
-            h2= nominator/denominator
-            h2 = h2[0]
-            
-        else:
-            h2 = sigg/(sigg+sige)
+    if std :
+        h2= nominator/denominator
+        h2 = h2[0]
+        
+    else:
+        h2 = sigg/(sigg+sige)
             
         var_ge = 2/denominator 
         
@@ -137,7 +137,20 @@ def create_formula(nnpc, covars, mp):
     # Get the full range of pc columns
     pc_cols = ["pc_" + str(p) for p in range(1, nnpc +1)]
     # Create formula string
-    form = mp + "~ " + " + ".join(covars) + " + " +  " + ".join(pc_cols)
+    covar_part = " + ".join(covars)
+    pc_part = " + ".join(pc_cols)
+    
+    if (len(covars) == 0) and (len(pc_cols) != 0) :
+        RHS = pc_part
+    elif (len(covars) != 0) and (len(pc_cols)== 0) :
+        RHS = covar_part
+    elif (len(covars) == 0) and (len(pc_cols)== 0) :
+        RHS = "1"
+    else :
+        RHS = " + ".join([covar_part, pc_part])
+
+
+    form = mp + "~ " +  RHS
     # columns
     cols = id_cols + [mp] + covars + pc_cols
     # return the formula and columns

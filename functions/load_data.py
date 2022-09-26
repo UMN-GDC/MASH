@@ -56,6 +56,32 @@ def ReadGRMBin(prefix, AllN = False):
     val = {'diag': grm[i], 'off': np.delete(grm, i),'id': ids,'N':N, "n_phen_nona" : n_phen_nona}
     return val
 
+def build_grm(G) :
+    # Get specific detials about the GRM
+    ids = G['id']
+    k = G['n_phen_nona']
+    GRM = np.zeros((k , k ))
+    GRM[np.diag_indices(k)] = G['diag']
+    ############################### reconstruct GRM
+    # 
+    temp_i = 0
+    temp = 0
+    # k= args.k
+
+    l = list(range(k, k, k))
+    l.append(k)
+    for i in l:
+        cor = multirange(range(temp_i, i))
+        GRM[cor['b'], cor['a']] = G['off'][temp:temp+len(cor['b'])]
+        GRM.T[cor['b'], cor['a']] = G['off'][temp:temp+len(cor['b'])]
+        temp = temp + len(cor['b'])
+        del(cor)
+        temp_i = i
+    ################################
+    return GRM, ids
+
+
+
 
 # This allows us to read in multiple partial GRM's into one full GRM
 def multirange(counts):

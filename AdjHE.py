@@ -12,24 +12,22 @@ Last Updated 2022-06-06
 # , loops, and store heritability estimates 
 ##############################################################
 
-#%% For troubleshootingg
-#import os
-#os.chdir("/home/christian/Research/Stat_gen/tools/Basu_herit")
-
-#%%
+import os
+os.chdir("/home/christian/Research/Stat_gen/tools/Basu_herit")
 import pandas as pd
 import itertools
 from functions.AdjHE_estimator import load_n_estimate
 from functions.load_data import load_everything
 from functions.parser import get_args, read_flags
 from functions.traits_visualizer import covs_vs_cov_of_interest
-# from pathlib import Path
 
-#%% For troubleshooting 
-# c_args= {}
+
+#%% For troubleshootingg
+
+c_args= {}
 # c_args['argfile'] = "Example/Argfile.json"
-# args = read_flags(c_args)
-
+c_args['argfile'] = "simulations/sims_Argfile.json"
+args = read_flags(c_args)
 
 
 #%% Get command line arguments
@@ -46,7 +44,7 @@ print(args)
                                                                     PC_file= args["PC"],
                                                                     k= args["k"])
 #%% Save images of covariate relations
-covs_vs_cov_of_interest(df, args["RV"], args["covars"], args["out"])
+# covs_vs_cov_of_interest(df, args["RV"], args["covars"], args["out"])
 
 #%%
 print("Calculating heritibility")
@@ -75,19 +73,28 @@ else :
     mpheno = [covariates[i-1] for i in args["mpheno"]]
 
 #%%
-
 # create empty list to store heritability estimates
 results = pd.DataFrame()
 
 # loop over all combinations of pcs and phenotypes
-if covars == None:
-    for idx, (mp, nnpc) in enumerate(itertools.product(mpheno, args["npc"])):
+if (covars == None) and (args["npc"] != None):
+    for mp, nnpc in itertools.product(mpheno, args["npc"]):
         r = load_n_estimate(
             df=df, covars=[], nnpc=nnpc, mp=mp, ids=ids, GRM_array_nona=GRM_array_nona, std= False, fast = args["fast"])
         results = pd.concat([results, r])
+elif (covars == None) and (args["npc"] == None):
+    for mp in mpheno:
+        r = load_n_estimate(
+            df=df, covars=[], nnpc=0, mp=mp, ids=ids, GRM_array_nona=GRM_array_nona, std= False, fast = args["fast"])
+        results = pd.concat([results, r])
+elif (covars != None) and (args["npc"] == None):
+    for mp, covs in itertools.product(mpheno, cov_combos):
+        r = load_n_estimate(
+            df=df, covars= covs, nnpc=0, mp=mp, ids=ids, GRM_array_nona=GRM_array_nona, std= False, fast = args["fast"])
+        results = pd.concat([results, r])
 else:
     
-    for idx, (mp, nnpc, covs) in enumerate(itertools.product(mpheno, args["npc"], cov_combos)):
+    for mp, nnpc, covs in itertools.product(mpheno, args["npc"], cov_combos):
         r = load_n_estimate(
             df=df, covars=covs, nnpc=nnpc, mp=mp, ids=ids, GRM_array_nona=GRM_array_nona, std= False, fast = args["fast"])
         results = pd.concat([results, r])
