@@ -1,0 +1,18 @@
+{
+  "PC" : "simulations/Data/EUR_no_rels.eigenvec",
+  "covar": "simulations/Data/Covars.tsv" ,
+  "prefix" : "simulations/Data/EUR_no_rels",
+  "pheno" : "simulations/Data/EUR_no_rels_sims.tsv",
+  "out" : "simulations/AdjHE_results",
+  "npc"  : [0, 1, 5] ,
+  "mpheno" : [1, 2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18],
+  "k" : 0,
+  "std" :  false,
+  "covars" : null,
+  "argfile" : null,
+  "loop_covars" : false,
+  "PredLMM" :  false,
+  "loop_covs" : false,
+  "RV" : null,
+  "fast" : true
+}
