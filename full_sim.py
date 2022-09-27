@@ -27,6 +27,9 @@ from functions.load_data import ReadGRMBin, build_grm
 from functions.eigenvector_outters import multiple_outer
 from functions.simulation_helpers.simulate_GRM_phenos import sim_GRM, simulate_phenotypes
 
+# NUMBER OF REPS FOR EACH CONFIGURATION
+reps = 5
+
 #%% create the domain of variance contributions over which to simulate
 sg = np.array(range(5)) /5
 ss = np.array(range(5))/5
@@ -56,8 +59,10 @@ df = df.merge(df2, left_on = ["fid", "iid"], right_on = ["FID", "IID"])[["FID","
 #%% Simulate model Y = 0 + e,   e ~ N(0, sgA + ssS + se I)
 # with varying variances attached to each covariance structure
 
-df = simulate_phenotypes(GRM, df, sigmas, "full_ABCD")
-df = simulate_phenotypes(A, df, sigmas, "full_sim")
+df = simulate_phenotypes(GRM, df, sigmas, "full_ABCD", reps = 5)
+df2 = simulate_phenotypes(A, df, sigmas, "full_sim", reps = 5 )
 
 
+df.to_csv("Simulated_ABCD_phenotypes.csv", index= False)
+df2.to_csv("Simulated_non_sparse_phenotypes.csv", index= False) 
     

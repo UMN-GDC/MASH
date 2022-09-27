@@ -26,7 +26,7 @@ def sim_GRM(n, GRM_save) :
         np.save(GRM_save + ".npy", A)
 
 
-def simulate_phenotypes(GRM, df, sigmas, sim_prefix) :
+def simulate_phenotypes(GRM, df, sigmas, sim_prefix, reps = 1) :
     num_sites = len(np.unique(df.abcd_site))
     n = GRM.shape[0]
 
@@ -40,9 +40,13 @@ def simulate_phenotypes(GRM, df, sigmas, sim_prefix) :
         # compute covariance for simulate(V) for simulation
         V = s[0] * GRM + s[2] * np.identity(n)
 
-        phensuffix = "".join((sigmas[i]*10).astype(int).astype(str))
-        print("simulation:  " + phensuffix)
-        df.insert(df.shape[1] , sim_prefix + phensuffix, np.random.multivariate_normal(mean = site_effects, cov = V))
+        paramset = "".join((sigmas[i]*10).astype(int).astype(str))
+
+	# repeat it for the number of desired replicates
+        for i in range(reps): 
+            colname = paramset + "_" + str(i+1)
+            print("simulation:  " + colname)
+            df.insert(df.shape[1] , sim_prefix + colname, np.random.multivariate_normal(mean = site_effects, cov = V))
     
     return df
     
