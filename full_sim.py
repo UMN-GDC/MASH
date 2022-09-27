@@ -17,7 +17,8 @@ s
 @author: christian
 """
 import os 
-os.chdir("/home/christian/Research/Stat_gen/tools/Basu_herit")
+# os.chdir("/home/christian/Research/Stat_gen/tools/Basu_herit")
+os.chdir("/panfs/roc/groups/3/rando149/coffm049/tools/Basu_herit")
 import itertools
 import numpy as np
 import pandas as pd
@@ -35,18 +36,18 @@ sigmas = np.array(list((itertools.product(sg,ss, se))))
 sigmas = sigmas[sigmas.sum(axis= 1) == 1]
 
 #%% load GRM
-G = ReadGRMBin("simulations/Data/EUR_no_rels")
+G = ReadGRMBin("/panfs/roc/groups/3/rando149/coffm049/ABCD/Results/01_Gene_QC/filters/filter1/GRMs/full/full")
 GRM, df = build_grm(G)
 del G
 n= GRM.shape[0]
 #%% Simulate/load a random GRM (nonsparse)
 
-sim_GRM(11878, "simulations/Random_corr.npy")
+sim_GRM(n, "simulations/Random_corr.npy")
 
 A = np.load("simulations/Random_corr.npy")[0:n, 0:n]
 #%% load data on sites
 
-df2= pd.read_csv("simulations/Data/Covars.tsv", sep = " ")
+df2= pd.read_csv("/panfs/roc/groups/3/rando149/coffm049/ABCD/Results/02_Phenotypes/Covars.tsv", sep = " ")
 
 df = df.merge(df2, left_on = ["fid", "iid"], right_on = ["FID", "IID"])[["FID","IID", "abcd_site"]]
 
@@ -55,6 +56,8 @@ df = df.merge(df2, left_on = ["fid", "iid"], right_on = ["FID", "IID"])[["FID","
 #%% Simulate model Y = 0 + e,   e ~ N(0, sgA + ssS + se I)
 # with varying variances attached to each covariance structure
 
-df = simulate_phenotypes(GRM, df, sigmas, "EUR_no_rels")
+df = simulate_phenotypes(GRM, df, sigmas, "full_ABCD")
+df = simulate_phenotypes(A, df, sigmas, "full_sim")
+
 
     
