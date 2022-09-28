@@ -3,3 +3,4 @@
 *ABCD_Data*
 *.out
 *.err
+*__pycache__*
