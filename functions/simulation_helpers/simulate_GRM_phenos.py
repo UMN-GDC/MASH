@@ -24,7 +24,8 @@ def sim_GRM(n, GRM_save) :
         A = random_correlation.rvs(eigs, tol = 1e-1)
         # Scale correlation into covariance 
         np.save(GRM_save + ".npy", A)
-
+    else: 
+        print("No simulations necessary it was already simulated")
 
 def simulate_phenotypes(GRM, df, sigmas, sim_prefix, reps = 1) :
     num_sites = len(np.unique(df.abcd_site))

@@ -156,7 +156,7 @@ def load_data(pheno_file=None, cov_file=None, PC_file= None) :
         except FileNotFoundError:
             print("Specified PC file is not found or cannot be loaded")
             
-    
+    df.columns = df.columns.str.lower() 
     # return the full dataframe as well as names for covariates and phenotypes
     return df, covariates, phenotypes  
 
@@ -219,6 +219,9 @@ def load_everything(prefix, pheno_file, cov_file=None, PC_file=None, k=0):
     
     
     df, covariates, phenotypes = load_data(pheno_file=pheno_file, cov_file=cov_file, PC_file=PC_file)
+    # Reorder so that covariates and phenotypes match the GRM
+    df = ids.merge(df, on = ["fid", "iid"])
+
     end_read = timeit.default_timer()
     read_time = end_read - start_read
     

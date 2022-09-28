@@ -13,7 +13,7 @@ Last Updated 2022-06-06
 ##############################################################
 
 import os
-os.chdir("/home/christian/Research/Stat_gen/tools/Basu_herit")
+#os.chdir("/home/christian/Research/Stat_gen/tools/Basu_herit")
 import pandas as pd
 import itertools
 from functions.AdjHE_estimator import load_n_estimate

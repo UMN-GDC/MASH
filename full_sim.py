@@ -45,12 +45,13 @@ del G
 n= GRM.shape[0]
 #%% Simulate/load a random GRM (nonsparse)
 
-sim_GRM(n, "simulations/Random_corr.npy")
+sim_GRM(n, "simulations/Random_corr")
 
+print("loading simulated GRM")
 A = np.load("simulations/Random_corr.npy")[0:n, 0:n]
 #%% load data on sites
 
-df2= pd.read_csv("/panfs/roc/groups/3/rando149/coffm049/ABCD/Results/02_Phenotypes/Covars.tsv", sep = " ")
+df2= pd.read_csv("/panfs/roc/groups/3/rando149/coffm049/ABCD/Results/02_Phenotypes/Covars.tsv", sep = "\t")
 
 df = df.merge(df2, left_on = ["fid", "iid"], right_on = ["FID", "IID"])[["FID","IID", "abcd_site"]]
 

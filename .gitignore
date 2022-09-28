@@ -1,3 +1,5 @@
 # skip any files with delete in there name
 *delete*
 *ABCD_Data*
+*.out
+*.err
