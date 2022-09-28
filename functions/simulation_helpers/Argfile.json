@@ -1,0 +1,8 @@
+{
+  "covar" : "Example/Input_files/covar.txt",
+  "prefix" : "Example/Input_files/grm",
+  "out" : "Example/AdjHE_results",
+  "covars" : [2, 1],
+  "RV" : "inter_miss",
+  "replicates" : 1
+}
