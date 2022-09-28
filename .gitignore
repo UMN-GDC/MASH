@@ -4,3 +4,4 @@
 *.out
 *.err
 *__pycache__*
+*.npy
