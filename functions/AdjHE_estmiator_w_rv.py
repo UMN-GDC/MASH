@@ -45,8 +45,7 @@ def AdjHE_rv_estimator(A,data, mp, rv, npc=0, std=False) :
     
     X = data.drop(mp, axis =1)
     y = data[mp]
-    # Extract random variable
-    RV = data[rv]
+
     # Create S similarity matrix 
     site, sizes= np.unique(data[rv], return_counts = True)
     #%% Construct the block diagonal
@@ -85,20 +84,3 @@ def AdjHE_rv_estimator(A,data, mp, rv, npc=0, std=False) :
    
    
     
-   
-#%%    
-df = pd.DataFrame({"a" : [2,1,4,3],
-                   "b": [1,2,3,4]})
-GRM = np.array([[1,2,3,4],
-                [5,6,7,8],
-                [9,10,11,12],
-                [13,14,15,16]])
-#%%
-df = df.sort_values("a")
-#%%
-
-#%%
-
-
-
-
