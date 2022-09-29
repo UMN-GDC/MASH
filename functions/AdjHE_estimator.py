@@ -52,8 +52,8 @@ def AdjHE_estimator(A,data, mp, npc=0, std=False):
     PC_cols = [ col.startswith("pc")   for col in data ]
     PCs = data.iloc[:, PC_cols]
     
-    trA2 = np.sum(np.multiply(A,A))
-    trA = np.sum(np.diag(A))
+    trA2 = np.trace(np.linalg.matrix_power(A,2))
+    trA = np.trace(A)
     n = A.shape[1]
 
     # If standardized AdjHE is chosen 
@@ -168,11 +168,11 @@ def load_n_AdjHE(df, covars, nnpc, mp, ids, GRM_array_nona, std = False):
     ----------
     df : pandas dataframe
         dataframe contianing phenotype, covariates, an prinicpal components.
-    covars : list of int
-        list of integers specifying which covariates to include in the resiudalization.
+    covars : list of strings
+        list of variable names to include in the resiudalization.
     nnpc : int
         number of pcs to include.
-    mp : int
+    mp : string
         which phenotype to estiamte on.
     ids : np array
         np array of subject ids.

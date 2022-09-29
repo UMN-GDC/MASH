@@ -7,6 +7,8 @@ Created on Thu Sep  8 08:55:43 2022
 """
 
 import numpy as np
+from scipy.linalg import block_diag
+import pandas as pd
 #%%
 
 
@@ -22,8 +24,8 @@ def AdjHE_rv_estimator(A,data, mp, rv, npc=0, std=False) :
         A dataframe containing all covariates, principal components, and phenotype that has been residualized if necessary.
     mp : int
         1 based index specifying the phenotype to be estimated on.
-    rv : int
-        1 based index specifying the variable to be used as a random variable.
+    rv : string
+        specifying the name of the column to be used as a random variable.
     npc : int, optional
         number of prinicpal components to adjust for. The default is 0.
     std : bool, optional
@@ -35,24 +37,47 @@ def AdjHE_rv_estimator(A,data, mp, rv, npc=0, std=False) :
         h2 - heritability estimate.
         standard error estimate
     """
+    # Reorder df by the random variable
+    # then reorder the GRM to match
+    data = data.sort_values(rv)
+    A = A[data.index,:][:,data.index]
+    n = A.shape[0]
+    
+    X = data.drop(mp, axis =1)
     y = data[mp]
     # Extract random variable
     RV = data[rv]
     # Create S similarity matrix 
-    S = np.outer(RV, RV)
+    site, sizes= np.unique(data[rv], return_counts = True)
+    #%% Construct the block diagonal
+    diags = [np.ones((size,size)) for size in sizes]
+    S = block_diag(*diags)
+    diags = [np.ones((size,size)) for size in sizes]
+
+    
+    # Construct the orthogonal projection matrix Q utilizing QR decomposition
+    q, r = np.linalg.qr(X)
+    Q = np.identity(n) - X.dot(np.linalg.inv(r).dot(q.T))
+
         
     # Compute elements of 3x3 matrix
-    trA2 = np.tr(A**2)
-    trSA = np.tr(S*A)
-    trA = np.tr(A)
-    n = A.shape[0]
+    QS = Q.dot(S)
+    QSQ = QS.dot(Q)
+    QA = Q.dot(A)
+    
+    # find necessary traces
+    trA2 = np.trace(np.linalg.matrix_power(A,2))
+    trQSQA = np.trace(QS.dot(QA))
+    trA = np.trace(A)
+    trQS2Q= np.trace(np.linalg.matrix_power(QS, 2))
+    trQSQ = np.trace(QSQ)
     
     
     # Find solution 
-    XtX = np.matrix([[trA2, trSA, trA],
-                     [trSA, n**2, n],
-                     [trA, n, n]])
-    sigmas = np.linalg.inv(XtX) * np.concatenate([A, S, np.identity(n)], axis = 0) * y 
+    XtXm1 = np.linalg.inv(np.matrix([[trA2, trQSQA, trA],
+                     [trQSQA, trQS2Q, trQSQ],
+                     [trA, trQSQ, n]]))
+    sigmas = np.dot(XtXm1, np.concatenate([A, QSQ, np.identity(n)], axis = 0) )* y 
     
     return(sigmas)
     
@@ -62,13 +87,18 @@ def AdjHE_rv_estimator(A,data, mp, rv, npc=0, std=False) :
     
    
 #%%    
-
-A = GRM_array_nona
-mp = 1
-rv = 4
-data = df
-npc= 0
-std = False
+df = pd.DataFrame({"a" : [2,1,4,3],
+                   "b": [1,2,3,4]})
+GRM = np.array([[1,2,3,4],
+                [5,6,7,8],
+                [9,10,11,12],
+                [13,14,15,16]])
+#%%
+df = df.sort_values("a")
+#%%
 
 #%%
+
+
+
 
