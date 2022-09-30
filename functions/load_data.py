@@ -20,10 +20,8 @@ def sum_n_vec(n):
 
 def ReadGRMBin(prefix, AllN = False):
     print("Reading GRM: ", prefix)
-
     # Time reading the GRM and other data
     start_read = timeit.default_timer()
-
     BinFileName  = prefix + ".grm.bin"
     NFileName = prefix + ".grm.N.bin"
     IDFileName = prefix + ".grm.id"
@@ -67,7 +65,6 @@ def build_grm(G) :
     temp_i = 0
     temp = 0
     # k= args.k
-
     l = list(range(k, k, k))
     l.append(k)
     for i in l:
@@ -103,35 +100,27 @@ def multirange(counts):
 
 # Read covariates, PC's, and phenotype all at once
 def load_data(pheno_file=None, cov_file=None, PC_file= None) :
-    
     # Need to specify at least one of pheno or cov files
     if (pheno_file == None) and (cov_file == None):
         raise Exception("Sorry, you need to specify at least one of either the phenotype file or covariate file") 
-
     # load phenotypes
     if pheno_file == None:
         print("No separate phenotype file specified.")
         phenotypes =[]
-        
     else:        
         try:
-            df = pd.read_table(pheno_file, sep = " ", header = 0)
+            df = pd.read_table(pheno_file, sep = "\s+", header = 0)
             df.columns = [col_name.lower() for col_name in df.columns]
             phenotypes = df.columns[2:]
-            
         except FileNotFoundError:
             print("Specified phenotype file is not found or cannot be loaded")
-            # create empty list of phenotypes 
-            phenotypes = []
-        
     # read in covariates if nonnull
     if cov_file == None:
         print("No covariates file specified.")
         covariates = []
-        
     else: 
         try:
-            cov_selected = pd.read_table(cov_file, sep = " ", header=0)
+            cov_selected = pd.read_table(cov_file, sep = "\s+", header=0)
             cov_selected.columns = [col_name.lower() for col_name in cov_selected.columns]
             covariates = cov_selected.columns[2:]
             try:
@@ -140,22 +129,16 @@ def load_data(pheno_file=None, cov_file=None, PC_file= None) :
                 df = cov_selected
         except FileNotFoundError:
             print("Specified covariate file is not found or cannot be loaded")
-            # create empty list of covariates to return
-            covariates= []
-            
     # read in pcs if nonnull
     if PC_file == None:
         print("No PC file specified.")
-
     else: 
         try:
-            PCs = pd.read_table(PC_file, sep= " ", header=None)
+            PCs = pd.read_table(PC_file, sep= "\s+", header=None)
             PCs.columns = ["fid", "iid"] + ["pc_" + str(s) for s in range(1, PCs.shape[1]-1)]
             df = pd.merge(df, PCs, on=["fid", "iid"])
-            
         except FileNotFoundError:
             print("Specified PC file is not found or cannot be loaded")
-            
     df.columns = df.columns.str.lower() 
     # return the full dataframe as well as names for covariates and phenotypes
     return df, covariates, phenotypes  
@@ -220,6 +203,11 @@ def load_everything(prefix, pheno_file, cov_file=None, PC_file=None, k=0):
     
     df, covariates, phenotypes = load_data(pheno_file=pheno_file, cov_file=cov_file, PC_file=PC_file)
     # Reorder so that covariates and phenotypes match the GRM
+    ids["fid"] = ids.fid.astype(str)
+    ids["iid"] = ids.iid.astype(str)
+
+    df["fid"] = df.fid.astype(str)
+    df["iid"] = df.iid.astype(str)
     df = ids.merge(df, on = ["fid", "iid"])
 
     end_read = timeit.default_timer()
