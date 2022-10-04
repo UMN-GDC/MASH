@@ -46,7 +46,7 @@ def ReadGRMBin(prefix, AllN = False):
             N = int(N)
     i = sum_n_vec(n)
     ids = ids.rename(columns={0: "fid", 1: "iid"})
-    ids = ids.dropna()
+    #ids = ids.dropna()
     # ids["FID"] = ids.FID.astype(int)
     n_phen_nona = ids.shape[0]
     n_phen_nona = grm[i].size

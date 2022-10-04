@@ -5,3 +5,5 @@
 *.err
 *__pycache__*
 *.npy
+*Simulated*
+*phenotypes*

@@ -21,13 +21,15 @@ from functions.load_data import load_everything
 from functions.parser import get_args, read_flags
 from functions.traits_visualizer import covs_vs_cov_of_interest
 
-
+#######################################
+#######################################
 #%% For troubleshootingg
-
-c_args= {}
+#c_args= {}
 # c_args['argfile'] = "Example/Argfile.json"
-c_args['argfile'] = "simulations/sims_Argfile.json"
-args = read_flags(c_args)
+#c_args['argfile'] = "simulations/sims_Argfile.json"
+#args = read_flags(c_args)
+#######################################
+#######################################
 
 
 #%% Get command line arguments

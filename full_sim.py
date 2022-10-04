@@ -31,9 +31,9 @@ from functions.simulation_helpers.simulate_GRM_phenos import sim_GRM, simulate_p
 reps = 5
 
 #%% create the domain of variance contributions over which to simulate
-sg = np.array(range(5)) /5
-ss = np.array(range(5))/5
-se = np.array(range(5))/5
+sg = np.array(range(5)) /3
+ss = np.array(range(5))/3
+se = np.array(range(5))/3
 sigmas = np.array(list((itertools.product(sg,ss, se))))
 # only grab the ones that sum to 1 to make interpretation more direct
 sigmas = sigmas[sigmas.sum(axis= 1) == 1]
@@ -53,17 +53,20 @@ A = np.load("simulations/Random_corr.npy")[0:n, 0:n]
 
 df2= pd.read_csv("/panfs/roc/groups/3/rando149/coffm049/ABCD/Results/02_Phenotypes/Covars.tsv", sep = "\t")
 
-df = df.merge(df2, left_on = ["fid", "iid"], right_on = ["FID", "IID"])[["FID","IID", "abcd_site"]]
+df2 = df.merge(df2, left_on = ["fid", "iid"], right_on = ["FID", "IID"])[["FID","IID", "abcd_site"]]
 
+# Then get the indices to keep for the GRM
+GRM_keep = [iid in df2 for iid in df.iid]
 
+GRM = GRM[GRM_keep,:][:, GRM_keep]
 
 #%% Simulate model Y = 0 + e,   e ~ N(0, sgA + ssS + se I)
 # with varying variances attached to each covariance structure
 
-df = simulate_phenotypes(GRM, df, sigmas, "full_ABCD", reps = 5)
-df2 = simulate_phenotypes(A, df, sigmas, "full_sim", reps = 5 )
+df = simulate_phenotypes(GRM, df, sigmas, "EUR_norels_ABCD", reps = 5)
+df2 = simulate_phenotypes(A, df, sigmas, "EUR_norels_sim", reps = 5 )
 
 
-df.to_csv("Simulated_ABCD_phenotypes.csv", index= False)
-df2.to_csv("Simulated_non_sparse_phenotypes.csv", index= False) 
+df.to_csv("Simulated_ABCD_full_phenotypes.csv", index= False)
+df2.to_csv("Simulated_non_sparse_full_phenotypes.csv", index= False) 
     
