@@ -22,51 +22,48 @@ os.chdir("/panfs/roc/groups/3/rando149/coffm049/tools/Basu_herit")
 import itertools
 import numpy as np
 import pandas as pd
-from scipy.stats import random_correlation
 from functions.load_data import ReadGRMBin, build_grm
-from functions.eigenvector_outters import multiple_outer
 from functions.simulation_helpers.simulate_GRM_phenos import sim_GRM, simulate_phenotypes
 
-# NUMBER OF REPS FOR EACH CONFIGURATION
-reps = 5
-
-#%% create the domain of variance contributions over which to simulate
-sg = np.array(range(5)) /3
-ss = np.array(range(5))/3
-se = np.array(range(5))/3
-sigmas = np.array(list((itertools.product(sg,ss, se))))
-# only grab the ones that sum to 1 to make interpretation more direct
-sigmas = sigmas[sigmas.sum(axis= 1) == 1]
+# NUMBER OF REPS (reps) FOR EACH CONFIGURATION and number of subejcts (n)
+reps = 3
+steps = 3 
+n = 5000
 
 #%% load GRM
-G = ReadGRMBin("/panfs/roc/groups/3/rando149/coffm049/ABCD/Results/01_Gene_QC/filters/filter1/GRMs/full/full")
-GRM, df = build_grm(G)
-del G
-n= GRM.shape[0]
-#%% Simulate/load a random GRM (nonsparse)
+GRM, ids = build_grm(ReadGRMBin("/panfs/roc/groups/3/rando149/coffm049/ABCD/Results/01_Gene_QC/filters/filter1/GRMs/full/full"))
+GRM = GRM[0:n,:][:, 0:n]
+ids = ids.iloc[0:n,:]
 
-sim_GRM(n, "simulations/Random_corr")
-
-print("loading simulated GRM")
-A = np.load("simulations/Random_corr.npy")[0:n, 0:n]
-#%% load data on sites
-
-df2= pd.read_csv("/panfs/roc/groups/3/rando149/coffm049/ABCD/Results/02_Phenotypes/Covars.tsv", sep = "\t")
-
-df2 = df.merge(df2, left_on = ["fid", "iid"], right_on = ["FID", "IID"])[["FID","IID", "abcd_site"]]
+#%% load covariates 
+df = pd.read_csv("/panfs/roc/groups/3/rando149/coffm049/ABCD/Results/02_Phenotypes/Covars.tsv", sep = "\t")
+# use the order from the ids data to match the order of the GRM
+df = ids.merge(df, left_on = ["fid", "iid"], right_on = ["FID", "IID"])[["FID","IID", "abcd_site"]]
 
 # Then get the indices to keep for the GRM
-GRM_keep = [iid in df2 for iid in df.iid]
-
+GRM_keep = [i in list(df.IID) for i in ids.iid]
 GRM = GRM[GRM_keep,:][:, GRM_keep]
+
+n = GRM.shape[0]
+
+#%% Simulate/load a random GRM (nonsparse)
+sim_GRM(n, "simulations/Random_corr.npy")
+print("loading simulated GRM")
+A = np.load("simulations/Random_corr.npy")[0:n, 0:n]
 
 #%% Simulate model Y = 0 + e,   e ~ N(0, sgA + ssS + se I)
 # with varying variances attached to each covariance structure
 
-df = simulate_phenotypes(GRM, df, sigmas, "EUR_norels_ABCD", reps = 5)
-df2 = simulate_phenotypes(A, df, sigmas, "EUR_norels_sim", reps = 5 )
+#%% create the domain of variance contributions over which to simulate
+sg = np.array(range(5)) /steps
+ss = np.array(range(5))/steps
+se = np.array(range(5))/steps
+sigmas = np.array(list((itertools.product(sg,ss, se))))
+# only grab the ones that sum to 1 to make interpretation more direct
+sigmas = sigmas[sigmas.sum(axis= 1) == 1]
 
-
-df.to_csv("Simulated_ABCD_full_phenotypes.csv", index= False)
-df2.to_csv("Simulated_non_sparse_full_phenotypes.csv", index= False) 
+# And simulated values to the datframe then save it
+df = simulate_phenotypes(GRM, df, sigmas, "ABCD", reps = reps)
+df = simulate_phenotypes(A, df, sigmas, "synth", reps = reps )
+df.to_csv("Simulated_full_phenotypes.csv", index= False, sep = "\t")
     

@@ -5,8 +5,8 @@ Created on Wed Sep 21 08:31:35 2022
 
 @author: christian
 """
-import os
-os.chdir("/home/christian/Research/Stat_gen/tools/Basu_herit")
+#import os
+#os.chdir("/home/christian/Research/Stat_gen/tools/Basu_herit")
 import numpy as np
 import statsmodels.formula.api as smf
 import pandas as pd

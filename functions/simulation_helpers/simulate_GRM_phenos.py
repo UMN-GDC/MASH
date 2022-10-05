@@ -28,14 +28,14 @@ def sim_GRM(n, GRM_save) :
         print("No simulations necessary it was already simulated")
 
 def simulate_phenotypes(GRM, df, sigmas, sim_prefix, reps = 1) :
-    num_sites = len(np.unique(df.abcd_site))
+    sites = np.unique(df.abcd_site)
     n = GRM.shape[0]
-
+    num_sites = len(sites)
     
     for i, s in enumerate(sigmas) :
         # Generate random site effects
         Bs = np.random.normal(0,  s[1], num_sites)
-        BBs =  {"site" + str(i + 1).rjust(2, "0") : Bs[i] for i in range(num_sites)}
+        BBs =  {sites[i] : Bs[i] for i in range(num_sites)}
         site_effects = [BBs[site] for site in df.abcd_site]
         
         # compute covariance for simulate(V) for simulation

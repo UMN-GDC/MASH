@@ -29,7 +29,7 @@ def ReadGRMBin(prefix, AllN = False):
     entry_format = 'f' # N is stored as a float in the binary file
     entry_size = calcsize(entry_format)
     ## Read IDs
-    ids = pd.read_csv(IDFileName, sep = '\t', header = None)
+    ids = pd.DataFrame(np.loadtxt(IDFileName, delimiter = '\t', dtype = str))
     ids_vec = ids.iloc[:,1]
     n = len(ids.index)
     ids_diag = ['NA' for x in range(n)]
@@ -174,33 +174,7 @@ def load_everything(prefix, pheno_file, cov_file=None, PC_file=None, k=0):
     start_read = timeit.default_timer()
     
     # Read in grm
-    G = ReadGRMBin(prefix)
-    # Get specific detials about the GRM
-    ids = G['id']
-    n_phen_nona = G['n_phen_nona']
-    GRM_array_nona = np.zeros((n_phen_nona, n_phen_nona))
-    GRM_array_nona[np.diag_indices(n_phen_nona)] = G['diag']
-    
-    ###############################
-    # Don't know what this is doing
-    if(k == 0):
-        k = n_phen_nona
-    temp_i = 0
-    temp = 0
-    # k= args.k
-    
-    l = list(range(k, n_phen_nona, k))
-    l.append(n_phen_nona)
-    for i in l:
-        cor = multirange(range(temp_i, i))
-        GRM_array_nona[cor['b'], cor['a']] = G['off'][temp:temp+len(cor['b'])]
-        GRM_array_nona.T[cor['b'], cor['a']] = G['off'][temp:temp+len(cor['b'])]
-        temp = temp + len(cor['b'])
-        del(cor)
-        temp_i = i
-    ################################
-    
-    
+    GRM, ids = build_grm(ReadGRMBin(prefix))
     df, covariates, phenotypes = load_data(pheno_file=pheno_file, cov_file=cov_file, PC_file=PC_file)
     # Reorder so that covariates and phenotypes match the GRM
     ids["fid"] = ids.fid.astype(str)
@@ -216,4 +190,4 @@ def load_everything(prefix, pheno_file, cov_file=None, PC_file=None, k=0):
     print("It took " + str(read_time) + " (s) to read GRM, covariates, and phenotypes")
     print("Phenos + Covars:", df.columns)
     
-    return df, covariates, phenotypes, GRM_array_nona, ids 
+    return df, covariates, phenotypes, GRM, ids 

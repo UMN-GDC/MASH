@@ -1,0 +1,2 @@
+/panfs/roc/groups/3/rando149/coffm049/tools/Basu_herit/functions/simulation_helpers/simulate_GRM_phenos.py:50: RuntimeWarning: covariance is not positive-semidefinite.
+  df.insert(df.shape[1] , sim_prefix + colname, np.random.multivariate_normal(mean = site_effects, cov = V))

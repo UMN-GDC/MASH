@@ -1,0 +1,18 @@
+{
+  "PC" : "/panfs/roc/groups/3/rando149/coffm049/ABCD/Results/01_Gene_QC/filters/filter1/Eigens/full.eigenvec",
+  "covar" : "/panfs/roc/groups/3/rando149/coffm049/ABCD/Results/02_Phenotypes/Covars.tsv",
+  "prefix" : "/panfs/roc/groups/3/rando149/coffm049/ABCD/Results/01_Gene_QC/filters/filter1/GRMs/full/full",
+  "pheno" : "simulations/Simulated_phenotypes/full_phenotypes.phen",
+  "out" : "simulations",
+  "npc"  : [0, 5, 10],
+  "mpheno" : [2,3, 4,5,6,7,8,9,10,11,20,30,40,50],
+  "k" : 0,
+  "std" :  false,
+  "covars" : null,
+  "argfile" : null,
+  "loop_covars" : false,
+  "PredLMM" :  false,
+  "loop_covs" : false,
+  "RV" : "inter_miss",
+  "fast" : true
+}
