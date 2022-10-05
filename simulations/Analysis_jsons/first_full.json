@@ -5,7 +5,7 @@
   "pheno" : "simulations/Simulated_phenotypes/full_phenotypes.phen",
   "out" : "simulations",
   "npc"  : [0, 5, 10],
-  "mpheno" : [2,3, 4,5,6,7,8,9,10,11,20,30,40,50],
+  "mpheno" : "all",
   "k" : 0,
   "std" :  false,
   "covars" : null,

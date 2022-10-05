@@ -65,14 +65,19 @@ if (args["covars"] != None) and (len(covariates) > 0) :
 
 else :
     covars = None
-    
-#%% get list of phenotype names to regress
-if (args["pheno"] != None) :
-    # if separate phenotype file is specified, grab from that
-    mpheno = [phenotypes[i-1] for i in args["mpheno"]] 
+
+if isinstance(args["mpheno"], str) :
+    mpheno = phenotypes
 else :
-    # if separate pheno file is not specified grab from the covariates file
-    mpheno = [covariates[i-1] for i in args["mpheno"]]
+
+    #%% get list of phenotype names to regress
+    if (args["pheno"] != None) :
+        # if separate phenotype file is specified, grab from that
+        mpheno = [phenotypes[i-1] for i in args["mpheno"]] 
+    else :
+        # if separate pheno file is not specified grab from the covariates file
+        mpheno = [covariates[i-1] for i in args["mpheno"]]
+
 
 #%%
 # create empty list to store heritability estimates
