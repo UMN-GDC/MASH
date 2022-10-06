@@ -26,7 +26,7 @@ from functions.traits_visualizer import covs_vs_cov_of_interest
 #%% For troubleshootingg
 #c_args= {}
 # c_args['argfile'] = "Example/Argfile.json"
-#c_args['argfile'] = "simulations/sims_Argfile.json"
+#c_args['argfile'] = "simulations/Analysis_jsons/first_full.json"
 #args = read_flags(c_args)
 #######################################
 #######################################
@@ -66,7 +66,7 @@ if (args["covars"] != None) and (len(covariates) > 0) :
 else :
     covars = None
 
-if isinstance(args["mpheno"], str) :
+if args["mpheno"] == "all" :
     mpheno = phenotypes
 else :
 

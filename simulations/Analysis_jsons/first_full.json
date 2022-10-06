@@ -1,6 +1,6 @@
 {
   "PC" : "/panfs/roc/groups/3/rando149/coffm049/ABCD/Results/01_Gene_QC/filters/filter1/Eigens/full.eigenvec",
-  "covar" : "/panfs/roc/groups/3/rando149/coffm049/ABCD/Results/02_Phenotypes/Covars.tsv",
+  "covar" : null,
   "prefix" : "/panfs/roc/groups/3/rando149/coffm049/ABCD/Results/01_Gene_QC/filters/filter1/GRMs/full/full",
   "pheno" : "simulations/Simulated_phenotypes/full_phenotypes.phen",
   "out" : "simulations",

@@ -36,9 +36,9 @@ GRM = GRM[0:n,:][:, 0:n]
 ids = ids.iloc[0:n,:]
 
 #%% load covariates 
-df = pd.read_csv("/panfs/roc/groups/3/rando149/coffm049/ABCD/Results/02_Phenotypes/Covars.tsv", sep = "\t")
+df = pd.read_csv("/panfs/roc/groups/3/rando149/coffm049/ABCD/Results/02_Phenotypes/Covars.tsv", sep = " ")
 # use the order from the ids data to match the order of the GRM
-df = ids.merge(df, left_on = ["fid", "iid"], right_on = ["FID", "IID"])[["FID","IID", "abcd_site"]]
+df = ids.merge(df, left_on = "iid", right_on = "IID")[["FID","IID", "abcd_site"]]
 
 # Then get the indices to keep for the GRM
 GRM_keep = [i in list(df.IID) for i in ids.iid]
@@ -55,15 +55,15 @@ A = np.load("simulations/Random_corr.npy")[0:n, 0:n]
 # with varying variances attached to each covariance structure
 
 #%% create the domain of variance contributions over which to simulate
-sg = np.array(range(5)) /steps
-ss = np.array(range(5))/steps
-se = np.array(range(5))/steps
+sg = np.array(range(steps)) /steps
+ss = np.array(range(steps))/steps
+se = np.array(range(steps))/steps
 sigmas = np.array(list((itertools.product(sg,ss, se))))
 # only grab the ones that sum to 1 to make interpretation more direct
-sigmas = sigmas[sigmas.sum(axis= 1) == 1]
+sigmas = sigmas[sigmas.sum(axis= 1) < 1]
 
 # And simulated values to the datframe then save it
 df = simulate_phenotypes(GRM, df, sigmas, "ABCD", reps = reps)
 df = simulate_phenotypes(A, df, sigmas, "synth", reps = reps )
-df.to_csv("Simulated_full_phenotypes.csv", index= False, sep = "\t")
+df.drop("abcd_site", axis = 1).to_csv("Simulated_full_phenotypes.csv", index= False, sep = " ")
     

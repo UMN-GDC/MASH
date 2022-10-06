@@ -137,7 +137,9 @@ def create_formula(nnpc, covars, mp):
     # Get the full range of pc columns
     pc_cols = ["pc_" + str(p) for p in range(1, nnpc +1)]
     # Create formula string
-    covar_part = " + ".join(covars)
+    
+    if covars != None:
+        covar_part = " + ".join(covars)
     pc_part = " + ".join(pc_cols)
     
     if (len(covars) == 0) and (len(pc_cols) != 0) :
