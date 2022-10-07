@@ -1,3 +1,4 @@
+import os
 import pandas as pd
 import numpy as np
 from struct import unpack, calcsize
@@ -191,3 +192,50 @@ def load_everything(prefix, pheno_file, cov_file=None, PC_file=None, k=0):
     print("Phenos + Covars:", df.columns)
     
     return df, covariates, phenotypes, GRM, ids 
+
+
+
+# To check if a file is missing a header
+def check_header(filename):
+        with open(filename) as f:
+            first = f.read(1)
+        return first not in '.-0123456789'
+
+
+def data_loader(file) :
+    # if filepath is empty it's the GRM
+    if os.path.splitext(file)[-1] == "":
+        df = pd.DataFrame(np.loadtxt(file+ ".grm.id", delimiter = '\t', dtype = str))
+        df.columns = ["fid", "iid"]
+    
+    # check if it's the pheno or covar file
+    elif check_header(file) :
+        df = pd.read_table(file, sep = "\s+", header = 0)
+        df.columns = [col_name.lower() for col_name in df.columns]
+
+    # if not it's the PC file
+    else: 
+        df = pd.read_table(file, sep= "\s+", header=None)
+        df.columns = ["fid", "iid"] + ["pc_" + str(s) for s in range(1, df.shape[1]-1)]
+        df.fid = df.fid.astype("Int64")
+    
+    # make sure fid and iid are objects to join with the ids from the GRM
+    df["fid"] = df.fid.astype(str)
+    df["iid"] = df.iid.astype(str)
+    return df
+
+def load_tables(list_of_files) :
+    # load first dataframe
+    df = data_loader(list_of_files[0])
+    # load the rest of the data
+    for file in list_of_files[1:] :
+        newdf = data_loader(file)
+        # merge always using the left keys such that it always aligns with the GRM
+        df = pd.merge(df, newdf, on = ["fid", "iid"], how = "left")    
+    return df            
+
+
+
+
+
+

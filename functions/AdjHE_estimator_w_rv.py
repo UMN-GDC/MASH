@@ -51,8 +51,8 @@ def AdjHE_rv_estimator(A,data, mp, rv, npc=0, std=False) :
     #%% Construct the block diagonal
     diags = [np.ones((size,size)) for size in sizes]
     S = block_diag(*diags)
-    diags = [np.ones((size,size)) for size in sizes]
-
+    diags = [np.ones((size,size))* size for size in sizes]
+    S2 = block_diag(*diags) 
     
     # Construct the orthogonal projection matrix Q utilizing QR decomposition
     q, r = np.linalg.qr(X)
@@ -68,17 +68,18 @@ def AdjHE_rv_estimator(A,data, mp, rv, npc=0, std=False) :
     trA2 = np.trace(np.linalg.matrix_power(A,2))
     trQSQA = np.trace(QS.dot(QA))
     trA = np.trace(A)
-    trQS2Q= np.trace(np.linalg.matrix_power(QS, 2))
     trQSQ = np.trace(QSQ)
-    
+    trQS2Q = np.trace(Q.dot(S2.dot(Q)))
     
     # Find solution 
     XtXm1 = np.linalg.inv(np.matrix([[trA2, trQSQA, trA],
                      [trQSQA, trQS2Q, trQSQ],
                      [trA, trQSQ, n]]))
-    sigmas = np.dot(XtXm1, np.concatenate([A, QSQ, np.identity(n)], axis = 0) )* y 
+    # Possible that the y's will need to account for prinicpal componetns in future real data cases
+    sigmas = np.dot(XtXm1, np.concatenate([A, QSQ, np.identity(n)], axis = 0)* np.outer(y,y))
     
-    return(sigmas)
+    # return heritability estimate
+    return sigmas[0] / sum(sigmas), 0
     
     
    

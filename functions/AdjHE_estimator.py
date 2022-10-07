@@ -21,7 +21,7 @@ import pandas as pd
 import statsmodels.api as sm
 import statsmodels.formula.api as smf
 from functions.eigenvector_outters import multiple_outer
-
+from functions.AdjHE_estimator_w_rv import AdjHE_rv_estimator
 
 def AdjHE_estimator(A,data, mp, npc=0, std=False):
     """
@@ -160,7 +160,7 @@ def create_formula(nnpc, covars, mp):
  
 
 
-def load_n_AdjHE(df, covars, nnpc, mp, ids, GRM_array_nona, std = False):
+def load_n_AdjHE(df, covars, nnpc, mp, ids, GRM_array_nona, std = False, RV = None):
     """
     Estimates heritability using the efficient AdjHE closed form solution. Takes a dataframe, selects only the
     necessary columns (so that when we do complete cases it doesnt exclude too many samples) residualizes the 
@@ -182,6 +182,9 @@ def load_n_AdjHE(df, covars, nnpc, mp, ids, GRM_array_nona, std = False):
         the GRM with missingness removed.
     std : bool, optional
         specifying whether standarization happens before heritability estimation. The default is False.
+    RV : string, optional
+        Varible to control for as a random effect, if applicable
+
 
     Returns
     -------
@@ -209,8 +212,11 @@ def load_n_AdjHE(df, covars, nnpc, mp, ids, GRM_array_nona, std = False):
     # keep portion of GRM without missingess for the phenotypes or covariates
     nonmissing = ids[ids.iid.isin(temp.iid)].index
     GRM_nonmissing = GRM_array_nona[nonmissing,:][:,nonmissing]
-    # Get heritability and SE estimates
-    h2, se = AdjHE_estimator(A= GRM_nonmissing, data = temp, mp = mp, npc=nnpc, std=std)
+    # Get heritability and SE estimates from appropriate estimator
+    if RV == None :
+        h2, se = AdjHE_estimator(A= GRM_nonmissing, data = temp, mp = mp, npc=nnpc, std=std)
+    else :
+        h2, se = AdjHE_rv_estimator(A= GRM_nonmissing, data = temp, mp = mp,rv=RV, npc=nnpc, std=std)
     # Get time for each estimate
     t = timeit.default_timer() - start_est
     # Get memory for each step (in Mb) (This is a little sketchy)
@@ -323,7 +329,7 @@ def load_n_MOM(df, covars, nnpc, mp, ids, GRM_array_nona, std = False):
 
 #%%
 
-def load_n_estimate(df, covars, nnpc, mp, ids, GRM_array_nona, std = False, fast=True):
+def load_n_estimate(df, covars, nnpc, mp, ids, GRM_array_nona, std = False, fast=True, RV = None):
     """
     Estimates heritability, but solves a full OLS problem making it slower than the closed form solution. Takes 
     a dataframe, selects only the necessary columns (so that when we do complete cases it doesnt exclude too many samples)
@@ -345,6 +351,8 @@ def load_n_estimate(df, covars, nnpc, mp, ids, GRM_array_nona, std = False, fast
         the GRM with missingness removed.
     std : bool, optional
         specifying whether standarization happens before heritability estimation. The default is False.
+    RV : string, optional
+        Varible to control for as a random effect, if applicable
 
     Returns
     -------
@@ -361,7 +369,7 @@ def load_n_estimate(df, covars, nnpc, mp, ids, GRM_array_nona, std = False, fast
     # Select method of estimation
     if fast == True: 
         print("AdjHE")
-        result = load_n_AdjHE(df, covars, nnpc, mp, ids, GRM_array_nona, std = False)
+        result = load_n_AdjHE(df, covars, nnpc, mp, ids, GRM_array_nona, std = False, RV = RV)
 
     else: 
         print("OLS")

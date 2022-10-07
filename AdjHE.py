@@ -87,23 +87,23 @@ results = pd.DataFrame()
 if (covars == None) and (args["npc"] != None):
     for mp, nnpc in itertools.product(mpheno, args["npc"]):
         r = load_n_estimate(
-            df=df, covars=[], nnpc=nnpc, mp=mp, ids=ids, GRM_array_nona=GRM_array_nona, std= False, fast = args["fast"])
+            df=df, covars=[], nnpc=nnpc, mp=mp, ids=ids, GRM_array_nona=GRM_array_nona, std= False, fast = args["fast"], RV = args["RV"])
         results = pd.concat([results, r])
 elif (covars == None) and (args["npc"] == None):
     for mp in mpheno:
         r = load_n_estimate(
-            df=df, covars=[], nnpc=0, mp=mp, ids=ids, GRM_array_nona=GRM_array_nona, std= False, fast = args["fast"])
+            df=df, covars=[], nnpc=0, mp=mp, ids=ids, GRM_array_nona=GRM_array_nona, std= False, fast = args["fast"], RV = args["RV"])
         results = pd.concat([results, r])
 elif (covars != None) and (args["npc"] == None):
     for mp, covs in itertools.product(mpheno, cov_combos):
         r = load_n_estimate(
-            df=df, covars= covs, nnpc=0, mp=mp, ids=ids, GRM_array_nona=GRM_array_nona, std= False, fast = args["fast"])
+            df=df, covars= covs, nnpc=0, mp=mp, ids=ids, GRM_array_nona=GRM_array_nona, std= False, fast = args["fast"], RV = args["RV"])
         results = pd.concat([results, r])
 else:
     
     for mp, nnpc, covs in itertools.product(mpheno, args["npc"], cov_combos):
         r = load_n_estimate(
-            df=df, covars=covs, nnpc=nnpc, mp=mp, ids=ids, GRM_array_nona=GRM_array_nona, std= False, fast = args["fast"])
+            df=df, covars=covs, nnpc=nnpc, mp=mp, ids=ids, GRM_array_nona=GRM_array_nona, std= False, fast = args["fast"], RV = args["RV"])
         results = pd.concat([results, r])
     
 
