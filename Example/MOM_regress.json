@@ -3,16 +3,16 @@
   "covar" : "Example/Input_files/covar.txt",
   "prefix" : "Example/Input_files/grm",
   "pheno" : "Example/Input_files/pheno.phen",
-  "out" : "Example/AdjHE_results",
+  "out" : "Example/MOM_regress",
   "npc"  : [5, 10],
-  "mpheno" : [1, 4,5,6],
+  "mpheno" : ["Head_size", "Liver_size", "O2_level", "first100", "first1000", "first3000"],
   "k" : 0,
   "std" :  false,
-  "covars" : [2, 1],
+  "covars" : ["Inter", "Inter_miss"],
   "argfile" : "/home/christian/Research/Stat_gen/tools/Basu_herit/Example/Arg_file.json",
   "loop_covars" : false,
   "PredLMM" :  false,
   "loop_covs" : false,
-  "RV" : "inter_miss",
-  "fast" : true
+  "RV" : null,
+  "fast" : false 
 }

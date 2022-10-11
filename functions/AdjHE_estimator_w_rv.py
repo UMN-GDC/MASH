@@ -39,47 +39,53 @@ def AdjHE_rv_estimator(A,data, mp, rv, npc=0, std=False) :
     """
     # Reorder df by the random variable
     # then reorder the GRM to match
-    data = data.sort_values(rv)
-    A = A[data.index,:][:,data.index]
+    print("AdjHE + random effect")
+    data = data.reset_index().drop("index", axis = 1)
+    data = data.sort_values(rv).dropna(subset= [rv])
+    A = np.matrix(A[data.index,:][:,data.index])
     n = A.shape[0]
     
-    X = data.drop(mp, axis =1)
-    y = data[mp]
+    data["Intercept"] = 1
+    X = np.matrix(data.drop([mp, "fid", "iid", rv], axis =1))
+    y = np.matrix(data[mp])
 
     # Create S similarity matrix 
     site, sizes= np.unique(data[rv], return_counts = True)
     #%% Construct the block diagonal
     diags = [np.ones((size,size)) for size in sizes]
-    S = block_diag(*diags)
+    S = np.matrix(block_diag(*diags))
     diags = [np.ones((size,size))* size for size in sizes]
-    S2 = block_diag(*diags) 
+    S2 = np.matrix(block_diag(*diags) )
     
     # Construct the orthogonal projection matrix Q utilizing QR decomposition
     q, r = np.linalg.qr(X)
     Q = np.identity(n) - X.dot(np.linalg.inv(r).dot(q.T))
-
+    Q = np.matrix(Q)
         
     # Compute elements of 3x3 matrix
-    QS = Q.dot(S)
-    QSQ = QS.dot(Q)
-    QA = Q.dot(A)
+    QS = Q * S
+    QSQ = QS * Q
     
     # find necessary traces
-    trA2 = np.trace(np.linalg.matrix_power(A,2))
-    trQSQA = np.trace(QS.dot(QA))
+    trA2 = np.trace(A ** 2)
+    trQSQA = np.trace(QSQ * A)
     trA = np.trace(A)
     trQSQ = np.trace(QSQ)
-    trQS2Q = np.trace(Q.dot(S2.dot(Q)))
+    trQS2Q = np.trace(Q * S2 * Q)
     
+    youter = np.matrix(np.outer(y,y))
+    trAY = np.trace(A * youter)
+    trQSQY = np.trace(QSQ * youter)
+    trYout = np.linalg.norm(y) * n
     # Find solution 
     XtXm1 = np.linalg.inv(np.matrix([[trA2, trQSQA, trA],
                      [trQSQA, trQS2Q, trQSQ],
                      [trA, trQSQ, n]]))
     # Possible that the y's will need to account for prinicpal componetns in future real data cases
-    sigmas = np.dot(XtXm1, np.concatenate([A, QSQ, np.identity(n)], axis = 0)* np.outer(y,y))
+    sigmas = XtXm1.dot(np.matrix([[trAY], [trQSQY], [trYout]]))
     
     # return heritability estimate
-    return sigmas[0] / sum(sigmas), 0
+    return (sigmas[0] / sum(sigmas))[0,0], 0
     
     
    

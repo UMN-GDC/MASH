@@ -18,21 +18,22 @@ s
 """
 import os 
 # os.chdir("/home/christian/Research/Stat_gen/tools/Basu_herit")
-os.chdir("/panfs/roc/groups/3/rando149/coffm049/tools/Basu_herit")
+# os.chdir("/panfs/roc/groups/3/rando149/coffm049/tools/Basu_herit")
 import itertools
 import numpy as np
 import pandas as pd
-from functions.load_data import ReadGRMBin, build_grm
+from functions.load_data import ReadGRMBin
 from functions.simulation_helpers.simulate_GRM_phenos import sim_GRM, simulate_phenotypes
 
 # NUMBER OF REPS (reps) FOR EACH CONFIGURATION and number of subejcts (n)
 reps = 3
-steps = 3 
 n = 5000
 
 #%% load GRM
-GRM, ids = build_grm(ReadGRMBin("/panfs/roc/groups/3/rando149/coffm049/ABCD/Results/01_Gene_QC/filters/filter1/GRMs/full/full"))
+prefix = "/panfs/roc/groups/3/rando149/coffm049/ABCD/Results/01_Gene_QC/filters/filter1/GRMs/full/full"
+GRM = ReadGRMBin(prefix)
 GRM = GRM[0:n,:][:, 0:n]
+ids = ids = pd.DataFrame(np.loadtxt(prefix + ".grm.id", delimiter = '\t', dtype = str), columns = ["fid", "iid"])
 ids = ids.iloc[0:n,:]
 
 #%% load covariates 
@@ -55,12 +56,15 @@ A = np.load("simulations/Random_corr.npy")[0:n, 0:n]
 # with varying variances attached to each covariance structure
 
 #%% create the domain of variance contributions over which to simulate
-sg = np.array(range(steps)) /steps
-ss = np.array(range(steps))/steps
-se = np.array(range(steps))/steps
-sigmas = np.array(list((itertools.product(sg,ss, se))))
-# only grab the ones that sum to 1 to make interpretation more direct
-sigmas = sigmas[sigmas.sum(axis= 1) < 1]
+sg = np.array([0, 0.3, 0.6] )
+ss = np.array([0, 0.2])
+gints= np.array([0, 0.2])
+sigmas = np.array(list((itertools.product(sg, ss, gints))))
+# add error such that th variances add up to one
+sigmas= np.insert(sigmas, 3, 1- np.sum(sigmas,axis = 1), axis=1)
+# grab interesting combinations
+sigmas = sigmas[[0,3, 4, 5, 6, 7, 8, 9, 10, 11] ,:]
+
 
 # And simulated values to the datframe then save it
 df = simulate_phenotypes(GRM, df, sigmas, "ABCD", reps = reps)

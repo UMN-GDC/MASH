@@ -1,0 +1,18 @@
+{
+  "PC" : null,
+  "covar" : null,
+  "prefix" : "simulations/Simulated_phenotypes/synth",
+  "pheno" : "simulations/Simulated_phenotypes/synth_phenos.phen",
+  "out" : "synth_basic.csv",
+  "npc"  : [0],
+  "mpheno" : "all",
+  "k" : 0,
+  "std" :  false,
+  "covars" : null,
+  "argfile" : null,
+  "loop_covars" : false,
+  "PredLMM" :  false,
+  "loop_covs" : false,
+  "RV" : null,
+  "fast" : true
+}

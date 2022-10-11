@@ -7,3 +7,6 @@
 *.npy
 *Simulated*
 *phenotypes*
+*.csv
+
+!Example/

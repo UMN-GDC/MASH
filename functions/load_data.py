@@ -9,14 +9,6 @@ from functions.loading_extracting_niis import load_extract_niis
 
 
 
-# The following code was adapted from the GCTA creators website for loading binary GRM's
-# https://yanglab.westlake.edu.cn/software/gcta/#MakingaGRM
-
-def sum_n_vec(n):
-    s = [int(0)] * n
-    for i in range(n):
-        s[i] = int(((i + 1) * (i + 2) / 2) - 1)
-    return s
 
 
 def ReadGRMBin(prefix, AllN = False):
@@ -31,118 +23,60 @@ def ReadGRMBin(prefix, AllN = False):
     entry_size = calcsize(entry_format)
     ## Read IDs
     ids = pd.DataFrame(np.loadtxt(IDFileName, delimiter = '\t', dtype = str))
-    ids_vec = ids.iloc[:,1]
+    u = np.tril_indices(ids.shape[0])
     n = len(ids.index)
-    ids_diag = ['NA' for x in range(n)]
-    n_off = int(n * (n - 1) / 2)
     ## Read relatedness values
     grm = np.fromfile(BinFileName, dtype = dt)
-    ## Read number of markers values
-    if AllN:
-        N = np.fromfile(NFileName, dtype = dt)
+    # seed empty grm
+    GRM = np.zeros((n, n), dtype = dt)
+    # make an upper triangle matrix
+    GRM[u] = grm
+    # Make the rest of the symmetric matrix
+    GRM = GRM + GRM.T - np.diag(np.diag(GRM))
+    return GRM
+
+
+# To check if a file is missing a header
+def check_header(filename):
+        with open(filename) as f:
+            first = f.read(1)
+        return first not in '.-0123456789'
+
+
+def data_loader(file) :
+    # if filepath is empty it's the GRM
+    if os.path.splitext(file)[-1] == "":
+        df = pd.DataFrame(np.loadtxt(file+ ".grm.id", delimiter = '\t', dtype = str))
+        df.columns = ["fid", "iid"]
+
+    # check if it's the pheno or covar file
+    elif check_header(file) :
+        df = pd.read_table(file, sep = "\s+", header = 0)
+        df.columns = [col_name.lower() for col_name in df.columns]
+
+    # if not it's the PC file
     else:
-        with open(NFileName, mode='rb') as f:
-            record = f.read(entry_size)
-            N = unpack(entry_format, record)[0]
-            N = int(N)
-    i = sum_n_vec(n)
-    ids = ids.rename(columns={0: "fid", 1: "iid"})
-    #ids = ids.dropna()
-    # ids["FID"] = ids.FID.astype(int)
-    n_phen_nona = ids.shape[0]
-    n_phen_nona = grm[i].size
-    GRM_array_nona = np.zeros((n_phen_nona, n_phen_nona))
-    val = {'diag': grm[i], 'off': np.delete(grm, i),'id': ids,'N':N, "n_phen_nona" : n_phen_nona}
-    return val
+        df = pd.read_table(file, sep= "\s+", header=None)
+        df.columns = ["fid", "iid"] + ["pc_" + str(s) for s in range(1, df.shape[1]-1)]
+        df.fid = df.fid.astype("Int64")
 
-def build_grm(G) :
-    # Get specific detials about the GRM
-    ids = G['id']
-    k = G['n_phen_nona']
-    GRM = np.zeros((k , k ))
-    GRM[np.diag_indices(k)] = G['diag']
-    ############################### reconstruct GRM
-    # 
-    temp_i = 0
-    temp = 0
-    # k= args.k
-    l = list(range(k, k, k))
-    l.append(k)
-    for i in l:
-        cor = multirange(range(temp_i, i))
-        GRM[cor['b'], cor['a']] = G['off'][temp:temp+len(cor['b'])]
-        GRM.T[cor['b'], cor['a']] = G['off'][temp:temp+len(cor['b'])]
-        temp = temp + len(cor['b'])
-        del(cor)
-        temp_i = i
-    ################################
-    return GRM, ids
+    # make sure fid and iid are objects to join with the ids from the GRM
+    df["fid"] = df.fid.astype(str)
+    df["iid"] = df.iid.astype(str)
+    return df
+
+def load_tables(list_of_files) :
+    # load first dataframe
+    df = data_loader(list_of_files[0])
+    # load the rest of the data
+    for file in list_of_files[1:] :
+        if file != None: 
+            newdf = data_loader(file)
+            # merge always using the left keys such that it always aligns with the GRM
+            df = pd.merge(df, newdf, on = ["fid", "iid"], how = "left")
+    return df
 
 
-
-
-# This allows us to read in multiple partial GRM's into one full GRM
-def multirange(counts):
-    counts = np.asarray(counts)
-    # Remove the following line if counts is always strictly positive.
-    counts = counts[counts != 0]
-    counts1 = counts[:-1]
-    reset_index = np.cumsum(counts1)
-    incr = np.ones(counts.sum(), dtype=int)
-    incr[0] = 0
-    incr[reset_index] = 1 - counts1
-    # Reuse the incr array for the final result.
-    incr.cumsum(out=incr)
-    val = {'a':incr,'b':np.repeat(counts,counts)}
-    return val
-
-
-
-
-# Read covariates, PC's, and phenotype all at once
-def load_data(pheno_file=None, cov_file=None, PC_file= None) :
-    # Need to specify at least one of pheno or cov files
-    if (pheno_file == None) and (cov_file == None):
-        raise Exception("Sorry, you need to specify at least one of either the phenotype file or covariate file") 
-    # load phenotypes
-    if pheno_file == None:
-        print("No separate phenotype file specified.")
-        phenotypes =[]
-    else:        
-        try:
-            df = pd.read_table(pheno_file, sep = "\s+", header = 0)
-            df.columns = [col_name.lower() for col_name in df.columns]
-            phenotypes = df.columns[2:]
-        except FileNotFoundError:
-            print("Specified phenotype file is not found or cannot be loaded")
-    # read in covariates if nonnull
-    if cov_file == None:
-        print("No covariates file specified.")
-        covariates = []
-    else: 
-        try:
-            cov_selected = pd.read_table(cov_file, sep = "\s+", header=0)
-            cov_selected.columns = [col_name.lower() for col_name in cov_selected.columns]
-            covariates = cov_selected.columns[2:]
-            try:
-                df = pd.merge(cov_selected, df, on = ["fid", "iid"])
-            except :
-                df = cov_selected
-        except FileNotFoundError:
-            print("Specified covariate file is not found or cannot be loaded")
-    # read in pcs if nonnull
-    if PC_file == None:
-        print("No PC file specified.")
-    else: 
-        try:
-            PCs = pd.read_table(PC_file, sep= "\s+", header=None)
-            PCs.columns = ["fid", "iid"] + ["pc_" + str(s) for s in range(1, PCs.shape[1]-1)]
-            df = pd.merge(df, PCs, on=["fid", "iid"])
-        except FileNotFoundError:
-            print("Specified PC file is not found or cannot be loaded")
-    df.columns = df.columns.str.lower() 
-    # return the full dataframe as well as names for covariates and phenotypes
-    return df, covariates, phenotypes  
 
 
 # %% Read GRM
@@ -160,12 +94,10 @@ def load_everything(prefix, pheno_file, cov_file=None, PC_file=None, k=0):
         Path to covariate file. The default is None.
     PC_file : string, optional
         path to PC's file. The default is None.
-    k : int, optional
-        numbero f partitions for the estimate. The default is 0.
 
     Returns
     -------
-    a tuple of the full dataframe, covariate names, phenotype names, GRM without missing vlaues, and ids.
+    a tuple of the full dataframe, GRM without missing vlaues
 
     """
     
@@ -175,67 +107,20 @@ def load_everything(prefix, pheno_file, cov_file=None, PC_file=None, k=0):
     start_read = timeit.default_timer()
     
     # Read in grm
-    GRM, ids = build_grm(ReadGRMBin(prefix))
-    df, covariates, phenotypes = load_data(pheno_file=pheno_file, cov_file=cov_file, PC_file=PC_file)
-    # Reorder so that covariates and phenotypes match the GRM
-    ids["fid"] = ids.fid.astype(str)
-    ids["iid"] = ids.iid.astype(str)
-
-    df["fid"] = df.fid.astype(str)
-    df["iid"] = df.iid.astype(str)
-    df = ids.merge(df, on = ["fid", "iid"])
+    GRM = ReadGRMBin(prefix)
+    list_of_files = [prefix, pheno_file, PC_file, cov_file]
+    df = load_tables(list_of_files)
 
     end_read = timeit.default_timer()
     read_time = end_read - start_read
     
     print("It took " + str(read_time) + " (s) to read GRM, covariates, and phenotypes")
     print("Phenos + Covars:", df.columns)
-    
-    return df, covariates, phenotypes, GRM, ids 
-
-
-
-# To check if a file is missing a header
-def check_header(filename):
-        with open(filename) as f:
-            first = f.read(1)
-        return first not in '.-0123456789'
-
-
-def data_loader(file) :
-    # if filepath is empty it's the GRM
-    if os.path.splitext(file)[-1] == "":
-        df = pd.DataFrame(np.loadtxt(file+ ".grm.id", delimiter = '\t', dtype = str))
-        df.columns = ["fid", "iid"]
-    
-    # check if it's the pheno or covar file
-    elif check_header(file) :
-        df = pd.read_table(file, sep = "\s+", header = 0)
-        df.columns = [col_name.lower() for col_name in df.columns]
-
-    # if not it's the PC file
-    else: 
-        df = pd.read_table(file, sep= "\s+", header=None)
-        df.columns = ["fid", "iid"] + ["pc_" + str(s) for s in range(1, df.shape[1]-1)]
-        df.fid = df.fid.astype("Int64")
-    
-    # make sure fid and iid are objects to join with the ids from the GRM
-    df["fid"] = df.fid.astype(str)
-    df["iid"] = df.iid.astype(str)
-    return df
-
-def load_tables(list_of_files) :
-    # load first dataframe
-    df = data_loader(list_of_files[0])
-    # load the rest of the data
-    for file in list_of_files[1:] :
-        newdf = data_loader(file)
-        # merge always using the left keys such that it always aligns with the GRM
-        df = pd.merge(df, newdf, on = ["fid", "iid"], how = "left")    
-    return df            
-
-
-
-
-
+   
+    # Get the phenotype names
+    phenotypes = pd.read_table(pheno_file, sep = "\s+", header = 0, nrows= 0).columns.tolist()
+    phenotypes = [phenotype.lower() for phenotype in phenotypes]
+    phenotypes.remove("fid")
+    phenotypes.remove("iid")
+    return df, GRM, phenotypes 
 

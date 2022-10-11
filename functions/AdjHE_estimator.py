@@ -14,7 +14,7 @@ Last Updated 2022-05-26
 ##############################################################
 
 import numpy as np
-import statsmodels.api as sm
+from numpy import matrix
 import timeit
 import resource
 import pandas as pd
@@ -23,10 +23,11 @@ import statsmodels.formula.api as smf
 from functions.eigenvector_outters import multiple_outer
 from functions.AdjHE_estimator_w_rv import AdjHE_rv_estimator
 
+
+
 def AdjHE_estimator(A,data, mp, npc=0, std=False):
     """
     Fucntion for generating heritability estimates from an Adjusted HE standpoint in closed form.
-
     Parameters
     ----------
     A : numpy array  
@@ -39,7 +40,6 @@ def AdjHE_estimator(A,data, mp, npc=0, std=False):
         number of prinicpal components to adjust for. The default is 0.
     std : bool, optional
         Specify whether or not to standaridize the variables before estimation. The default is False.
-
     Returns
     -------
     tumple(scalar, scalar)
@@ -113,7 +113,8 @@ def AdjHE_estimator(A,data, mp, npc=0, std=False):
 
 
 
-def create_formula(nnpc, covars, mp):
+
+def create_formula(nnpc, covars, mp, RV = None):
     """
     Creates a formula for the mean to residualize against. In other words describes the projection space and by extension the residual space.
 
@@ -155,12 +156,15 @@ def create_formula(nnpc, covars, mp):
     form = mp + "~ " +  RHS
     # columns
     cols = id_cols + [mp] + covars + pc_cols
+    if RV != None :
+        cols = cols + [RV]
+
     # return the formula and columns
     return(form, cols)
  
 
 
-def load_n_AdjHE(df, covars, nnpc, mp, ids, GRM_array_nona, std = False, RV = None):
+def load_n_AdjHE(df, covars, nnpc, mp, GRM, std = False, RV = None):
     """
     Estimates heritability using the efficient AdjHE closed form solution. Takes a dataframe, selects only the
     necessary columns (so that when we do complete cases it doesnt exclude too many samples) residualizes the 
@@ -176,9 +180,7 @@ def load_n_AdjHE(df, covars, nnpc, mp, ids, GRM_array_nona, std = False, RV = No
         number of pcs to include.
     mp : string
         which phenotype to estiamte on.
-    ids : np array
-        np array of subject ids.
-    GRM_array_nona : np array
+    GRM : np array
         the GRM with missingness removed.
     std : bool, optional
         specifying whether standarization happens before heritability estimation. The default is False.
@@ -197,12 +199,13 @@ def load_n_AdjHE(df, covars, nnpc, mp, ids, GRM_array_nona, std = False, RV = No
         - time for analysis
         - maximum memory usage
     """
+    ids = df[["fid", "iid"]]
     # seed empty result vector
     # result.columns = ["h2", "SE", "Pheno", "PCs", "Time for analysis(s)", "Memory Usage", "formula"]
     # start clock for fitting 
     start_est = timeit.default_timer()
     # create the regression formula and columns for seelcting temporary
-    form, cols  = create_formula(nnpc, covars, mp)
+    form, cols  = create_formula(nnpc, covars, mp, RV)
     # save a temporary dataframe
     temp = df[cols].dropna()
     # Save residuals of selected phenotype after regressing out PCs and covars
@@ -211,7 +214,7 @@ def load_n_AdjHE(df, covars, nnpc, mp, ids, GRM_array_nona, std = False, RV = No
     # smf.mixedlm(formula= form, data = temp, groups=temp["scan_site"])
     # keep portion of GRM without missingess for the phenotypes or covariates
     nonmissing = ids[ids.iid.isin(temp.iid)].index
-    GRM_nonmissing = GRM_array_nona[nonmissing,:][:,nonmissing]
+    GRM_nonmissing = GRM[nonmissing,:][:,nonmissing]
     # Get heritability and SE estimates from appropriate estimator
     if RV == None :
         h2, se = AdjHE_estimator(A= GRM_nonmissing, data = temp, mp = mp, npc=nnpc, std=std)
@@ -232,13 +235,13 @@ def load_n_AdjHE(df, covars, nnpc, mp, ids, GRM_array_nona, std = False, RV = No
     print(list(temp.columns))
     print(result["h2"])
     # Return the fit results
-    return(pd.DataFrame(result))
+    return(pd.DataFrame(result, index = [0]))
 
 
 #%%
 
 
-def load_n_MOM(df, covars, nnpc, mp, ids, GRM_array_nona, std = False):
+def load_n_MOM(df, covars, nnpc, mp, GRM_array_nona, std = False, RV  = None):
     """
     Estimates heritability, but solves a full OLS problem making it slower than the closed form solution. Takes 
     a dataframe, selects only the necessary columns (so that when we do complete cases it doesnt exclude too many samples)
@@ -254,8 +257,6 @@ def load_n_MOM(df, covars, nnpc, mp, ids, GRM_array_nona, std = False):
         number of pcs to include.
     mp : int
         which phenotype to estiamte on.
-    ids : np array
-        np array of subject ids.
     GRM_array_nona : np array
         the GRM with missingness removed.
     std : bool, optional
@@ -272,12 +273,14 @@ def load_n_MOM(df, covars, nnpc, mp, ids, GRM_array_nona, std = False):
         - time for analysis
         - maximum memory usage
     """
+    print("MOM regression estimator")
+    ids = df[["fid", "iid"]]
     # seed empty result vector
     # result.columns = ["h2", "SE", "Pheno", "PCs", "Time for analysis(s)", "Memory Usage", "formula"]
     # start clock for fitting 
     start_est = timeit.default_timer()
     # create the regression formula and columns for seelcting temporary
-    form, cols  = create_formula(nnpc, covars, mp)
+    form, cols  = create_formula(nnpc, covars, mp, RV = RV)
     # save a temporary dataframe
     temp = df[cols].dropna()
     # Save residuals of selected phenotype after regressing out PCs and covars
@@ -323,13 +326,13 @@ def load_n_MOM(df, covars, nnpc, mp, ids, GRM_array_nona, std = False):
     print(list(temp.columns))
     print(result["h2"])
     # Return the fit results
-    return(pd.DataFrame(result))
+    return(pd.DataFrame(result, index = [0]))
 
 
 
 #%%
 
-def load_n_estimate(df, covars, nnpc, mp, ids, GRM_array_nona, std = False, fast=True, RV = None):
+def load_n_estimate(df, covars, nnpc, mp, GRM, std = False, fast=True, RV = None):
     """
     Estimates heritability, but solves a full OLS problem making it slower than the closed form solution. Takes 
     a dataframe, selects only the necessary columns (so that when we do complete cases it doesnt exclude too many samples)
@@ -345,9 +348,7 @@ def load_n_estimate(df, covars, nnpc, mp, ids, GRM_array_nona, std = False, fast
         number of pcs to include.
     mp : int
         which phenotype to estiamte on.
-    ids : np array
-        np array of subject ids.
-    GRM_array_nona : np array
+    GRM : np array
         the GRM with missingness removed.
     std : bool, optional
         specifying whether standarization happens before heritability estimation. The default is False.
@@ -369,13 +370,45 @@ def load_n_estimate(df, covars, nnpc, mp, ids, GRM_array_nona, std = False, fast
     # Select method of estimation
     if fast == True: 
         print("AdjHE")
-        result = load_n_AdjHE(df, covars, nnpc, mp, ids, GRM_array_nona, std = False, RV = RV)
+        result = load_n_AdjHE(df, covars, nnpc, mp, GRM, std = False, RV = RV)
 
     else: 
         print("OLS")
-        result = load_n_MOM(df, covars, nnpc, mp, ids, GRM_array_nona, std = False)
+        result = load_n_MOM(df, covars, nnpc, mp, GRM, std = False, RV = RV)
     
     return(pd.DataFrame(result))
 
-#%%
-# d = load_n_all_estimate(df, covars, nnpc, "first3000", ids, GRM_array_nona, std = False, fast=False)
+# def new_adjHE(GRM, df, covars, nnpc, mp): 
+#   # treat  data as matricies for simpler notation
+#   df = df.reset_index().drop("index", axis = 1).dropna()
+#    A = np.matrix(GRM[data.index,:][:,data.index])
+#    n = A.shape[0]
+
+#    df["Intercept"] = 1
+#    X = np.matrix(data.drop([mp, "fid", "iid"], axis =1))
+
+#    # make y a column vector
+#    y = matrix(df["mp"]).T
+
+#    # compute items necessary for heritability
+#    N = GRM.shape[0]
+#    k = len(covars)
+#    
+#    st = ????
+#    trA = np.trace(A)
+#    sumt = ???
+#    sumS = ???
+#    yAy = y.T * A * y
+#    yy = y.T * y 
+#
+#    # calculate numeratro
+#    csg = (N-k) * (yA - st) - (trA - sumS) * (yy - sumt)
+#    cse = -(trA - sumS) * (yAy - st) + (trA2 - sumS^2) * (y - sumt)
+#
+#    h2 = (csg / (csg + cse))[0,0]
+
+
+    
+
+
+
