@@ -1,9 +1,9 @@
 {
   "PC" : null,
   "covar" : "/panfs/roc/groups/3/rando149/coffm049/ABCD/Results/02_Phenotypes/Covars.tsv",
-  "prefix" : "simulations/Simulated_phenotypes/synth",
-  "pheno" : "simulations/Simulated_phenotypes/synth_phenos.phen",
-  "out" : "synth_rv.csv",
+  "prefix" : "simulations/phenotypes/synth",
+  "pheno" : "simulations/phenotypes/Synth.phen",
+  "out" : "simulations/Results/Synth/synth_rv.csv",
   "npc"  : [0],
   "mpheno" : "all",
   "k" : 0,

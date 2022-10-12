@@ -1,9 +1,9 @@
 {
   "PC" : null,
   "covar" : null,
-  "prefix" : "simulations/Simulated_phenotypes/synth",
-  "pheno" : "simulations/Simulated_phenotypes/synth_phenos.phen",
-  "out" : "synth_basic.csv",
+  "prefix" : "simulations/phenotypes/synth",
+  "pheno" : "simulations/phenotypes/Synth.phen",
+  "out" : "simulations/Results/Synth/synth_basic.csv",
   "npc"  : [0],
   "mpheno" : "all",
   "k" : 0,

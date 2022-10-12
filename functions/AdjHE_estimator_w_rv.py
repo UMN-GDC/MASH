@@ -54,8 +54,8 @@ def AdjHE_rv_estimator(A,data, mp, rv, npc=0, std=False) :
     #%% Construct the block diagonal
     diags = [np.ones((size,size)) for size in sizes]
     S = np.matrix(block_diag(*diags))
-    diags = [np.ones((size,size))* size for size in sizes]
-    S2 = np.matrix(block_diag(*diags) )
+    # diags = [np.ones((size,size))* size for size in sizes]
+    # S2 = np.matrix(block_diag(*diags) )
     
     # Construct the orthogonal projection matrix Q utilizing QR decomposition
     q, r = np.linalg.qr(X)
@@ -63,24 +63,24 @@ def AdjHE_rv_estimator(A,data, mp, rv, npc=0, std=False) :
     Q = np.matrix(Q)
         
     # Compute elements of 3x3 matrix
-    QS = Q * S
-    QSQ = QS * Q
+    QSQ = Q * S * Q
     
     # find necessary traces
     trA2 = np.trace(A ** 2)
     trQSQA = np.trace(QSQ * A)
     trA = np.trace(A)
     trQSQ = np.trace(QSQ)
-    trQS2Q = np.trace(Q * S2 * Q)
-    
+    trQSQQSQ = np.trace(QSQ * QSQ)
+
+    # Find inverse 
+    XtXm1 = np.linalg.inv(np.matrix([[trA2, trQSQA, trA],
+                 [trQSQA, trQSQQSQ, trQSQ],
+                 [trA, trQSQ, n]]))
+
     youter = np.matrix(np.outer(y,y))
     trAY = np.trace(A * youter)
     trQSQY = np.trace(QSQ * youter)
-    trYout = np.linalg.norm(y) * n
-    # Find solution 
-    XtXm1 = np.linalg.inv(np.matrix([[trA2, trQSQA, trA],
-                     [trQSQA, trQS2Q, trQSQ],
-                     [trA, trQSQ, n]]))
+    trYout =  np.trace(youter)
     # Possible that the y's will need to account for prinicpal componetns in future real data cases
     sigmas = XtXm1.dot(np.matrix([[trAY], [trQSQY], [trYout]]))
     

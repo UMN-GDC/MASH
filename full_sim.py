@@ -26,7 +26,7 @@ from functions.load_data import ReadGRMBin
 from functions.simulation_helpers.simulate_GRM_phenos import sim_GRM, simulate_phenotypes
 
 # NUMBER OF REPS (reps) FOR EACH CONFIGURATION and number of subejcts (n)
-reps = 3
+reps = 10 
 n = 5000
 
 #%% load GRM
@@ -48,10 +48,9 @@ GRM = GRM[GRM_keep,:][:, GRM_keep]
 n = GRM.shape[0]
 
 #%% Simulate/load a random GRM (nonsparse)
-sim_GRM(n, "simulations/Random_corr.npy")
+sim_GRM(n, "simulations/phenotypes/synth")
 print("loading simulated GRM")
-A = np.load("simulations/Random_corr.npy")[0:n, 0:n]
-
+A = ReadGRMBin("simulations/phenotypes/synth")[0:n,0:n]
 #%% Simulate model Y = 0 + e,   e ~ N(0, sgA + ssS + se I)
 # with varying variances attached to each covariance structure
 
@@ -63,11 +62,13 @@ sigmas = np.array(list((itertools.product(sg, ss, gints))))
 # add error such that th variances add up to one
 sigmas= np.insert(sigmas, 3, 1- np.sum(sigmas,axis = 1), axis=1)
 # grab interesting combinations
-sigmas = sigmas[[0,3, 4, 5, 6, 7, 8, 9, 10, 11] ,:]
+sigmas = sigmas[[0,2,4, 5, 6, 7, 8, 9, 10, 11] ,:]
 
 
 # And simulated values to the datframe then save it
-df = simulate_phenotypes(GRM, df, sigmas, "ABCD", reps = reps)
-df = simulate_phenotypes(A, df, sigmas, "synth", reps = reps )
-df.drop("abcd_site", axis = 1).to_csv("Simulated_full_phenotypes.csv", index= False, sep = " ")
+df1 = simulate_phenotypes(GRM, df, sigmas, "ABCD", reps = reps)
+df2 = simulate_phenotypes(A, df, sigmas, "synth", reps = reps )
+df1.drop("abcd_site", axis = 1).to_csv("simulations/phenotypes/ABCD.csv", index= False, sep = " ")
+df2.drop("abcd_site", axis = 1).to_csv("simulations/phenotypes/Synth.csv", index= False, sep = " ")
+
     

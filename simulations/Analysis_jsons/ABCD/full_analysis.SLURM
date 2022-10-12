@@ -1,5 +1,5 @@
 #!/bin/bash -l
-#SBATCH --time=5:30:00
+#SBATCH --time=8:30:00
 #SBATCH --ntasks=1
 #SBATCH --mem=20g
 #SBATCH --mail-type=ALL  
@@ -15,6 +15,6 @@ cd ~/tools/Basu_herit
 
 #python AdjHE.py --argfile simulations/Analysis_jsons/ABCD/basic.json
 #python AdjHE.py --argfile simulations/Analysis_jsons/ABCD/basic_sites.json
-#python AdjHE.py --argfile simulations/Analysis_jsons/ABCD/site_rv.json  
-python AdjHE.py --argfile simulations/Analysis_jsons/ABCD/MOM.json
+python AdjHE.py --argfile simulations/Analysis_jsons/ABCD/site_rv.json  
+#python AdjHE.py --argfile simulations/Analysis_jsons/ABCD/MOM.json
 
