@@ -46,6 +46,9 @@ def AdjHE_estimator(A,data, mp, npc=0, std=False):
         h2 - heritability estimate.
         standard error estimate
     """
+    if isinstance(A, np.matrix) :
+        A = np.array(A)
+    
     # remove identifiers from y for linear algebra 
     y = data[mp]
     # select PC columns 
