@@ -1,5 +1,5 @@
 #!/bin/bash -l
-#SBATCH --time=8:00:00
+#SBATCH --time=2:00:00
 #SBATCH --ntasks=1
 #SBATCH --mem=10g
 #SBATCH --mail-type=ALL  

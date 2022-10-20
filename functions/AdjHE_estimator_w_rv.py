@@ -55,7 +55,7 @@ def AdjHE_rv_estimator(A,data, mp, rv, npc=0, std=False) :
     diags = [np.ones((size,size)) for size in sizes]
     S = np.matrix(block_diag(*diags))
     # Standardize S
-    S = (S - S.mean(axis = 1))/ S.std(axis = 1)
+    # S = (S - S.mean(axis = 1))/ S.std(axis = 1)
 
     # diags = [np.ones((size,size))* size for size in sizes]
     # S2 = np.matrix(block_diag(*diags) )

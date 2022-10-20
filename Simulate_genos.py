@@ -176,10 +176,10 @@ for sigma in sigmas :
         results["se"].append(sigma[2])
     
         
-        sim1 = AdjHE_simulator(nsubjects= 2000, nSNPs = 100)
+        sim1 = AdjHE_simulator(nsubjects= 1000, nSNPs = 100)
         sim1.sim_pops(theta_alleles = 0.5, nclusts = 1)
         sim1.sim_genos()
-        sim1.sim_phenos(prop_causal = 0.05, var_comps= list(sigma), nsites=  25, intercept = 0)
+        sim1.sim_phenos(prop_causal = 0.05, var_comps= list(sigma), nsites=  10, intercept = 0)
         # Fit basic AdjHE
         sim1.estimate(nnpc = 0, fast = True, RV = "abcd_site")
         results["Site_RE"].append(sim1.result["h2"][0])
@@ -196,16 +196,7 @@ for sigma in sigmas :
 results = pd.DataFrame(results)
 results2 = pd.melt(results, id_vars= ["sg", "ss", "se"], value_vars=['Basic_est', 'Site_RE', 'Site_FE'])
 results2["herit"] = results2.sg/ (results2.sg + results2.ss + results2.se)
-results.to_csv("sim_2000.csv",index = False)
-
-#%%
+results.to_csv("sim_1000_10s.csv",index = False)
 
 
-#fig = px.box(results2, x="variable", y="value", facet_col="herit", facet_row="ss" )
-#fig.add_hline(y = "sg")
-# Free y scals
-#fig.update_yaxes(matches=None)
-#fig.for_each_yaxis(lambda yaxis: yaxis.update(showticklabels=True))
 
-# Save figure
-#plot(fig, filename='full_genome_1000_sim_results.html')
