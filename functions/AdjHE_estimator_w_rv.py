@@ -9,6 +9,7 @@ Created on Thu Sep  8 08:55:43 2022
 import numpy as np
 from scipy.linalg import block_diag
 import pandas as pd
+from functions.eigenvector_outters.py import multiple_outer
 #%%
 
 
