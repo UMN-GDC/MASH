@@ -51,6 +51,8 @@ n = GRM.shape[0]
 sim_GRM(n, "simulations/phenotypes/synth")
 print("loading simulated GRM")
 A = ReadGRMBin("simulations/phenotypes/synth")[0:n,0:n]
+# Standardize A
+A = (A - A.mean(axis = 1))/ A.std(axis = 1)
 #%% Simulate model Y = 0 + e,   e ~ N(0, sgA + ssS + se I)
 # with varying variances attached to each covariance structure
 
@@ -68,7 +70,7 @@ sigmas = sigmas[[0,2,4, 5, 6, 7, 8, 9, 10, 11] ,:]
 # And simulated values to the datframe then save it
 df1 = simulate_phenotypes(GRM, df, sigmas, "ABCD", reps = reps)
 df2 = simulate_phenotypes(A, df, sigmas, "synth", reps = reps )
-df1.drop("abcd_site", axis = 1).to_csv("simulations/phenotypes/ABCD.csv", index= False, sep = " ")
-df2.drop("abcd_site", axis = 1).to_csv("simulations/phenotypes/Synth.csv", index= False, sep = " ")
+df1.drop("abcd_site", axis = 1).to_csv("simulations/phenotypes/ABCD.phen", index= False, sep = " ")
+df2.drop("abcd_site", axis = 1).to_csv("simulations/phenotypes/Synth.phen", index= False, sep = " ")
 
     

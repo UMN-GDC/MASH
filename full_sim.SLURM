@@ -11,4 +11,4 @@ module load python
 
 cd ~/tools/Basu_herit
 
-python ~/tools/Basu_herit/full_sim.py 
+python ~/tools/Basu_herit/full_geno_sim.py 

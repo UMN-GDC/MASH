@@ -7,7 +7,7 @@ Created on Thu Oct 13 09:25:44 2022
 @author: christian
 """
 import os 
-os.chdir("/home/christian/Research/Stat_gen/tools/Basu_herit")
+#os.chdir("/home/christian/Research/Stat_gen/tools/Basu_herit")
 
 import numpy as np
 import pandas as pd
@@ -145,18 +145,10 @@ class AdjHE_simulator() :
         self.result = load_n_estimate(df=self.df, covars=covars,  nnpc=nnpc, mp="Y", GRM= self.GRM, std= False, fast = fast, RV = RV)
 
 
-#%%
-sim1 = AdjHE_simulator(nsubjects= 1000, nSNPs = 100)
-sim1.sim_pops(theta_alleles = 0.5, nclusts = 1)
-sim1.sim_genos()
-sim1.sim_phenos(prop_causal = 0.05, var_comps=[0,0,1], nsites=  10, intercept = 0)
-sim1.estimate(nnpc = 0, fast = True, RV = "abcd_site")
-
-
-#%%
+#%% Simulations
 import itertools
-import plotly.express as px
-from plotly.offline import plot
+#import plotly.express as px
+#from plotly.offline import plot
 
 sg = [0.25, 0.5, 0.75]
 ss = [0, 0.5]
@@ -178,13 +170,13 @@ results = {"sg" : [],
            "Site_RE" : [],
            "Site_FE" : []}
 for sigma in sigmas :
-    for rep in range(5) :
+    for rep in range(100) :
         results["sg"].append(sigma[0])
         results["ss"].append(sigma[1])
         results["se"].append(sigma[2])
     
         
-        sim1 = AdjHE_simulator(nsubjects= 1000, nSNPs = 100)
+        sim1 = AdjHE_simulator(nsubjects= 2000, nSNPs = 100)
         sim1.sim_pops(theta_alleles = 0.5, nclusts = 1)
         sim1.sim_genos()
         sim1.sim_phenos(prop_causal = 0.05, var_comps= list(sigma), nsites=  25, intercept = 0)
@@ -204,28 +196,16 @@ for sigma in sigmas :
 results = pd.DataFrame(results)
 results2 = pd.melt(results, id_vars= ["sg", "ss", "se"], value_vars=['Basic_est', 'Site_RE', 'Site_FE'])
 results2["herit"] = results2.sg/ (results2.sg + results2.ss + results2.se)
-
+results.to_csv("sim_2000.csv",index = False)
 
 #%%
 
 
-fig = px.box(results2, x="variable", y="value", facet_col="herit", facet_row="ss" )
+#fig = px.box(results2, x="variable", y="value", facet_col="herit", facet_row="ss" )
 #fig.add_hline(y = "sg")
 # Free y scals
-fig.update_yaxes(matches=None)
-fig.for_each_yaxis(lambda yaxis: yaxis.update(showticklabels=True))
-plot(fig)
+#fig.update_yaxes(matches=None)
+#fig.for_each_yaxis(lambda yaxis: yaxis.update(showticklabels=True))
 
-#%%
-
-# Add lines to denote heritability
-    print(idx)
-    if (sg == 0.0 and ss == 0.5) or (sg == 0.75 and ss == 0.5) :
-        print("Nope")
-    else : 
-
-
-fig.add_hline(y=[0, 0.25, 0.5, 1], line_dash="dot",
-              annotation_text="True herit",
-              annotation_position="bottom right")
-plot(fig)
+# Save figure
+#plot(fig, filename='full_genome_1000_sim_results.html')

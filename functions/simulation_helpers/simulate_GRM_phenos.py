@@ -10,6 +10,7 @@ Created on Fri Sep 23 10:00:54 2022
 """
 import os
 import numpy as np
+import pandas as pd
 from scipy.stats import random_correlation
 from scipy.linalg import block_diag
 
@@ -33,7 +34,8 @@ def sim_GRM(n, GRM_save) :
 
         # write binary file
         A.tofile(GRM_save + ".grm.bin")
-
+        # Standardize GRM
+        A = (A - A.mean(axis =1))/ A.std(axis=1)
     else: 
         print("No simulations necessary it was already simulated")
 
@@ -41,17 +43,25 @@ def sim_GRM(n, GRM_save) :
 
 def simulate_phenotypes(GRM, df, sigmas, sim_prefix, reps = 1) :
     n = GRM.shape[0]
-   
+    # Standardize GRM just in case it wasn't
+    GRM = (GRM - GRM.mean(axis =1))/ GRM.std(axis=1)
+ 
     # Create S similarity matrix 
     sites, sizes= np.unique(df["abcd_site"], return_counts = True)
     #%% Construct the block diagonal
     diags = [np.ones((size,size)) for size in sizes]
     S = np.matrix(block_diag(*diags))
+    # Standardize S
+    S = (S - S.mean(axis = 1))/ S.std(axis = 1)
 
     num_sites = len(sites)
+    # Create interaction matrix
     SG = S * GRM
+    # Standardize it
+    SG = (SG - SG.mean(axis = 1))/ SG.std(axis = 1)
+
  
-    rng = default_rng()
+    rng = np.random.default_rng(123)
 
     for i, s in enumerate(sigmas) :
         # Generate random site effects
@@ -65,10 +75,10 @@ def simulate_phenotypes(GRM, df, sigmas, sim_prefix, reps = 1) :
         paramset = "".join((sigmas[i]*10).astype(int).astype(str))
 
 	# repeat it for the number of desired replicates
-        rands = pd.DataFrame(rng.multivariate_normal(mean = site_effects, cov = V, reps).T)
+        rands = pd.DataFrame(rng.multivariate_normal(mean = site_effects, cov = V, size = reps).T)
         rands.columns = [paramset + "_" + str(i+1) for i in range(reps)] 
     
-    df = pd.concat([df, rands], axis = 1)
+        df = pd.concat([df, rands], axis = 1)
     
     return df
     
