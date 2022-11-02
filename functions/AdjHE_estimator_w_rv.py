@@ -9,11 +9,11 @@ Created on Thu Sep  8 08:55:43 2022
 import numpy as np
 from scipy.linalg import block_diag
 import pandas as pd
-from functions.eigenvector_outters.py import multiple_outer
+from functions.eigenvector_outters import columnwise_outter
 #%%
 
 
-def AdjHE_rv_estimator(A,data, mp, rv, npc=0, std=False) :
+def AdjHE_rv_estimator(A,df, mp, rv, npc=0, std=False) :
     """
     Estimate the heritability of the presence of an additional random effect.
 
@@ -21,7 +21,7 @@ def AdjHE_rv_estimator(A,data, mp, rv, npc=0, std=False) :
     ----------
     A : numpy array  
         n x n array containing the GRM values.
-    data : pandas dataframe
+    df : pandas dataframe
         A dataframe containing all covariates, principal components, and phenotype that has been residualized if necessary.
     mp : int
         1 based index specifying the phenotype to be estimated on.
@@ -41,17 +41,17 @@ def AdjHE_rv_estimator(A,data, mp, rv, npc=0, std=False) :
     # Reorder df by the random variable
     # then reorder the GRM to match
     print("AdjHE + random effect")
-    data = data.reset_index().drop("index", axis = 1)
-    data = data.sort_values(rv).dropna(subset= [rv])
-    A = np.matrix(A[data.index,:][:,data.index])
+    df = df.reset_index().drop("index", axis = 1)
+    df = df.sort_values(rv).dropna(subset= [rv])
+    A = np.matrix(A[df.index,:][:,df.index])
     n = A.shape[0]
     
-    data["Intercept"] = 1
-    X = np.matrix(data.drop([mp, "fid", "iid", rv], axis =1))
-    y = np.matrix(data[mp])
+    df["Intercept"] = 1
+    X = np.matrix(df.drop([mp, "fid", "iid", rv], axis =1))
+    y = np.matrix(df[mp])
 
     # Create S similarity matrix 
-    site, sizes= np.unique(data[rv], return_counts = True)
+    site, sizes= np.unique(df[rv], return_counts = True)
     #%% Construct the block diagonal
     diags = [np.ones((size,size)) for size in sizes]
     S = np.matrix(block_diag(*diags))
@@ -88,8 +88,10 @@ def AdjHE_rv_estimator(A,data, mp, rv, npc=0, std=False) :
     # Possible that the y's will need to account for prinicpal componetns in future real data cases
     sigmas = XtXm1.dot(np.matrix([[trAY], [trQSQY], [trYout]]))
     
+    results = {"sg" : sigmas[0,0], "ss": sigmas[1,0], "se" : sigmas[2,0], "var(sg)" : 0}
+    
     # return heritability estimate
-    return (sigmas[0] / sum(sigmas))[0,0], 0
+    return results
     
     
    

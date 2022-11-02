@@ -20,19 +20,19 @@ import resource
 import pandas as pd
 import statsmodels.api as sm
 import statsmodels.formula.api as smf
-from functions.eigenvector_outters import multiple_outer
+from functions.eigenvector_outters import columnwise_outter
 from functions.AdjHE_estimator_w_rv import AdjHE_rv_estimator
 
 
 
-def AdjHE_estimator(A,data, mp, npc=0, std=False):
+def AdjHE_estimator(A, df, mp, npc=0, std=False):
     """
     Fucntion for generating heritability estimates from an Adjusted HE standpoint in closed form.
     Parameters
     ----------
     A : numpy array  
         n x n array containing the GRM values.
-    data : pandas dataframe
+    df : pandas dataframe
         A dataframe containing all covariates, principal components, and phenotype that has been residualized if necessary.
     mp : int
         1 based index specifying the phenotype to be estimated on.
@@ -42,77 +42,63 @@ def AdjHE_estimator(A,data, mp, npc=0, std=False):
         Specify whether or not to standaridize the variables before estimation. The default is False.
     Returns
     -------
-    tumple(scalar, scalar)
-        h2 - heritability estimate.
+    tumple(ndarray, scalar)
+        variance parameter estimates.
         standard error estimate
     """
-    if isinstance(A, np.matrix) :
-        A = np.array(A)
     
-    # remove identifiers from y for linear algebra 
-    y = data[mp]
-    # select PC columns 
-    PC_cols = [ col.startswith("pc")   for col in data ]
-    PCs = data.iloc[:, PC_cols]
+    y = np.array(df[mp])
+    A = np.array(A)
+
+    if npc ==0 :
+        Sjs = 0
+        Tjs =0
+    else :
+        # Grab the PCs
+        PC_cols = [ col.startswith("pc")   for col in df ]
+        # Select specified number of Pcs
+        PC = np.array(df.iloc[:,PC_cols])[:, :npc]
+        # Stack the PCs for easier matrix multiplications
+        PCs = np.reshape(PC.T, newshape=(PC.shape[1], PC.shape[0], 1), order = "C")
+        # transpose the PCs
+        PCsT = np.reshape(PC.T, newshape=(PC.shape[1], 1, PC.shape[0]), order = "C")
     
-    trA2 = np.trace(np.linalg.matrix_power(A,2))
+    
+        # Calculate outer products of eigenvectors
+        PPt = np.matmul(PCs, PCsT)
+    
+        # Calculate tj's
+        Tjs = np.matmul(np.matmul(y, PPt), y.T)
+    
+        # Calculated Sj's
+        Sjs = np.matmul(np.matmul(PCsT, A), PCs).flatten()
+
+    # Compute elements of regression matrix
+    n = A.shape[0]
+    
+    # Could square A faster with following A^2 = VD^2 V', but need to pass in eigenvalues D
+    trA2 = np.trace(np.linalg.matrix_power(A, 2))
     trA = np.trace(A)
-    n = A.shape[1]
-
-    # If standardized AdjHE is chosen 
-    if (std == True) :
-        # Standardize the y
-        y = (y-np.mean(y))/np.std(y)
     
-    yay = np.dot(y.T, np.dot(A, y)).flatten()
-    yty = np.dot(y.T, y).flatten()
-
-
-    # If standardized AdjHE is chosen 
-    tn = np.sum(y)**2/n # all 1s PC
-
-    if (npc==0):
-        denominator = trA2 - 2*trA + n
-        nominator = n - trA + yay - yty
-        sigg = n*yay - trA*yty
-        sigg = sigg-yay+tn*trA # add 1's
-        sige = trA2*yty - trA*yay
-        sige = sige-tn*trA2 # add 1's
-
-    else:
-        pc = PCs
-        s = np.diag(np.dot(pc.T,np.dot(A,pc)))
-        b = s - 1
-        c = np.dot(y.T, pc)**2 - 1
-        nominator = n - trA + yay - yty - np.sum(b*c)
+    topleft = trA2 - np.sum(Sjs ** 2)
+    offdiag= trA - np.sum(Sjs)
+    bottomright = n- npc
         
-        # remove identifiers for linear algebra
-        pc = PCs
-        pcA = np.dot(pc.T,A)
-        pcApc = np.dot(pcA,pc)
-        s = np.diag(pcApc) #pciApci
-        b = s-1
-        t = np.dot(y.transpose(),pc)**2 #ypcipciy
-        a11 = trA2 - np.sum(s**2) 
-        a12 = trA - np.sum(s)
-        b1 = yay - np.sum(s*t)
-        b2 = yty - np.sum(t)
-        sigg = (n-npc)*b1 - a12*b2
-        sigg = sigg.flatten() - yay.flatten() + tn * a12 # add 1's
-        sige = a11*b2 - a12*b1
-        sige = sige.flatten()-tn*a11 # add 1's
-        denominator = trA2 - 2*trA + n - np.sum(b**2)
-        
-    if std :
-        h2= nominator/denominator
-        h2 = h2[0]
-        
-    else:
-        h2 = sigg/(sigg+sige)
-            
-        var_ge = 2/denominator 
-        
-    return h2,np.sqrt(abs(var_ge))
+    # Solve the regression problem
+    XXinv = np.linalg.inv(np.matrix([[topleft, offdiag],
+                                     [offdiag, bottomright]]))
+    yay = np.matmul(y.T, np.matmul(A, y))
+    yty = np.inner(y,y)
+    Ycol= np.array([yay - np.sum(Tjs * Sjs),
+                    yty - np.sum(Tjs)])
+    sigmas = np.array(np.matmul(XXinv, Ycol)).flatten()
+    
+    
+    # Get the variance
+    denominator = trA2 - 2*trA + n - np.sum(Sjs**2)
+    var_h2 = 2/ denominator
+    results = {"sg" : sigmas[0], "ss": 0, "se" : sigmas[1], "var(sg)" : var_h2}
+    return results
 
 
 
@@ -124,7 +110,7 @@ def create_formula(nnpc, covars, mp, RV = None):
     Parameters
     ----------
     nnpc : int
-        number of PC's included in the projection.
+        number of PC's included in model.
     covars : list of integers
         the covariates to be included in the projection.
     mp : int
@@ -142,18 +128,10 @@ def create_formula(nnpc, covars, mp, RV = None):
     pc_cols = ["pc_" + str(p) for p in range(1, nnpc +1)]
     # Create formula string
     
-    if covars != None:
-        covar_part = " + ".join(covars)
-    pc_part = " + ".join(pc_cols)
-    
-    if (len(covars) == 0) and (len(pc_cols) != 0) :
-        RHS = pc_part
-    elif (len(covars) != 0) and (len(pc_cols)== 0) :
-        RHS = covar_part
-    elif (len(covars) == 0) and (len(pc_cols)== 0) :
-        RHS = "1"
+    if len(covars) != 0:
+        RHS = " + ".join(covars)
     else :
-        RHS = " + ".join([covar_part, pc_part])
+        RHS = "1"
 
 
     form = mp + "~ " +  RHS
@@ -220,21 +198,26 @@ def load_n_AdjHE(df, covars, nnpc, mp, GRM, std = False, RV = None):
     GRM_nonmissing = GRM[nonmissing,:][:,nonmissing]
     # Get heritability and SE estimates from appropriate estimator
     if RV == None :
-        h2, se = AdjHE_estimator(A= GRM_nonmissing, data = temp, mp = mp, npc=nnpc, std=std)
+        result = AdjHE_estimator(A= GRM_nonmissing, df = temp, mp = mp, npc=nnpc, std=std)
     else :
-        h2, se = AdjHE_rv_estimator(A= GRM_nonmissing, data = temp, mp = mp,rv=RV, npc=nnpc, std=std)
+        result = AdjHE_rv_estimator(A= GRM_nonmissing, df = temp, mp = mp,rv=RV, npc=nnpc, std=std)
     # Get time for each estimate
     t = timeit.default_timer() - start_est
     # Get memory for each step (in Mb) (This is a little sketchy)
     mem = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss/1000
     # Save the formula for the control variables and results
-    result = {"h2" : h2,
-              "SE" : se,
+    result = {"h2" : result["sg"] / (result["sg"] + result["ss"] + result["se"]),
+              "SE" : np.sqrt(result["var(sg)"]),
               "Pheno" : mp,
               "PCs" : nnpc,
               "Covariates" : "+".join(covars),
               "Time for analysis(s)" : t,
               "Memory Usage" : mem}
+    if result["h2"] < 0 :
+        result["h2"] = 0
+    elif result["h2"] >1 :
+        result["h2"] = 1
+    
     print(list(temp.columns))
     print(result["h2"])
     # Return the fit results
@@ -304,7 +287,7 @@ def load_n_MOM(df, covars, nnpc, mp, GRM_array_nona, std = False, RV  = None):
         "I" : np.identity(len(temp[mp]))[np.triu_indices(len(temp[mp]))].flatten()})
     # Get outer product of eigen loadings
     temp2 = pd.concat([temp2,
-                       multiple_outer(temp, nnpc)], axis = 1)
+                       columnwise_outter(temp, nnpc)], axis = 1)
     temp2[mp] = np.outer(temp[mp], temp[mp])[np.triu_indices(len(temp[mp]))].flatten()
     # Fit the model
     model = sm.OLS(endog = temp2[mp], exog = temp2.drop(mp, axis = 1)).fit()
@@ -380,35 +363,6 @@ def load_n_estimate(df, covars, nnpc, mp, GRM, std = False, fast=True, RV = None
         result = load_n_MOM(df, covars, nnpc, mp, GRM, std = False, RV = RV)
     
     return(pd.DataFrame(result))
-
-# def new_adjHE(GRM, df, covars, nnpc, mp): 
-#   # treat  data as matricies for simpler notation
-#   df = df.reset_index().drop("index", axis = 1).dropna()
-#    A = np.matrix(GRM[data.index,:][:,data.index])
-#    n = A.shape[0]
-
-#    df["Intercept"] = 1
-#    X = np.matrix(data.drop([mp, "fid", "iid"], axis =1))
-
-#    # make y a column vector
-#    y = matrix(df["mp"]).T
-
-#    # compute items necessary for heritability
-#    N = GRM.shape[0]
-#    k = len(covars)
-#    
-#    st = ????
-#    trA = np.trace(A)
-#    sumt = ???
-#    sumS = ???
-#    yAy = y.T * A * y
-#    yy = y.T * y 
-#
-#    # calculate numeratro
-#    csg = (N-k) * (yA - st) - (trA - sumS) * (yy - sumt)
-#    cse = -(trA - sumS) * (yAy - st) + (trA2 - sumS^2) * (y - sumt)
-#
-#    h2 = (csg / (csg + cse))[0,0]
 
 
     

@@ -34,7 +34,7 @@ def ReadGRMBin(prefix, AllN = False):
     # Make the rest of the symmetric matrix
     GRM = GRM + GRM.T - np.diag(np.diag(GRM))
     # Assure it is standardized
-    GRM = (GRM - GRM.mean(axis = 1))/ GRM.std(axis = 1)
+    #GRM = (GRM - GRM.mean(axis = 1))/ GRM.std(axis = 1)
     return GRM
 
 

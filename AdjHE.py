@@ -13,7 +13,7 @@ Last Updated 2022-06-06
 ##############################################################
 
 import os
-#os.chdir("/home/christian/Research/Stat_gen/tools/Basu_herit")
+os.chdir("/home/christian/Research/Stat_gen/tools/Basu_herit")
 #os.chdir("/panfs/roc/groups/3/rando149/coffm049/tools/Basu_herit")
 import pandas as pd
 import itertools
@@ -25,9 +25,8 @@ from functions.traits_visualizer import covs_vs_cov_of_interest
 #######################################
 #######################################
 #%% For troubleshootingg
-#c_args= {"argfile" : "Example/Argfile.json"}
-#c_args= {'argfile' : "simulations/Analysis_jsons/first_full.json"}
-#args = read_flags(c_args)
+# args= read_flags({"argfile" : "Example/basic_AdjHE.json"})
+# args= read_flags({'argfile' : "simulations/Analysis_jsons/first_full.json"})
 #######################################
 #######################################
 
@@ -66,7 +65,7 @@ else :
 if args["mpheno"] == "all" :
     mpheno = phenotypes
 else :
-    #%% get list of phenotype names to regress
+    # get list of phenotype names to regress
     if (args["pheno"] != None) :
         # if separate phenotype file is specified, grab from that
         mpheno =  [ph.lower() for ph in args["mpheno"]]

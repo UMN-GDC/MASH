@@ -7,43 +7,27 @@ Created on Fri Aug 12 11:57:20 2022
 """
 
 import numpy as np
-import pandas as pd
-import regex as re
-#%%
-
                           
-def multiple_outer(df, nnpc) :
+def columnwise_outter(mat) :
     """
-    Function for calculating multiple outer products for the case when more than one eigenvector is used.
+    Gvien a (n x p) matrix of eigenvector loadings for individuals with p eigen loading vectors as the columns and n observations
+    calculate and return all elementwise outer products stacked.
 
     Parameters
     ----------
-    df : pandas dataframe 
-        n x p contianing FID, IID, and PC's
+    mat : numpy matrix
+        (n x p) matrix with p columns for each eigenvetor loading and n observations.
 
     Returns
     -------
-    pandas dataframe
-        n**2 x p
-        each column represents the flattened upper half of the outer product of each PC.
+    St : np.array
+        (p x n x n) stacked array of eigenvector loading outer products.
 
     """
-    subjects = df.shape[0]
-    
-    # get list of columns that are PCs
-    # r = re.compile("pc_*")
-    # pc_cols = list(filter(r.match, df.columns))
-    
-    # seed empty dataframe for outer product
-    outers = pd.DataFrame(np.zeros(( int((subjects**2+ subjects)/2), 0)))
+    St = np.zeros((mat.shape[1], mat.shape[0], mat.shape[0]))
 
-    # Get outter product of each PC column
-    for c_ind in range(1, nnpc + 1) :
-        # construct the pc name
-        pc_col = "pc_" + str(c_ind)
-        t= np.outer(df[pc_col], df[pc_col])[np.triu_indices(subjects)]
-        outers["pc_" + str(c_ind)] = t
-    # return outter product matrix
-    return(outers)
+    for i in range(mat.shape[1]) :
+        St[i,:,:] = np.outer(mat[:,i], mat[:,i])
+    return St
 
 
