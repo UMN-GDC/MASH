@@ -12,6 +12,6 @@
   "argfile" : "/home/christian/Research/Stat_gen/tools/Basu_herit/Example/Arg_file.json",
   "loop_covars" : false,
   "loop_covs" : false,
-  "RV" : null,
+  "RV" : "abcd_site",
   "Method" : "AdjHE"
 }

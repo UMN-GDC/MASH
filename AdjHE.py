@@ -80,7 +80,7 @@ if args["npc"] == None :
 # loop over all combinations of pcs and phenotypes
 for mp, nnpc, covs in itertools.product(mpheno, args["npc"], cov_combos):
     r = load_n_estimate(
-        df=df, covars=covs, nnpc=nnpc, mp=mp, GRM= GRM, std= False, fast = args["fast"], RV = args["RV"])
+        df=df, covars=covs, nnpc=nnpc, mp=mp, GRM= GRM, std= False, Method = args["Method"], RV = args["RV"])
     results = pd.concat([results, r], ignore_index = True)
     
 # %%

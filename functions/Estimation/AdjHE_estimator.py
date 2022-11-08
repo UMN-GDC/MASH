@@ -134,7 +134,10 @@ def AdjHE_rv_estimator(A,df, mp, rv, npc=0, std=False) :
     n = A.shape[0]
     
     df["Intercept"] = 1
-    X = np.matrix(df.drop([mp, "fid", "iid", rv], axis =1))
+    X_sites= df[rv]
+
+    # Get dummies for categoricals if they exist
+    X = np.matrix(pd.get_dummies(df.drop(["fid", "iid", rv], axis = 1),  drop_first = True))
     y = np.matrix(df[mp])
 
     # Create S similarity matrix 
