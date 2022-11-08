@@ -180,27 +180,14 @@ def load_n_AdjHE(df, covars, nnpc, mp, GRM, std = False, RV = None):
         - time for analysis
         - maximum memory usage
     """
-    ids = df[["fid", "iid"]]
-    # seed empty result vector
-    # result.columns = ["h2", "SE", "Pheno", "PCs", "Time for analysis(s)", "Memory Usage", "formula"]
     # start clock for fitting 
     start_est = timeit.default_timer()
-    # create the regression formula and columns for seelcting temporary
-    form, cols  = create_formula(nnpc, covars, mp, RV)
-    # save a temporary dataframe
-    temp = df[cols].dropna()
-    # Save residuals of selected phenotype after regressing out PCs and covars
-    temp[mp] = smf.ols(formula = form, data = temp, missing = 'drop').fit().resid
-    # Potentially could use this to control for random effects
-    # smf.mixedlm(formula= form, data = temp, groups=temp["scan_site"])
-    # keep portion of GRM without missingess for the phenotypes or covariates
-    nonmissing = ids[ids.iid.isin(temp.iid)].index
-    GRM_nonmissing = GRM[nonmissing,:][:,nonmissing]
+    
     # Get heritability and SE estimates from appropriate estimator
     if RV == None :
-        result = AdjHE_estimator(A= GRM_nonmissing, df = temp, mp = mp, npc=nnpc, std=std)
+        result = AdjHE_estimator(A= GRM, df = df, mp = mp, npc=nnpc, std=std)
     else :
-        result = AdjHE_rv_estimator(A= GRM_nonmissing, df = temp, mp = mp,rv=RV, npc=nnpc, std=std)
+        result = AdjHE_rv_estimator(A= GRM, df = df, mp = mp,rv=RV, npc=nnpc, std=std)
     # Get time for each estimate
     t = timeit.default_timer() - start_est
     # Get memory for each step (in Mb) (This is a little sketchy)
@@ -218,7 +205,7 @@ def load_n_AdjHE(df, covars, nnpc, mp, GRM, std = False, RV = None):
     elif result["h2"] >1 :
         result["h2"] = 1
     
-    print(list(temp.columns))
+    print(list(df.columns))
     print(result["h2"])
     # Return the fit results
     return(pd.DataFrame(result, index = [0]))
@@ -227,7 +214,7 @@ def load_n_AdjHE(df, covars, nnpc, mp, GRM, std = False, RV = None):
 #%%
 
 
-def load_n_MOM(df, covars, nnpc, mp, GRM_array_nona, std = False, RV  = None):
+def load_n_MOM(df, covars, nnpc, mp, GRM, std = False, RV  = None):
     """
     Estimates heritability, but solves a full OLS problem making it slower than the closed form solution. Takes 
     a dataframe, selects only the necessary columns (so that when we do complete cases it doesnt exclude too many samples)
@@ -243,7 +230,7 @@ def load_n_MOM(df, covars, nnpc, mp, GRM_array_nona, std = False, RV  = None):
         number of pcs to include.
     mp : int
         which phenotype to estiamte on.
-    GRM_array_nona : np array
+    GRM : np array
         the GRM with missingness removed.
     std : bool, optional
         specifying whether standarization happens before heritability estimation. The default is False.
@@ -259,36 +246,23 @@ def load_n_MOM(df, covars, nnpc, mp, GRM_array_nona, std = False, RV  = None):
         - time for analysis
         - maximum memory usage
     """
-    print("MOM regression estimator")
-    ids = df[["fid", "iid"]]
-    # seed empty result vector
-    # result.columns = ["h2", "SE", "Pheno", "PCs", "Time for analysis(s)", "Memory Usage", "formula"]
     # start clock for fitting 
     start_est = timeit.default_timer()
-    # create the regression formula and columns for seelcting temporary
-    form, cols  = create_formula(nnpc, covars, mp, RV = RV)
-    # save a temporary dataframe
-    temp = df[cols].dropna()
-    # Save residuals of selected phenotype after regressing out PCs and covars
-    temp[mp] = smf.ols(formula = form, data = temp, missing = 'drop').fit().resid
-    # Potentially could use this to control for random effects
-    # smf.mixedlm(formula= form, data = temp, groups=temp["scan_site"])
-    # keep portion of GRM without missingess for the phenotypes or covariates
-    nonmissing = ids[ids.iid.isin(temp.iid)].index
-    GRM_nonmissing = GRM_array_nona[nonmissing,:][:,nonmissing]
+
+    print("MOM regression estimator")
     # Get heritability and SE estimates
     # Create a matrix of the second order terms
     temp2 = pd.DataFrame({
         # get dependent from outter product of residualized phenotypes
         #"yyt" : np.outer(temp[mp], temp[mp])[np.triu_indices(len(temp[mp]))].flatten(),
         # get GRM
-        "A" : GRM_nonmissing[np.triu_indices(len(temp[mp]))].flatten(),
+        "A" : GRM[np.triu_indices(len(df[mp]))].flatten(),
         # get I matrix
-        "I" : np.identity(len(temp[mp]))[np.triu_indices(len(temp[mp]))].flatten()})
+        "I" : np.identity(len(df[mp]))[np.triu_indices(len(df[mp]))].flatten()})
     # Get outer product of eigen loadings
     temp2 = pd.concat([temp2,
-                       columnwise_outter(temp, nnpc)], axis = 1)
-    temp2[mp] = np.outer(temp[mp], temp[mp])[np.triu_indices(len(temp[mp]))].flatten()
+                       columnwise_outter(df, nnpc)], axis = 1)
+    temp2[mp] = np.outer(df[mp], df[mp])[np.triu_indices(len(df[mp]))].flatten()
     # Fit the model
     model = sm.OLS(endog = temp2[mp], exog = temp2.drop(mp, axis = 1)).fit()
     sg = model.params["A"]
@@ -309,7 +283,7 @@ def load_n_MOM(df, covars, nnpc, mp, GRM_array_nona, std = False, RV  = None):
               "Covariates" : "+".join(covars),
               "Time for analysis(s)" : t,
               "Memory Usage" : mem}
-    print(list(temp.columns))
+    print(list(df.columns))
     print(result["h2"])
     # Return the fit results
     return(pd.DataFrame(result, index = [0]))
@@ -352,15 +326,30 @@ def load_n_estimate(df, covars, nnpc, mp, GRM, std = False, fast=True, RV = None
         - time for analysis
         - maximum memory usage
     """
+    ids = df[["fid", "iid"]]
+    # seed empty result vector
+    # result.columns = ["h2", "SE", "Pheno", "PCs", "Time for analysis(s)", "Memory Usage", "formula"]
+    # create the regression formula and columns for seelcting temporary
+    form, cols  = create_formula(nnpc, covars, mp, RV)
+    # save a temporary dataframe
+    temp = df[cols].dropna()
+    # Save residuals of selected phenotype after regressing out PCs and covars
+    temp[mp] = smf.ols(formula = form, data = temp, missing = 'drop').fit().resid
+    # Potentially could use this to control for random effects
+    # smf.mixedlm(formula= form, data = temp, groups=temp["scan_site"])
+    # keep portion of GRM without missingess for the phenotypes or covariates
+    nonmissing = ids[ids.iid.isin(temp.iid)].index
+    GRM_nonmissing = GRM[nonmissing,:][:,nonmissing]
+
     
     # Select method of estimation
     if fast == True: 
         print("AdjHE")
-        result = load_n_AdjHE(df, covars, nnpc, mp, GRM, std = False, RV = RV)
+        result = load_n_AdjHE(temp, covars, nnpc, mp, GRM_nonmissing, std = False, RV = RV)
 
     else: 
         print("OLS")
-        result = load_n_MOM(df, covars, nnpc, mp, GRM, std = False, RV = RV)
+        result = load_n_MOM(temp, covars, nnpc, mp, GRM_nonmissing, std = False, RV = RV)
     
     return(pd.DataFrame(result))
 

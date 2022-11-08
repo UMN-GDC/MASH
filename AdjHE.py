@@ -13,7 +13,7 @@ Last Updated 2022-06-06
 ##############################################################
 
 import os
-os.chdir("/home/christian/Research/Stat_gen/tools/Basu_herit")
+# os.chdir("/home/christian/Research/Stat_gen/tools/Basu_herit")
 #os.chdir("/panfs/roc/groups/3/rando149/coffm049/tools/Basu_herit")
 import pandas as pd
 import itertools
@@ -49,29 +49,24 @@ df, GRM, phenotypes = load_everything(prefix = args["prefix"],
 #%%
 print("Calculating heritibility")
 
-# Grab covariate names if covariates specified
+# Create list of covariate sets to regress over
 if args["covars"] != None :
     # make them all lowercase
     args["covars"] = [covar.lower() for covar in args["covars"]]
-    # Create the sets of covarates over which we can loopi
-    # This will return a list of lists of indices for the sets of covaraites to use
+    # Create the sets of covarates over which we can loop
+    # This will return a list of lists of covariate names to regress on
     cov_combos = [args["covars"][0:idx+1] for idx, c in enumerate(args["covars"])]
     # If we don't want to loop, just grab the last item of the generated list assuming the user wants all of those variables included 
     if (args["loop_covs"] != True) : 
         cov_combos = [cov_combos[-1]]
 else :
-    covars = None
+    cov_combos = [[]]
 
 if args["mpheno"] == "all" :
     mpheno = phenotypes
 else :
-    # get list of phenotype names to regress
-    if (args["pheno"] != None) :
-        # if separate phenotype file is specified, grab from that
-        mpheno =  [ph.lower() for ph in args["mpheno"]]
-    else :
-        # if separate pheno file is not specified grab from the covariates file
-        mpheno = [covariates[i-1] for i in args["mpheno"]]
+    # make them lowercase
+    mpheno =  [ph.lower() for ph in args["mpheno"]]
 
 
 #%%
@@ -79,30 +74,14 @@ else :
 results = pd.DataFrame()
 covars = args["covars"]
 
-
-
+if args["npc"] == None :
+    args["npc"] = [0]
 
 # loop over all combinations of pcs and phenotypes
-if (covars == None) and (args["npc"] != None):
-    for mp, nnpc in itertools.product(mpheno, args["npc"]):
-        r = load_n_estimate(
-            df=df, covars=[], nnpc=nnpc, mp=mp, GRM=GRM, std= False, fast = args["fast"], RV = args["RV"])
-        results = pd.concat([results, r])
-elif (covars == None) and (args["npc"] == None):
-    for mp in mpheno:
-        r = load_n_estimate(
-            df=df, covars=[], nnpc=0, mp=mp, GRM=GRM, std= False, fast = args["fast"], RV = args["RV"])
-        results = pd.concat([results, r])
-elif (covars != None) and (args["npc"] == None):
-    for mp, covs in itertools.product(mpheno, cov_combos):
-        r = load_n_estimate(
-            df=df, covars= covs, nnpc=0, mp=mp, GRM=GRM, std= False, fast = args["fast"], RV = args["RV"])
-        results = pd.concat([results, r])
-else:
-    for mp, nnpc, covs in itertools.product(mpheno, args["npc"], cov_combos):
-        r = load_n_estimate(
-            df=df, covars=covs, nnpc=nnpc, mp=mp, GRM= GRM, std= False, fast = args["fast"], RV = args["RV"])
-        results = pd.concat([results, r], ignore_index = True)
+for mp, nnpc, covs in itertools.product(mpheno, args["npc"], cov_combos):
+    r = load_n_estimate(
+        df=df, covars=covs, nnpc=nnpc, mp=mp, GRM= GRM, std= False, fast = args["fast"], RV = args["RV"])
+    results = pd.concat([results, r], ignore_index = True)
     
 # %%
 print("Writing results")
