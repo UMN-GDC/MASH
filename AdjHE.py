@@ -17,9 +17,9 @@ import os
 #os.chdir("/panfs/roc/groups/3/rando149/coffm049/tools/Basu_herit")
 import pandas as pd
 import itertools
-from functions.AdjHE_estimator import load_n_estimate
-from functions.load_data import load_everything
-from functions.parser import get_args, read_flags
+from functions.Estimation.all_estimators import load_n_estimate
+from functions.Data_input.load_data import load_everything
+from functions.Data_input.parser import get_args, read_flags
 from functions.traits_visualizer import covs_vs_cov_of_interest
 
 #######################################

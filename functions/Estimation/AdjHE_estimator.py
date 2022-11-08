@@ -15,13 +15,13 @@ Last Updated 2022-05-26
 
 import numpy as np
 from numpy import matrix
+from scipy.linalg import block_diag
 import timeit
 import resource
 import pandas as pd
 import statsmodels.api as sm
 import statsmodels.formula.api as smf
-from functions.eigenvector_outters import columnwise_outter
-from functions.AdjHE_estimator_w_rv import AdjHE_rv_estimator
+from functions.Estimation.Estimate_helpers import create_formula, columnwise_outter
 
 
 
@@ -100,48 +100,88 @@ def AdjHE_estimator(A, df, mp, npc=0, std=False):
     results = {"sg" : sigmas[0], "ss": 0, "se" : sigmas[1], "var(sg)" : var_h2}
     return results
 
-
-
-
-def create_formula(nnpc, covars, mp, RV = None):
+def AdjHE_rv_estimator(A,df, mp, rv, npc=0, std=False) :
     """
-    Creates a formula for the mean to residualize against. In other words describes the projection space and by extension the residual space.
+    Estimate the heritability of the presence of an additional random effect.
 
     Parameters
     ----------
-    nnpc : int
-        number of PC's included in model.
-    covars : list of integers
-        the covariates to be included in the projection.
+    A : numpy array  
+        n x n array containing the GRM values.
+    df : pandas dataframe
+        A dataframe containing all covariates, principal components, and phenotype that has been residualized if necessary.
     mp : int
-        phenotype to be projected.
+        1 based index specifying the phenotype to be estimated on.
+    rv : string
+        specifying the name of the column to be used as a random variable.
+    npc : int, optional
+        number of prinicpal components to adjust for. The default is 0.
+    std : bool, optional
+        Specify whether or not to standaridize the variables before estimation. The default is False.
 
     Returns
     -------
-    (form, cols) where form is the formual exceptabule by smf.ols procedure and cols specifies the columns necessary for the projection
-    (PCs, covariates, and phenotype).
-
+    tuple(scalar, scalar)
+        h2 - heritability estimate.
+        standard error estimate
     """
-    # Get indices for ID variables
-    id_cols = ["fid", "iid"] 
-    # Get the full range of pc columns
-    pc_cols = ["pc_" + str(p) for p in range(1, nnpc +1)]
-    # Create formula string
+    # Reorder df by the random variable
+    # then reorder the GRM to match
+    print("AdjHE + random effect")
+    df = df.reset_index().drop("index", axis = 1)
+    df = df.sort_values(rv).dropna(subset= [rv])
+    A = np.matrix(A[df.index,:][:,df.index])
+    n = A.shape[0]
     
-    if len(covars) != 0:
-        RHS = " + ".join(covars)
-    else :
-        RHS = "1"
+    df["Intercept"] = 1
+    X = np.matrix(df.drop([mp, "fid", "iid", rv], axis =1))
+    y = np.matrix(df[mp])
+
+    # Create S similarity matrix 
+    site, sizes= np.unique(df[rv], return_counts = True)
+    # Construct the block diagonal
+    diags = [np.ones((size,size)) for size in sizes]
+    S = np.matrix(block_diag(*diags))
+    # Standardize S
+    # S = (S - S.mean(axis = 1))/ S.std(axis = 1)
+
+    # diags = [np.ones((size,size))* size for size in sizes]
+    # S2 = np.matrix(block_diag(*diags) )
+    
+    # Construct the orthogonal projection matrix Q utilizing QR decomposition
+    q, r = np.linalg.qr(X)
+    Q = np.identity(n) - X.dot(np.linalg.inv(r).dot(q.T))
+    Q = np.matrix(Q)
+        
+    # Compute elements of 3x3 matrix
+    QSQ = Q * S * Q
+    
+    # find necessary traces
+    trA2 = np.trace(A ** 2)
+    trQSQA = np.trace(QSQ * A)
+    trA = np.trace(A)
+    trQSQ = np.trace(QSQ)
+    trQSQQSQ = np.trace(QSQ * QSQ)
+
+    # Find inverse 
+    XtXm1 = np.linalg.inv(np.matrix([[trA2, trQSQA, trA],
+                 [trQSQA, trQSQQSQ, trQSQ],
+                 [trA, trQSQ, n]]))
+
+    youter = np.matrix(np.outer(y,y))
+    trAY = np.trace(A * youter)
+    trQSQY = np.trace(QSQ * youter)
+    trYout =  np.trace(youter)
+    # Possible that the y's will need to account for prinicpal componetns in future real data cases
+    sigmas = XtXm1.dot(np.matrix([[trAY], [trQSQY], [trYout]]))
+    
+    results = {"sg" : sigmas[0,0], "ss": sigmas[1,0], "se" : sigmas[2,0], "var(sg)" : 0}
+    
+    # return heritability estimate
+    return results
 
 
-    form = mp + "~ " +  RHS
-    # columns
-    cols = id_cols + [mp] + covars + pc_cols
-    if RV != None :
-        cols = cols + [RV]
 
-    # return the formula and columns
-    return(form, cols)
  
 
 
@@ -292,66 +332,6 @@ def load_n_MOM(df, covars, nnpc, mp, GRM, std = False, RV  = None):
 
 #%%
 
-def load_n_estimate(df, covars, nnpc, mp, GRM, std = False, fast=True, RV = None):
-    """
-    Estimates heritability, but solves a full OLS problem making it slower than the closed form solution. Takes 
-    a dataframe, selects only the necessary columns (so that when we do complete cases it doesnt exclude too many samples)
-    residualizes the phenotype, then documents the heritability, standard error and some computer usage metrics.
-
-    Parameters
-    ----------
-    df : pandas dataframe
-        dataframe contianing phenotype, covariates, an prinicpal components.
-    covars : list of int
-        list of integers specifying which covariates to include in the resiudalization.
-    nnpc : int
-        number of pcs to include.
-    mp : int
-        which phenotype to estiamte on.
-    GRM : np array
-        the GRM with missingness removed.
-    std : bool, optional
-        specifying whether standarization happens before heritability estimation. The default is False.
-    RV : string, optional
-        Varible to control for as a random effect, if applicable
-
-    Returns
-    -------
-    pandas dataframe containing:
-        - heritability estimate
-        - standard error the estimate
-        - the phenotype
-        - the number of pcs included
-        - The covarites included 
-        - time for analysis
-        - maximum memory usage
-    """
-    ids = df[["fid", "iid"]]
-    # seed empty result vector
-    # result.columns = ["h2", "SE", "Pheno", "PCs", "Time for analysis(s)", "Memory Usage", "formula"]
-    # create the regression formula and columns for seelcting temporary
-    form, cols  = create_formula(nnpc, covars, mp, RV)
-    # save a temporary dataframe
-    temp = df[cols].dropna()
-    # Save residuals of selected phenotype after regressing out PCs and covars
-    temp[mp] = smf.ols(formula = form, data = temp, missing = 'drop').fit().resid
-    # Potentially could use this to control for random effects
-    # smf.mixedlm(formula= form, data = temp, groups=temp["scan_site"])
-    # keep portion of GRM without missingess for the phenotypes or covariates
-    nonmissing = ids[ids.iid.isin(temp.iid)].index
-    GRM_nonmissing = GRM[nonmissing,:][:,nonmissing]
-
-    
-    # Select method of estimation
-    if fast == True: 
-        print("AdjHE")
-        result = load_n_AdjHE(temp, covars, nnpc, mp, GRM_nonmissing, std = False, RV = RV)
-
-    else: 
-        print("OLS")
-        result = load_n_MOM(temp, covars, nnpc, mp, GRM_nonmissing, std = False, RV = RV)
-    
-    return(pd.DataFrame(result))
 
 
     
