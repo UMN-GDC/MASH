@@ -117,3 +117,6 @@ def derivative_minim_full(y, X, X_T, Ct, id_diag, add, G_selected, GRM_array, N)
  #result = np.hstack((np.asscalar(pc_minimizer_f),np.asscalar(sd),np.asscalar(sigma),t1))
  result = {'Heritability estimate':pc_minimizer_f, 'SD of heritability estimate':sd, 'Variance estimate':  sigma, 'Time taken':t1}
  return(result)
+
+def load_n_PredLMM() :
+    print("PredLMM is not full incorporated yet...")

@@ -10,12 +10,13 @@ import pandas as pd
 import statsmodels.formula.api as smf
 from functions.Estimation.AdjHE_estimator import load_n_AdjHE
 from functions.Estimation.AdjHE_estimator import load_n_MOM
+from functions.Estimation.PredLMM_estimator import load_n_PredLMM
 from functions.Estimation.Estimate_helpers import create_formula
 
 
 #%%
 
-def load_n_estimate(df, covars, nnpc, mp, GRM, std = False, fast=True, RV = None):
+def load_n_estimate(df, covars, nnpc, mp, GRM, std = False, Method = "AdjHE", RV = None):
     """
     Estimates heritability, but solves a full OLS problem making it slower than the closed form solution. Takes 
     a dataframe, selects only the necessary columns (so that when we do complete cases it doesnt exclude too many samples)
@@ -35,6 +36,9 @@ def load_n_estimate(df, covars, nnpc, mp, GRM, std = False, fast=True, RV = None
         the GRM with missingness removed.
     std : bool, optional
         specifying whether standarization happens before heritability estimation. The default is False.
+    Method: str
+        specify which method of estimation to use AdjHE, PredLMM, or MOM
+        Default is AdjHE
     RV : string, optional
         Varible to control for as a random effect, if applicable
 
@@ -66,13 +70,16 @@ def load_n_estimate(df, covars, nnpc, mp, GRM, std = False, fast=True, RV = None
 
     
     # Select method of estimation
-    if fast == True: 
+    if Method == "AdjHE": 
         print("AdjHE")
         result = load_n_AdjHE(temp, covars, nnpc, mp, GRM_nonmissing, std = False, RV = RV)
 
-    else: 
+    elif Method == "MOM": 
         print("OLS")
         result = load_n_MOM(temp, covars, nnpc, mp, GRM_nonmissing, std = False, RV = RV)
+    elif Method == "PredlMM" : 
+        result = load_n_PredLMM(temp, covars, nnpc, mp, GRM_nonmissing, std = False, RV = RV)
+
     
     return(pd.DataFrame(result))
 

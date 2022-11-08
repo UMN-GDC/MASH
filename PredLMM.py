@@ -8,44 +8,37 @@ from numpy.linalg import inv
 from scipy.linalg.blas import sgemm
 from copy import copy
 import pandas as pd 
-from functions.load_data import ReadGRMBin, multirange, load_data
-from functions.PredLMM_estimator import derivative_minim_sub, derivative_minim_full
-from functions.parser import prefix, covar, pheno, out, PC, args, mpheno
+from functions.Data_input.load_data import ReadGRMBin, load_everything
+from functions.Estimation.PredLMM_estimator import derivative_minim_sub, derivative_minim_full
+from functions.Data_input.parser import get_args, read_flags
 
-
+#%%
+# Get CL arguments and convert them to usable Python objects in a dictionary
+args = read_flags(get_args())
+print("These are the list of arguments that were input:")
+print(args)
 
 #%%
 
 print("Reading GRM")
-start_read = timeit.default_timer()
-G = ReadGRMBin(prefix)
-N = len(G['diag'])
-GRM = csr_matrix((N, N));GRM_array = GRM.todense().A1.reshape(N, N)
-idx = np.tril_indices(N,-1,N);idy = np.triu_indices(N,1,N);id_diag = np.diag_indices(N)
-GRM_array[idx] = G['off'];GRM_array[id_diag] = G['diag'];GRM_array[idy] = GRM_array.T[idy]
-GRM_array = np.float32(GRM_array)
-
-#%%
-
-#-----------------------convert the GRM to h5py format for faster loading------------------- 
-#hf = h5py.File('Data/example_grm.h5', 'w')
-#hf.create_dataset('dataset_1', data=GRM_array)
-#hf.close()
-
-#-----------------------loading GRM in h5py format------------------------------------------- 
-#hf = h5py.File('Data/example_grm.h5', 'r')
-#GRM_array= np.array(hf.get('GRM'),dtype="float32")
+ids, GRM = ReadGRMBin(args["prefix"])
+N = GRM.shape[0]
 
 
 print("Reading covariate and phenotype data")
-df, covariates, phenotypes = load_data(pheno_file=pheno, cov_file=covar, PC_file=PC)
+#%% Read in all data
+df, GRM, phenotypes = load_everything(prefix = args["prefix"],
+                          pheno_file = args["pheno"], 
+                          cov_file= args["covar"], 
+                          PC_file= args["PC"])
 #%%
 #----------------------Knot selection and selecting corresponding vectors----------------------------
 print("selecting knots")
+start_read = timeit.default_timer()
 subsample_size = 500;
 sub_sample = np.random.choice(range(0,N),subsample_size,replace=False)
 df_sub = df.iloc[sub_sample, ]
-G_selected = GRM_array[sub_sample,:][:,sub_sample]
+G_selected = GRM[sub_sample,:][:,sub_sample]
 Knot_sel_time = timeit.default_timer() - start_read
 #%%
 #------------------Fitting LMM using only the selected subsample (set of knots)-------------------------
