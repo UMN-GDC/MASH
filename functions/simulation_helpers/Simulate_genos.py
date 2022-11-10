@@ -11,7 +11,7 @@ import os
 
 import numpy as np
 import pandas as pd
-from functions.AdjHE_estimator import load_n_estimate
+from functions.Estimation.all_estimators import load_n_estimate
 from sklearn.decomposition import PCA
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -20,8 +20,6 @@ rng = np.random.default_rng(123)
 
 
 # TO DO:
-    # Estimate on balanced sites
-    # Estimate with PC adjustment 
     # Compare with naively splitting into sites and estimating (see if heritability estimate changes by site)
 
 
@@ -246,7 +244,7 @@ class AdjHE_simulator() :
                 dpi = 200)
 
         
-    def estimate(self, fast = True, RV = None, nnpc = 0, covars = [], gcta= False):
+    def estimate(self, Method = None, RV = None, nnpc = 0, covars = [], silent = True):
         
         if (nnpc != 0) and (RV != None):
             # project data onto pc space
@@ -262,7 +260,7 @@ class AdjHE_simulator() :
         else :
             G = self.GRM
 
-        if gcta :
+        if Method == "GCTA" :
             # Get lower triangle indices
             l = np.tril_indices(self.nsubjects)
 
@@ -292,14 +290,43 @@ class AdjHE_simulator() :
 
 
 
-        else :
-            self.result = load_n_estimate(df=self.df, covars=covars,  nnpc=nnpc, mp="Y", GRM= G, std= False, fast = fast, RV = RV)
+        elif Method == "AdjHE" :
+            self.result = load_n_estimate(df=self.df, covars=covars,  nnpc=nnpc, mp="Y", GRM= G, 
+                                          std= False, Method = Method, RV = RV, silent = silent)
         
-
+        elif Method =="Naive" :
+            # Empty results list
+            results = pd.DataFrame({"Estimate" : [],
+                                   "Size" : []})
+            
+            # loop over  all sites
+            for site in np.unique(self.df.abcd_site) :
+                # Grab the portion that lies within a given site
+                subdf = self.df.loc[self.df.abcd_site == site, :]
+                # Get size 
+                size = subdf.shape[0]
+                # Estimate just on the supsample
+                result = load_n_estimate(df=subdf, covars= [],  nnpc=0, mp="Y", GRM= self.GRM, std= False, Method = "AdjHE", RV = None,
+                                         silent=silent)
+                result = pd.DataFrame({"Estimate" : [result["h2"][0]],
+                                       "Size" : [size]})
+                # Add to the list of estimates
+                results = results.append(result, ignore_index = True)
+                
+            # Pool the estimates
+            results["nXbar"] = (results["Size"] * results["Estimate"]) / self.nsubjects
+            final_result = np.sum(results["nXbar"])
+            self.result = {"h2" : final_result,
+                      "SE" : 0,
+                      "Pheno" : "Y",
+                      "PCs" : nnpc,
+                      "Covariates" : "NONE",
+                      "Time for analysis(s)" : 0,
+                      "Memory Usage" : 0}
 
 
 #%%
-sim1 = AdjHE_simulator(nsubjects= 200, nSNPs = 100)
+sim1 = AdjHE_simulator(nsubjects= 1000, nSNPs = 100)
 sim1.sim_sites(nsites=  30)
 sim1.sim_pops(theta_alleles = 0.5, nclusts = 10, dominance = 3, site_comp="IID")
 sim1.sim_genos()
@@ -310,10 +337,11 @@ sim1.sim_pheno(var_comps=[0.5, 0.25, 0.25])
 sim1.GRM_vis(sort_by = "subj_ancestries", npc = 1)
 #%%
 
-sim1.estimate(nnpc = 0, fast = True)
-sim1.estimate(nnpc = 1, fast = True, RV = "abcd_site")
-sim1.estimate(nnpc = 0, fast = True, covars = ["abcd_site"])
-sim1.estimate(nnpc = 0, fast = True, gcta= True)
+sim1.estimate(nnpc = 0, Method = "AdjHE")
+sim1.estimate(nnpc = 1, Method = "AdjHE", RV = "abcd_site")
+sim1.estimate(nnpc = 0, Method = "AdjHE", covars = ["abcd_site"])
+sim1.estimate(nnpc = 0, Method = "GCTA")
+sim1.estimate(nnpc = 0, Method = "Naive", silent = True)
 
 
 
@@ -366,7 +394,8 @@ def est_simulations(sigmas, out, site_comp = "IID",
                "Site_RE" : [],
                "Site_FE" : [],
                #"MOM": []
-               "GCTA" :[]
+               "GCTA" :[],
+               "Naive" : []
                }
     # cycle through combinations of sigmas
     for sigma in sigmas :
@@ -383,30 +412,35 @@ def est_simulations(sigmas, out, site_comp = "IID",
             sim1.sim_genos()
             sim1.sim_gen_effects(prop_causal = prop_causal, site_dep=site_dep)
             sim1.sim_pheno(var_comps= list(sigma))
-            # Fit basic AdjHE
-            sim1.estimate(nnpc = nnpc, fast = True, RV = "abcd_site")
+            
+            # Fit basic AdjHE with RV
+            sim1.estimate(nnpc = nnpc, Method = "AdjHE", RV = "abcd_site")
             results["Site_RE"].append(sim1.result["h2"][0])
         
             # Fit basic AdjHE 
-            sim1.estimate(nnpc = nnpc, fast = True)
+            sim1.estimate(nnpc = nnpc, Method = "AdjHE")
             results["Basic_est"].append(sim1.result["h2"][0])
             
-            # Fit AdjHE with Site RV
-            sim1.estimate(nnpc = nnpc, fast = True, covars= ["abcd_site"])
+            # Fit AdjHE with Site fixed effect
+            sim1.estimate(nnpc = nnpc, Method = "AdjHE", covars= ["abcd_site"])
             results["Site_FE"].append(sim1.result["h2"][0])
+            
+            # Fit AdjHE naively pooling between sites
+            sim1.estimate(nnpc = nnpc, Method = "Naive")
+            results["Naive"].append(sim1.result["h2"])
             
             # Fit MOM
             #sim1.estimate(nnpc = 0, fast = False, covars= ["abcd_site"])
             #results["MOM"].append(sim1.result["h2"][0])
             
             # Fit GCTA
-            sim1.estimate(gcta= True)
+            sim1.estimate(Method = "GCTA")
             results["GCTA"].append(sim1.result["h2"])
 
 
     # Make results tall
     results = (pd.DataFrame(results)
-               .melt(id_vars= ["sg", "ss", "se"], value_vars=['GCTA', 'Site_RE', 'Site_FE'])
+               .melt(id_vars= ["sg", "ss", "se"], value_vars=['GCTA', 'Site_RE', 'Site_FE', "Naive"])
                )
     results["h2"] = results.sg/ (results.sg + results.ss + results.se)
     results["h2"][np.isnan(results.h2)] = 0
@@ -439,8 +473,8 @@ est_simulations(site_comp = "RAND", sigmas = sigmas,
 #%%
 # IID (GOLDEN ONE)
 est_simulations(site_comp = "IID", sigmas = sigmas, 
-                out = "/home/christian/Research/Stat_gen/tools/Basu_herit/docs/Presentations/Images/Ests_c2_s30_IID_1pc",
-                nclusts = 2, reps = 100, nsubjects =  1000, nnpc=1, theta_alleles = 0.15)
+                out = "/home/christian/Research/Stat_gen/tools/Basu_herit/docs/Presentations/Images/Ests_c2_s30_IID_1pc_plus_naive",
+                nclusts = 2, reps = 100, nsubjects =  1000, nsites= 2, nnpc=1, theta_alleles = 0.15)
 #%%
 est_simulations(site_comp = "IID", sigmas = sigmas, 
                 out = "/home/christian/Research/Stat_gen/tools/Basu_herit/docs/Presentations/Images/delete",
