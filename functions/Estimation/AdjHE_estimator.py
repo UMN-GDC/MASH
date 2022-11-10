@@ -226,10 +226,8 @@ def load_n_AdjHE(df, covars, nnpc, mp, GRM, std = False, RV = None):
     
     # Get heritability and SE estimates from appropriate estimator
     if RV == None :
-        print("AdjHE Estimation...")
         result = AdjHE_estimator(A= GRM, df = df, mp = mp, npc=nnpc, std=std)
     else :
-        print("AdjHE Estimation + Random effect...")
         result = AdjHE_rv_estimator(A= GRM, df = df, mp = mp,rv=RV, npc=nnpc, std=std)
     # Get time for each estimate
     t = timeit.default_timer() - start_est
@@ -248,8 +246,6 @@ def load_n_AdjHE(df, covars, nnpc, mp, GRM, std = False, RV = None):
     elif result["h2"] >1 :
         result["h2"] = 1
     
-    print(list(df.columns))
-    print(result["h2"])
     # Return the fit results
     return(pd.DataFrame(result, index = [0]))
 
@@ -292,7 +288,6 @@ def load_n_MOM(df, covars, nnpc, mp, GRM, std = False, RV  = None):
     # start clock for fitting 
     start_est = timeit.default_timer()
 
-    print("MOM regression estimator")
     # Get heritability and SE estimates
     # Create a matrix of the second order terms
     temp2 = pd.DataFrame({
@@ -326,18 +321,9 @@ def load_n_MOM(df, covars, nnpc, mp, GRM, std = False, RV  = None):
               "Covariates" : "+".join(covars),
               "Time for analysis(s)" : t,
               "Memory Usage" : mem}
-    print(list(df.columns))
-    print(result["h2"])
     # Return the fit results
     return(pd.DataFrame(result, index = [0]))
 
-
-
-#%%
-
-
-
-    
 
 
 
