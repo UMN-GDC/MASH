@@ -14,5 +14,5 @@
   "loop_covs" : false,
   "RV" : null,
   "Method" : "AdjHE",
-  "ids" : null
+  "ids" : "Example/Input_files/sub.grm.id"
 }

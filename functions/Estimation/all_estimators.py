@@ -71,13 +71,13 @@ def load_n_estimate(df, covars, nnpc, mp, GRM, std = False, Method = "AdjHE", RV
     
     # Select method of estimation
     if Method == "AdjHE": 
-        print("AdjHE")
         result = load_n_AdjHE(temp, covars, nnpc, mp, GRM_nonmissing, std = False, RV = RV)
 
     elif Method == "MOM": 
-        print("OLS")
+        print("OLS estimation...")
         result = load_n_MOM(temp, covars, nnpc, mp, GRM_nonmissing, std = False, RV = RV)
     elif Method == "PredlMM" : 
+        print("PredLMM Estimation...")
         result = load_n_PredLMM(temp, covars, nnpc, mp, GRM_nonmissing, std = False, RV = RV)
 
     

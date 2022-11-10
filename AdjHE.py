@@ -42,7 +42,8 @@ print(args)
 df, GRM, phenotypes = load_everything(prefix = args["prefix"],
                           pheno_file = args["pheno"], 
                           cov_file= args["covar"], 
-                          PC_file= args["PC"])
+                          PC_file= args["PC"],
+                          ids = args["ids"])
 #%% Save images of covariate relations
 # covs_vs_cov_of_interest(df, args["RV"], args["covars"], args["out"])
 

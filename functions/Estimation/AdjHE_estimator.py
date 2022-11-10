@@ -46,7 +46,6 @@ def AdjHE_estimator(A, df, mp, npc=0, std=False):
         variance parameter estimates.
         standard error estimate
     """
-    
     y = np.array(df[mp])
     A = np.array(A)
 
@@ -127,7 +126,6 @@ def AdjHE_rv_estimator(A,df, mp, rv, npc=0, std=False) :
     """
     # Reorder df by the random variable
     # then reorder the GRM to match
-    print("AdjHE + random effect")
     df = df.reset_index().drop("index", axis = 1)
     df = df.sort_values(rv).dropna(subset= [rv])
     A = np.matrix(A[df.index,:][:,df.index])
@@ -228,8 +226,10 @@ def load_n_AdjHE(df, covars, nnpc, mp, GRM, std = False, RV = None):
     
     # Get heritability and SE estimates from appropriate estimator
     if RV == None :
+        print("AdjHE Estimation...")
         result = AdjHE_estimator(A= GRM, df = df, mp = mp, npc=nnpc, std=std)
     else :
+        print("AdjHE Estimation + Random effect...")
         result = AdjHE_rv_estimator(A= GRM, df = df, mp = mp,rv=RV, npc=nnpc, std=std)
     # Get time for each estimate
     t = timeit.default_timer() - start_est

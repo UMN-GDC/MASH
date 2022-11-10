@@ -6,7 +6,7 @@ import timeit
 #%%
 
 
-def ReadGRMBin(prefix):
+def ReadGRMBin(prefix, sub_ids = None):
     """
     Read GCTA style binary GRM file sets into memory.
 
@@ -14,7 +14,8 @@ def ReadGRMBin(prefix):
     ----------
     prefix : string
         filepath common to all files of the GRM that is to be read.
-
+    sub_ids : str
+        OPTIONAL: filepath to FIDs/IIDS of subset of the sample
     Returns
     -------
     ids : pandas dataframe
@@ -42,6 +43,15 @@ def ReadGRMBin(prefix):
     GRM[l] = grm
     # Make the rest of the symmetric matrix
     GRM = GRM + GRM.T - np.diag(np.diag(GRM))
+    
+    if sub_ids != None :
+        ids2 = pd.read_csv(sub_ids, sep = "\t", header = None, dtype = str)
+        ids2.columns = ["fid", "iid"]
+        # keep the ids that overlap with the additionally specified ids
+        ids = ids.merge(ids2, on = ["fid", "iid"])
+        # Subset the GRM too
+        GRM = GRM[ids.index, :][:, ids.index]        
+
     return ids, GRM
 
 
@@ -83,7 +93,7 @@ def load_tables(ids, list_of_files) :
 
 
 # %% Read GRM
-def load_everything(prefix, pheno_file, cov_file=None, PC_file=None, k=0):
+def load_everything(prefix, pheno_file, cov_file=None, PC_file=None, k=0, ids = None):
     """
     Load all covariates, phenotypes, and the GRM
 
@@ -110,7 +120,7 @@ def load_everything(prefix, pheno_file, cov_file=None, PC_file=None, k=0):
     start_read = timeit.default_timer()
     
     # Read in grm
-    ids, GRM = ReadGRMBin(prefix)
+    ids, GRM = ReadGRMBin(prefix, ids)
     list_of_files = [pheno_file, PC_file, cov_file]
     df = load_tables(ids, list_of_files)
 
