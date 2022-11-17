@@ -363,7 +363,7 @@ class AdjHE_simulator():
         self.result = pd.DataFrame({"sg" : sigma[0], "ss" : sigma[1], "se" : sigma[2],                  # Store variance parameters
                       "nsub" : self.nsubjects, "nsites" : nsites, "nclusts" : nclusts,            # Store count parameters
                       "prop_causal" : prop_causal, "site_comp" : site_comp, "nSNPs" : self.nSNPs, # Store other parameters
-                      "theta_alleles" : theta_alleles, dominance : "dominance", "npc" : nnpc,
+                      "theta_alleles" : theta_alleles, "dominance" : dominance, "npc" : nnpc,
                       "Site_RE" : Site_RE, "Basic_est" : Basic_est, "Site_FE" :Site_FE, "Naive_AdjHE" : Naive, "GCTA" : GCTA # Store estimates
                       }, index = [0])
         
@@ -385,10 +385,35 @@ def sim_experiment(nsubjectss = [100], site_comps=["IID"], nSNPss = [20],
         
         sim_results = pd.concat([sim_results, sim.result], ignore_index = True)
         
+    # specify parameters and estimate  column names
+    params = ['sg', 'ss', 'se', 'nsub','nsites', 'nclusts', 'prop_causal', 'site_comp',
+              'nSNPs', 'theta_alleles', "dominance", 'npc']
+    ests = ['Site_RE', 'Basic_est', 'Site_FE', 'Naive_AdjHE', 'GCTA']
+    # Make results tall
+    sim_results = (pd.DataFrame(sim_results)
+               .melt(id_vars= params, value_vars= ests)
+               )
+    # Return results in a tall dataframe
     return sim_results
 
 
 
 
-def plot_save(sim_results, out) :
+def plot_save(results, out) :
+    results["h2"] = results.sg / (results.sg + results.ss + results.se)
+    results["h2"][np.isnan(results.h2)] = 0
+    results.to_csv(out + ".csv")
+
+    # Plot results and store at specified locaation
+    # fig = px.violin(results, x="variable", y="value", color="variable", facet_col="h2", facet_row = "ss")
+    fig = px.box(results, x="variable", y="value",
+                 color="variable", facet_col="h2", facet_row="ss")
+    fig.update_yaxes(matches=None)
+    fig.for_each_yaxis(lambda yaxis: yaxis.update(showticklabels=True))
+    fig.update_xaxes(matches=None)
+    fig.for_each_xaxis(lambda xaxis: xaxis.update(showticklabels=True))
+    fig.update_layout(
+        font=dict(size=20)
+    )
+    plot(fig, filename=out + ".html")
 
