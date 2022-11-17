@@ -223,60 +223,134 @@ Image credit: https://blogs.kcl.ac.uk/editlab/2019/05/07/if-something-is-genetic
 \begin{frame}{GWAS}
 \begin{itemize}
 	\item Genome Wide Association studies (GWAS)
-	$$Y = X\beta + \epsilon $$
-	\item Hypothesis testing done on the $\beta$ (sometimes millions)
-	\item Great for highly influential SNP's
-	\item Low power for causality spread across multiple SNP's
+	$$Y' = X_c\alpha + X_g\beta + \epsilon $$
+	\item $X_g$: genotype
+	\item $X_c$: other covariates
+	\item Inference done on the $\beta$ (sometimes millions)
+	\item Pro: Great for highly influential SNP's
+	\item Low: Low power for causality spread across multiple SNP's
 \end{itemize}
+\end{frame}
+
+\begin{frame}{Gene effects as random}
+\begin{itemize}
+	\item Consider $\beta \sim N(0, \sigma_g^2 I)$
+	\item Then $X_g\beta \sim N(0, \sigma_g^2 X_gX_g')$
+	\item Redefined as $N(0, \sigma^2_G A)$
+	\item Where A is called the \textbf{Genetic Relatedness Matrix}
+	\item Model becomes
+	$$Y' = X_c\alpha + \epsilon, \epsilon \sim (0, \sigma_G^2 A + \sigma_e^2I) $$
+\end{itemize}
+
 \end{frame}
 
 
 \begin{frame}{GRM based heritability estimation}
 \begin{itemize}
 	\item Describe variation in phenotype as random effect (LMM)
-		$$ Y = \epsilon, \epsilon \sim N(0, \sigma_g^2 GRM + \sigma_e^2 I)$$
-	\item Genetic Relatedness Matrices (GRM's) describe relatedness between subjects
-	\item Lose resolution on genome
-	\item Gain power for dispersed genetic effects
+		$$ Y' = \epsilon, \epsilon \sim N(0, \sigma_g^2 A + \sigma_e^2 I)$$
+	\item Gain: power for dispersed genetic effects
+	\item Loss: resolution on genome
 	\item GCTA uses REML which can be slow with large studies (n x n matrix)
 	\item Not efficient for exploration of mildly heritable traits (large sample sizes)
+	\item Can solve via MOM, but what about when there is population substructure?
 \end{itemize}
 \end{frame}
 
-
-
-\section{AdjHE increases computational efficiency of heritability estimation}
 \begin{frame}{New tool: AdjHE}
 	\begin{itemize}
 		\item Two-stage Method of Moments approach
-		\item Assumes ethnicities and covariate effects ortho to genetic effects yeilding closed form
-		\item Much more efficient 
+		\item Accounts for ethnicity as PC's of GRM
+		\item Key assumption: $X_c \perp A$
+		\item Closed form $\therefore$ Much more efficient 
 		\item Benchmarked: ~2x faster with 4000 subjects
 		\item 10x faster with 45k subjects
 	\end{itemize}
 	 \includegraphics[width = \textwidth]{/home/christian/Research/Stat_gen/tools/Basu_herit/docs/timeline_diagram.png}
- \end{frame}
-  
-\begin{frame}{Design features}
-\begin{columns}
-\begin{column}{0.5\textwidth}
-\includegraphics[width = \textwidth]{/home/christian/Research/Stat_gen/tools/Basu_herit/docs/diagram.png}
-\end{column}
-\begin{column}{0.5\textwidth}
-\begin{itemize}
-	\item Data reading meets and expands usable data
-	\item Easy integration with command line interface
-	\item Model selection with internal looping
-	\item Automated diagnostic plots
-	\item Multiple methods of estimation available
-\end{itemize}
-\end{column}
-\end{columns}
 \end{frame}
 
 
 
-\begin{frame}{Additional Feature}
+\begin{frame}{Dealing with population substructure}
+\begin{itemize}
+	\item Now relatedness contains family relations $A$ as well as structure from ethnic groups $G$
+	$$ GRM = A + G$$
+	\item PCA on GRM
+	$$GRM = \sum \lambda_i VV' = \sum \lambda_i A_iA_i' + \sum \lambda_i G_iG_i' $$
+	\item Suppose $G_i$ contribute more to variance
+	\item First k PC's define G
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Dealing with covariates}
+\begin{itemize}
+	\item Project away covariates ("Residualize")
+	$$ Q = I - X_c(X_c'X_c)^{-1}X_c' $$
+	$$ QY'= Y = QX_c + Q\epsilon = Q\epsilon $$
+	$$ Y \sim N(0, \sigma_G^2 A + \sum \delta_i G_iG_i'+ \sigma_e^2 I) $$
+	\item 2nd moment
+	$$ EYY' = Var(Y) + EYEY' = Var(Y) $$
+	$$ = \sigma_G^2 A + \sum \delta_i G_iG_i'+ \sigma_e^2 I$$
+	\item Solve via OLS
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Properties of OLS estimator}
+$$EYY' = \begin{bmatrix}
+A & G_1G_1' & \vdots & G_kG_k' & I 
+\end{bmatrix} \begin{bmatrix}
+\sigma_G^2 \\ \delta_1 \\ \dots \\ \delta_k \\ \sigma_e^2
+\end{bmatrix} $$
+$$EYY' - G\delta = \begin{bmatrix}
+A & I
+\end{bmatrix}
+\begin{bmatrix}
+\sigma_G^2 \\ \sigma_e^2
+\end{bmatrix} $$
+$$\begin{bmatrix}
+\hat\sigma_G^2 \\ \hat \sigma_e^2
+\end{bmatrix} = \begin{bmatrix}
+A & I 
+\end{bmatrix}
+(\begin{bmatrix}
+trA^2 & trA \\
+trA & n  
+\end{bmatrix})^{-1}
+\begin{bmatrix}
+A \\ I 
+\end{bmatrix}(YY' - G\hat \delta)$$
+\end{frame}
+
+
+\begin{frame}{Problem with multi-site estimation}
+\begin{itemize}
+	\item More studies using consortia to study smaller effects
+	\item The Adolescent Brain Cognitive Development (ABCD) has +10,000 subjects > 20 sites
+	\item Measures brain features
+	\item Brain features sensitive to machine used (i.e. depends on site)
+	\item Adding fixed effect blows up SE (coming up in a few slides)
+	\item So treat it as random effect
+	$$Y \sim N(X_c\alpha, \sigma_G^2A + \sum G_i\delta_i + S\sigma_s^2 + I\sigma_e^2) $$
+\end{itemize}
+\end{frame}
+
+\begin{frame}{AdjHE site extension}
+\begin{itemize}
+	\item Assume $X_c \perp X_s, A, G$
+	$$	EYY' - G\Delta G' = 
+	\begin{bmatrix}
+	A & QSQ & I
+	\end{bmatrix}\begin{bmatrix}
+	\sigma_G^2 \\ \sigma_s^2 \\ \sigma_e^2
+	\end{bmatrix}$$
+	\item OLS solution not closed form
+	\item Only involves inverson of 3x3 matrix
+	\end{itemize}
+\end{frame}
+
+
+\section{Simulations}
+\begin{frame}{Simulation tool}
 \begin{columns}
 \begin{column}{0.7\textwidth}
 \includegraphics[width = \textwidth]{/home/christian/Research/Stat_gen/tools/Basu_herit/docs/Simulation_diagram.png}
@@ -291,7 +365,6 @@ Image credit: https://blogs.kcl.ac.uk/editlab/2019/05/07/if-something-is-genetic
 \end{frame}
 
 
-\section{Simulations}
 \begin{frame}{Simulating population structures}
 \includegraphics[trim=3cm 0cm 3cm 0cm, clip,width = 0.49\textwidth]{/home/christian/Research/Stat_gen/tools/Basu_herit/docs/Presentations/Images/GRM_50_10_1_Homo.png}
 \includegraphics[trim=3cm 0cm 3cm 0cm, clip,width = 0.49\textwidth]{/home/christian/Research/Stat_gen/tools/Basu_herit/docs/Presentations/Images/GRM_50_10_2_IID.png}
@@ -303,17 +376,35 @@ Image credit: https://blogs.kcl.ac.uk/editlab/2019/05/07/if-something-is-genetic
 \includegraphics[width = 1.2\textwidth]{/home/christian/Research/Stat_gen/tools/Basu_herit/docs/Presentations/Images/Ests_c1_s30.png}
 \end{frame}
 
-\begin{frame}{Estimation on Heterogeneous}
+\begin{frame}{Estimation on Sites with IID composition}
 \centering
-\includegraphics[width = 1.2\textwidth]{/home/christian/Research/Stat_gen/tools/Basu_herit/docs/Presentations/Images/Ests_c5_s30_IID.png}
+\includegraphics[width = 1.2\textwidth]{/home/christian/Research/Stat_gen/tools/Basu_herit/docs/Presentations/Images/AdjHE_sim.png}
 \end{frame}
+
+\section{Estimation on brain region volumes}
+\begin{frame}{Naive estimates on Asegs data}
+\includegraphics[width = 0.49\textwidth]{/home/christian/Research/Stat_gen/tools/Basu_herit/docs/Presentations/Images/naive_GCTA.png}
+\includegraphics[width = 0.49\textwidth]{/home/christian/Research/Stat_gen/tools/Basu_herit/docs/Presentations/Images/naive_AdjHE.png}
+
+
+\end{frame}
+
+
+\begin{frame}{Controlling for Site AdjHE}
+\includegraphics[width = \textwidth]{/home/christian/Research/Stat_gen/tools/Basu_herit/docs/Presentations/Images/Aseg_AdjHE.png}
+
+\end{frame}
+
+
+
 
 
 
 \begin{frame}{Conclusions and future aims}
 \begin{itemize}
 	\item AdjHE is efficient estimator and accounts for basic effect from site
-	\item Need to expand to estimation with imbalanced sites for multisite studies (ex. ABCD)
+	\item Early analysis suggests volumes in adolescent brains are heritable
+	\item Consistent with ADNI results where
 	\item Applications to functional topology
 \end{itemize}
 \centering
@@ -331,7 +422,23 @@ Questions?
 
 \begin{frame}{References}
 Lin, Seal, and Basu. “Estimating SNP Heritability in Presence of Population Substructure in Biobank-Scale Datasets.” Genetics 2022 \\
-Hermosillo et al. “A Precision Functional Atlas of Network Probabilities and Individual-Specific Network Topography.” 2022 bioRxiv
+Hermosillo et al. “A Precision Functional Atlas of Network Probabilities and Individual-Specific Network Topography.” 2022 bioRxiv \\
+Zhao et al., 2019 “Heritability of Regional Brain Volumes in Large-Scale Neuroimaging and Genetic Studies.”
+\end{frame}
+
+
+\begin{frame}{Source Identifiability problem}
+\centering
+\includegraphics[trim=0cm 0cm 1.8cm 0cm, clip, width = 0.32\textwidth]{/home/christian/Research/Stat_gen/tools/Basu_herit/docs/Presentations/Images/GRM_mat.png}
+\includegraphics[width = 0.32\textwidth]{/home/christian/Research/Stat_gen/tools/Basu_herit/docs/Presentations/Images/I_mat.png}
+\includegraphics[width = 0.32\textwidth]{/home/christian/Research/Stat_gen/tools/Basu_herit/docs/Presentations/Images/S_mat.png}
+\end{frame}
+
+\begin{frame}{Zhao paper results (ADNI)}
+\centering
+\includegraphics[width =0.8\textwidth]{/home/christian/Research/Stat_gen/tools/Basu_herit/docs/Presentations/Images/UKB_volume_herits.jpg}
+
+
 \end{frame}
 
 

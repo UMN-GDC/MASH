@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.23 (TeX Live 2021) (preloaded format=pdflatex 2022.3.21)  28 OCT 2022 06:53
+This is pdfTeX, Version 3.141592653-2.6-1.40.23 (TeX Live 2021) (preloaded format=pdflatex 2022.3.21)  16 NOV 2022 13:08
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -979,7 +979,7 @@ ldy-Word-ppt-PNG/color/goldyM2out-RGB.png>] (./2022_MIDB_AdjHE.toc) [2
 
 ]
 </home/christian/Research/Stat_gen/tools/Basu_herit/docs/Presentations/Images/G
-enesxEnvironment.png, id=59, 948.54375pt x 355.3275pt>
+enesxEnvironment.png, id=58, 948.54375pt x 355.3275pt>
 File: /home/christian/Research/Stat_gen/tools/Basu_herit/docs/Presentations/Ima
 ges/GenesxEnvironment.png Graphic file (type png)
 <use /home/christian/Research/Stat_gen/tools/Basu_herit/docs/Presentations/Imag
@@ -992,172 +992,266 @@ s/Presentations/Images/GenesxEnvironment.png  used on input line 218.
  </home/christian/Research/Stat_gen/tools/Basu_herit/docs/Presentations/Images/
 GenesxEnvironment.png>]
 LaTeX Font Info:    Trying to load font information for OT1+lmss on input line 
-231.
+233.
  (/home/christian/.TinyTeX/texmf-dist/tex/latex/lm/ot1lmss.fd
 File: ot1lmss.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
 )
 LaTeX Font Info:    Trying to load font information for OML+lmm on input line 2
-31.
+33.
 
 (/home/christian/.TinyTeX/texmf-dist/tex/latex/lm/omllmm.fd
 File: omllmm.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
 )
 LaTeX Font Info:    Trying to load font information for OMS+lmsy on input line 
-231.
+233.
 
 (/home/christian/.TinyTeX/texmf-dist/tex/latex/lm/omslmsy.fd
 File: omslmsy.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
 )
 LaTeX Font Info:    Trying to load font information for OMX+lmex on input line 
-231.
+233.
 
 (/home/christian/.TinyTeX/texmf-dist/tex/latex/lm/omxlmex.fd
 File: omxlmex.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
 )
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <10.95> on input line 231.
+(Font)              <10.95> on input line 233.
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <8> on input line 231.
+(Font)              <8> on input line 233.
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <6> on input line 231.
-LaTeX Font Info:    Trying to load font information for U+msa on input line 231
+(Font)              <6> on input line 233.
+LaTeX Font Info:    Trying to load font information for U+msa on input line 233
 .
 
 (/home/christian/.TinyTeX/texmf-dist/tex/latex/amsfonts/umsa.fd
 File: umsa.fd 2013/01/14 v3.01 AMS symbols A
 )
-LaTeX Font Info:    Trying to load font information for U+msb on input line 231
+LaTeX Font Info:    Trying to load font information for U+msb on input line 233
 .
 
 (/home/christian/.TinyTeX/texmf-dist/tex/latex/amsfonts/umsb.fd
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 )
 LaTeX Font Info:    Font shape `T1/lmss/m/it' in size <10.95> not available
-(Font)              Font shape `T1/lmss/m/sl' tried instead on input line 231.
+(Font)              Font shape `T1/lmss/m/sl' tried instead on input line 233.
 LaTeX Font Info:    Font shape `T1/lmss/m/it' in size <8> not available
-(Font)              Font shape `T1/lmss/m/sl' tried instead on input line 231.
+(Font)              Font shape `T1/lmss/m/sl' tried instead on input line 233.
 LaTeX Font Info:    Font shape `T1/lmss/m/it' in size <6> not available
-(Font)              Font shape `T1/lmss/m/sl' tried instead on input line 231.
+(Font)              Font shape `T1/lmss/m/sl' tried instead on input line 233.
  [4
 
 ] [5
 
 ]
+[6
+
+]
 </home/christian/Research/Stat_gen/tools/Basu_herit/docs/timeline_diagram.png, 
-id=88, 864.22874pt x 114.4275pt>
+id=96, 864.22874pt x 114.4275pt>
 File: /home/christian/Research/Stat_gen/tools/Basu_herit/docs/timeline_diagram.
 png Graphic file (type png)
 <use /home/christian/Research/Stat_gen/tools/Basu_herit/docs/timeline_diagram.p
 ng>
 Package pdftex.def Info: /home/christian/Research/Stat_gen/tools/Basu_herit/doc
-s/timeline_diagram.png  used on input line 258.
+s/timeline_diagram.png  used on input line 270.
 (pdftex.def)             Requested size: 307.28467pt x 40.68576pt.
-
-[6
-
- </home/christian/Research/Stat_gen/tools/Basu_herit/docs/timeline_diagram.png>
-]
-</home/christian/Research/Stat_gen/tools/Basu_herit/docs/diagram.png, id=97, 53
-1.9875pt x 520.94624pt>
-File: /home/christian/Research/Stat_gen/tools/Basu_herit/docs/diagram.png Graph
-ic file (type png)
-<use /home/christian/Research/Stat_gen/tools/Basu_herit/docs/diagram.png>
-Package pdftex.def Info: /home/christian/Research/Stat_gen/tools/Basu_herit/doc
-s/diagram.png  used on input line 275.
-(pdftex.def)             Requested size: 153.63925pt x 150.45052pt.
  [7
 
- </home/christian/Research/Stat_gen/tools/Basu_herit/docs/diagram.png>]
+ </home/christian/Research/Stat_gen/tools/Basu_herit/docs/timeline_diagram.png>
+] [8
+
+] [9
+
+] [10
+
+] [11
+
+] [12
+
+]
 </home/christian/Research/Stat_gen/tools/Basu_herit/docs/Simulation_diagram.png
-, id=108, 479.7925pt x 347.2975pt>
+, id=149, 479.7925pt x 347.2975pt>
 File: /home/christian/Research/Stat_gen/tools/Basu_herit/docs/Simulation_diagra
 m.png Graphic file (type png)
 <use /home/christian/Research/Stat_gen/tools/Basu_herit/docs/Simulation_diagram
 .png>
 Package pdftex.def Info: /home/christian/Research/Stat_gen/tools/Basu_herit/doc
-s/Simulation_diagram.png  used on input line 291.
+s/Simulation_diagram.png  used on input line 365.
 (pdftex.def)             Requested size: 215.0993pt x 155.6995pt.
-
-[8
+ [13
 
  </home/christian/Research/Stat_gen/tools/Basu_herit/docs/Simulation_diagram.pn
 g>]
 </home/christian/Research/Stat_gen/tools/Basu_herit/docs/Presentations/Images/G
-RM_50_10_1_Homo.png, id=118, 433.62pt x 289.08pt>
+RM_50_10_1_Homo.png, id=159, 433.62pt x 289.08pt>
 File: /home/christian/Research/Stat_gen/tools/Basu_herit/docs/Presentations/Ima
 ges/GRM_50_10_1_Homo.png Graphic file (type png)
 <use /home/christian/Research/Stat_gen/tools/Basu_herit/docs/Presentations/Imag
 es/GRM_50_10_1_Homo.png>
 Package pdftex.def Info: /home/christian/Research/Stat_gen/tools/Basu_herit/doc
-s/Presentations/Images/GRM_50_10_1_Homo.png  used on input line 298.
+s/Presentations/Images/GRM_50_10_1_Homo.png  used on input line 371.
 (pdftex.def)             Requested size: 150.57861pt x 165.57129pt.
 </home/christian/Research/Stat_gen/tools/Basu_herit/docs/Presentations/Images/G
-RM_50_10_2_IID.png, id=120, 433.62pt x 289.08pt>
+RM_50_10_2_IID.png, id=161, 433.62pt x 289.08pt>
 File: /home/christian/Research/Stat_gen/tools/Basu_herit/docs/Presentations/Ima
 ges/GRM_50_10_2_IID.png Graphic file (type png)
 <use /home/christian/Research/Stat_gen/tools/Basu_herit/docs/Presentations/Imag
 es/GRM_50_10_2_IID.png>
 Package pdftex.def Info: /home/christian/Research/Stat_gen/tools/Basu_herit/doc
-s/Presentations/Images/GRM_50_10_2_IID.png  used on input line 298.
+s/Presentations/Images/GRM_50_10_2_IID.png  used on input line 371.
 (pdftex.def)             Requested size: 150.57861pt x 165.57129pt.
- [9
+ [14
 
  </home/christian/Research/Stat_gen/tools/Basu_herit/docs/Presentations/Images/
 GRM_50_10_1_Homo.png> </home/christian/Research/Stat_gen/tools/Basu_herit/docs/
 Presentations/Images/GRM_50_10_2_IID.png>]
 </home/christian/Research/Stat_gen/tools/Basu_herit/docs/Presentations/Images/E
-sts_c1_s30.png, id=133, 1836.8625pt x 926.46124pt>
+sts_c1_s30.png, id=176, 1836.8625pt x 926.46124pt>
 File: /home/christian/Research/Stat_gen/tools/Basu_herit/docs/Presentations/Ima
 ges/Ests_c1_s30.png Graphic file (type png)
 <use /home/christian/Research/Stat_gen/tools/Basu_herit/docs/Presentations/Imag
 es/Ests_c1_s30.png>
 Package pdftex.def Info: /home/christian/Research/Stat_gen/tools/Basu_herit/doc
-s/Presentations/Images/Ests_c1_s30.png  used on input line 304.
+s/Presentations/Images/Ests_c1_s30.png  used on input line 377.
 (pdftex.def)             Requested size: 368.73938pt x 185.98166pt.
 
-Overfull \hbox (61.44951pt too wide) in paragraph at lines 304--304
+Overfull \hbox (61.44951pt too wide) in paragraph at lines 377--377
  [][] 
  []
 
-[10
+[15
 
  </home/christian/Research/Stat_gen/tools/Basu_herit/docs/Presentations/Images/
 Ests_c1_s30.png>]
-</home/christian/Research/Stat_gen/tools/Basu_herit/docs/Presentations/Images/E
-sts_c5_s30_IID.png, id=143, 1836.8625pt x 926.46124pt>
+</home/christian/Research/Stat_gen/tools/Basu_herit/docs/Presentations/Images/A
+djHE_sim.png, id=186, 1911.14pt x 926.46124pt>
 File: /home/christian/Research/Stat_gen/tools/Basu_herit/docs/Presentations/Ima
-ges/Ests_c5_s30_IID.png Graphic file (type png)
+ges/AdjHE_sim.png Graphic file (type png)
 <use /home/christian/Research/Stat_gen/tools/Basu_herit/docs/Presentations/Imag
-es/Ests_c5_s30_IID.png>
+es/AdjHE_sim.png>
 Package pdftex.def Info: /home/christian/Research/Stat_gen/tools/Basu_herit/doc
-s/Presentations/Images/Ests_c5_s30_IID.png  used on input line 309.
-(pdftex.def)             Requested size: 368.73938pt x 185.98166pt.
+s/Presentations/Images/AdjHE_sim.png  used on input line 382.
+(pdftex.def)             Requested size: 368.74857pt x 178.75783pt.
 
-Overfull \hbox (61.44951pt too wide) in paragraph at lines 309--309
+Overfull \hbox (61.4587pt too wide) in paragraph at lines 382--382
  [][] 
  []
 
-[11
+[16
 
  </home/christian/Research/Stat_gen/tools/Basu_herit/docs/Presentations/Images/
-Ests_c5_s30_IID.png>]
+AdjHE_sim.png>]
+</home/christian/Research/Stat_gen/tools/Basu_herit/docs/Presentations/Images/n
+aive_GCTA.png, id=196, 505.89pt x 505.89pt>
+File: /home/christian/Research/Stat_gen/tools/Basu_herit/docs/Presentations/Ima
+ges/naive_GCTA.png Graphic file (type png)
+<use /home/christian/Research/Stat_gen/tools/Basu_herit/docs/Presentations/Imag
+es/naive_GCTA.png>
+Package pdftex.def Info: /home/christian/Research/Stat_gen/tools/Basu_herit/doc
+s/Presentations/Images/naive_GCTA.png  used on input line 390.
+(pdftex.def)             Requested size: 150.57167pt x 150.57167pt.
+</home/christian/Research/Stat_gen/tools/Basu_herit/docs/Presentations/Images/n
+aive_AdjHE.png, id=197, 505.89pt x 505.89pt>
+File: /home/christian/Research/Stat_gen/tools/Basu_herit/docs/Presentations/Ima
+ges/naive_AdjHE.png Graphic file (type png)
+<use /home/christian/Research/Stat_gen/tools/Basu_herit/docs/Presentations/Imag
+es/naive_AdjHE.png>
+Package pdftex.def Info: /home/christian/Research/Stat_gen/tools/Basu_herit/doc
+s/Presentations/Images/naive_AdjHE.png  used on input line 390.
+(pdftex.def)             Requested size: 150.57167pt x 150.57167pt.
+ [17
+
+ </home/christian/Research/Stat_gen/tools/Basu_herit/docs/Presentations/Images/
+naive_GCTA.png> </home/christian/Research/Stat_gen/tools/Basu_herit/docs/Presen
+tations/Images/naive_AdjHE.png>]
+</home/christian/Research/Stat_gen/tools/Basu_herit/docs/Presentations/Images/A
+seg_AdjHE.png, id=207, 563.10374pt x 421.575pt>
+File: /home/christian/Research/Stat_gen/tools/Basu_herit/docs/Presentations/Ima
+ges/Aseg_AdjHE.png Graphic file (type png)
+<use /home/christian/Research/Stat_gen/tools/Basu_herit/docs/Presentations/Imag
+es/Aseg_AdjHE.png>
+Package pdftex.def Info: /home/christian/Research/Stat_gen/tools/Basu_herit/doc
+s/Presentations/Images/Aseg_AdjHE.png  used on input line 396.
+(pdftex.def)             Requested size: 307.2936pt x 230.05937pt.
+
+Overfull \vbox (21.82814pt too high) detected at line 396
+ []
+
+[18
+
+ </home/christian/Research/Stat_gen/tools/Basu_herit/docs/Presentations/Images/
+Aseg_AdjHE.png>]
 </home/christian/Research/Stat_gen/tools/Basu_herit/docs/Presentations/Images/T
-opologies.png, id=153, 748.7975pt x 518.93875pt>
+opologies.png, id=217, 748.7975pt x 518.93875pt>
 File: /home/christian/Research/Stat_gen/tools/Basu_herit/docs/Presentations/Ima
 ges/Topologies.png Graphic file (type png)
 <use /home/christian/Research/Stat_gen/tools/Basu_herit/docs/Presentations/Imag
 es/Topologies.png>
 Package pdftex.def Info: /home/christian/Research/Stat_gen/tools/Basu_herit/doc
-s/Presentations/Images/Topologies.png  used on input line 322.
+s/Presentations/Images/Topologies.png  used on input line 413.
 (pdftex.def)             Requested size: 184.37675pt x 127.77853pt.
- [12
+
+Overfull \vbox (9.27647pt too high) detected at line 413
+ []
+
+[19
 
  </home/christian/Research/Stat_gen/tools/Basu_herit/docs/Presentations/Images/
-Topologies.png>] [13
+Topologies.png>] [20
 
-] [14
+] [21
 
 ]
+</home/christian/Research/Stat_gen/tools/Basu_herit/docs/Presentations/Images/G
+RM_mat.png, id=245, 291.0875pt x 252.945pt>
+File: /home/christian/Research/Stat_gen/tools/Basu_herit/docs/Presentations/Ima
+ges/GRM_mat.png Graphic file (type png)
+<use /home/christian/Research/Stat_gen/tools/Basu_herit/docs/Presentations/Imag
+es/GRM_mat.png>
+Package pdftex.def Info: /home/christian/Research/Stat_gen/tools/Basu_herit/doc
+s/Presentations/Images/GRM_mat.png  used on input line 435.
+(pdftex.def)             Requested size: 98.3337pt x 103.69267pt.
+</home/christian/Research/Stat_gen/tools/Basu_herit/docs/Presentations/Images/I
+_mat.png, id=247, 231.86626pt x 247.92625pt>
+File: /home/christian/Research/Stat_gen/tools/Basu_herit/docs/Presentations/Ima
+ges/I_mat.png Graphic file (type png)
+<use /home/christian/Research/Stat_gen/tools/Basu_herit/docs/Presentations/Imag
+es/I_mat.png>
+Package pdftex.def Info: /home/christian/Research/Stat_gen/tools/Basu_herit/doc
+s/Presentations/Images/I_mat.png  used on input line 435.
+(pdftex.def)             Requested size: 98.33487pt x 105.14595pt.
+</home/christian/Research/Stat_gen/tools/Basu_herit/docs/Presentations/Images/S
+_mat.png, id=248, 231.86626pt x 247.92625pt>
+File: /home/christian/Research/Stat_gen/tools/Basu_herit/docs/Presentations/Ima
+ges/S_mat.png Graphic file (type png)
+<use /home/christian/Research/Stat_gen/tools/Basu_herit/docs/Presentations/Imag
+es/S_mat.png>
+Package pdftex.def Info: /home/christian/Research/Stat_gen/tools/Basu_herit/doc
+s/Presentations/Images/S_mat.png  used on input line 435.
+(pdftex.def)             Requested size: 98.33487pt x 105.14595pt.
+ [22
+
+ </home/christian/Research/Stat_gen/tools/Basu_herit/docs/Presentations/Images/
+GRM_mat.png> </home/christian/Research/Stat_gen/tools/Basu_herit/docs/Presentat
+ions/Images/I_mat.png> </home/christian/Research/Stat_gen/tools/Basu_herit/docs
+/Presentations/Images/S_mat.png>]
+</home/christian/Research/Stat_gen/tools/Basu_herit/docs/Presentations/Images/U
+KB_volume_herits.jpg, id=261, 558.58687pt x 574.39594pt>
+File: /home/christian/Research/Stat_gen/tools/Basu_herit/docs/Presentations/Ima
+ges/UKB_volume_herits.jpg Graphic file (type jpg)
+<use /home/christian/Research/Stat_gen/tools/Basu_herit/docs/Presentations/Imag
+es/UKB_volume_herits.jpg>
+Package pdftex.def Info: /home/christian/Research/Stat_gen/tools/Basu_herit/doc
+s/Presentations/Images/UKB_volume_herits.jpg  used on input line 442.
+(pdftex.def)             Requested size: 232.65305pt x 239.23755pt.
+
+Overfull \vbox (31.00632pt too high) detected at line 442
+ []
+
+[23
+
+ </home/christian/Research/Stat_gen/tools/Basu_herit/docs/Presentations/Images/
+UKB_volume_herits.jpg>]
 \tf@nav=\write7
 \openout7 = `2022_MIDB_AdjHE.nav'.
 
@@ -1169,31 +1263,35 @@ Topologies.png>] [13
 
  (./2022_MIDB_AdjHE.aux)
 Package rerunfilecheck Info: File `2022_MIDB_AdjHE.out' has not changed.
-(rerunfilecheck)             Checksum: F1E1631E9CCE40F1758F8D3A47A5B5DC;916.
+(rerunfilecheck)             Checksum: 2C05E575CDE5DBEC1D18AB73C995D58E;745.
  ) 
 Here is how much of TeX's memory you used:
- 22509 strings out of 480236
- 446365 string characters out of 5895369
- 684528 words of memory out of 5000000
- 39922 multiletter control sequences out of 15000+600000
+ 22588 strings out of 480236
+ 450302 string characters out of 5895369
+ 689529 words of memory out of 5000000
+ 39976 multiletter control sequences out of 15000+600000
  517585 words of font info for 59 fonts, out of 8000000 for 9000
  14 hyphenation exceptions out of 8191
- 99i,14n,104p,447b,561s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 99i,14n,104p,440b,561s stack positions out of 5000i,500n,10000p,200000b,80000s
 {/home/christian/.TinyTeX/texmf-dist/fonts/enc/dvips/lm/lm-ec.enc}{/home/chri
-stian/.TinyTeX/texmf-dist/fonts/enc/dvips/lm/lm-mathsy.enc}{/home/christian/.Ti
-nyTeX/texmf-dist/fonts/enc/dvips/lm/lm-mathit.enc}{/home/christian/.TinyTeX/tex
-mf-dist/fonts/enc/dvips/lm/lm-rm.enc}</home/christian/.TinyTeX/texmf-dist/fonts
-/type1/public/lm/lmmi10.pfb></home/christian/.TinyTeX/texmf-dist/fonts/type1/pu
-blic/lm/lmss10.pfb></home/christian/.TinyTeX/texmf-dist/fonts/type1/public/lm/l
-mss17.pfb></home/christian/.TinyTeX/texmf-dist/fonts/type1/public/lm/lmss8.pfb>
-</home/christian/.TinyTeX/texmf-dist/fonts/type1/public/lm/lmssbx10.pfb></home/
-christian/.TinyTeX/texmf-dist/fonts/type1/public/lm/lmsso10.pfb></home/christia
-n/.TinyTeX/texmf-dist/fonts/type1/public/lm/lmsso8.pfb></home/christian/.TinyTe
-X/texmf-dist/fonts/type1/public/lm/lmsy10.pfb>
-Output written on 2022_MIDB_AdjHE.pdf (14 pages, 969151 bytes).
+stian/.TinyTeX/texmf-dist/fonts/enc/dvips/lm/lm-mathex.enc}{/home/christian/.Ti
+nyTeX/texmf-dist/fonts/enc/dvips/lm/lm-mathsy.enc}{/home/christian/.TinyTeX/tex
+mf-dist/fonts/enc/dvips/lm/lm-mathit.enc}{/home/christian/.TinyTeX/texmf-dist/f
+onts/enc/dvips/lm/lm-rm.enc}</home/christian/.TinyTeX/texmf-dist/fonts/type1/pu
+blic/lm/lmex10.pfb></home/christian/.TinyTeX/texmf-dist/fonts/type1/public/lm/l
+mmi10.pfb></home/christian/.TinyTeX/texmf-dist/fonts/type1/public/lm/lmss10.pfb
+></home/christian/.TinyTeX/texmf-dist/fonts/type1/public/lm/lmss17.pfb></home/c
+hristian/.TinyTeX/texmf-dist/fonts/type1/public/lm/lmss8.pfb></home/christian/.
+TinyTeX/texmf-dist/fonts/type1/public/lm/lmssbx10.pfb></home/christian/.TinyTeX
+/texmf-dist/fonts/type1/public/lm/lmsso10.pfb></home/christian/.TinyTeX/texmf-d
+ist/fonts/type1/public/lm/lmsso8.pfb></home/christian/.TinyTeX/texmf-dist/fonts
+/type1/public/lm/lmsy10.pfb></home/christian/.TinyTeX/texmf-dist/fonts/type1/pu
+blic/lm/lmsy8.pfb></home/christian/.TinyTeX/texmf-dist/fonts/type1/public/amsfo
+nts/symbols/msam10.pfb>
+Output written on 2022_MIDB_AdjHE.pdf (23 pages, 1446571 bytes).
 PDF statistics:
- 231 PDF objects out of 1000 (max. 8388607)
- 155 compressed objects within 2 object streams
- 33 named destinations out of 1000 (max. 500000)
- 137 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 338 PDF objects out of 1000 (max. 8388607)
+ 225 compressed objects within 3 object streams
+ 51 named destinations out of 1000 (max. 500000)
+ 173 words of extra memory for PDF output out of 10000 (max. 10000000)
 

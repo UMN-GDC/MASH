@@ -78,11 +78,15 @@ covars = args["covars"]
 if args["npc"] == None :
     args["npc"] = [0]
 
-# loop over all combinations of pcs and phenotypes
-for mp, nnpc, covs in itertools.product(mpheno, args["npc"], cov_combos):
-    r = load_n_estimate(
-        df=df, covars=covs, nnpc=nnpc, mp=mp, GRM= GRM, std= False, Method = args["Method"], RV = args["RV"])
-    results = pd.concat([results, r], ignore_index = True)
+# Loop over each set of covariate combos
+for covs in cov_combos :
+    # For each set of covariates recalculate the projection matrix
+    
+    # loop over all combinations of pcs and phenotypes
+    for mp, nnpc in itertools.product(mpheno, args["npc"]):
+        r = load_n_estimate(
+            df=df, covars=covs, nnpc=nnpc, mp=mp, GRM= GRM, std= False, Method = args["Method"], RV = args["RV"])
+        results = pd.concat([results, r], ignore_index = True)
     
 # %%
 print("Writing results")
