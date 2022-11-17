@@ -6,11 +6,11 @@ Created on Thu Oct 13 09:25:44 2022
 
 @author: christian
 """
-from plotly.offline import plot
-import plotly.express as px
+#from plotly.offline import plot
+#import plotly.express as px
 import itertools
-import os
-os.chdir("/home/christian/Research/Stat_gen/tools/Basu_herit")
+#import os
+#os.chdir("/home/christian/Research/Stat_gen/tools/Basu_herit")
 
 import numpy as np
 import pandas as pd
@@ -271,7 +271,14 @@ class AdjHE_simulator():
                 "temp.grm.id", sep=" ", index=False, header=False)
 
             # Estimate using GCTA
-            bashcommand = "../GCTA/gcta_1.93.2beta/gcta64 --grm temp --pheno temp.phen --mpheno 1 --reml --out temp"
+            # Find filepath to GCTA
+            gcta = "whereis gcta64"
+            gcta, __ = subprocess.Popen(
+                gcta.split(), stdout=subprocess.PIPE).communicate()
+
+            gcta= gcta.split()[1].decode("utf-8")
+
+            bashcommand = gcta + " --grm temp --pheno temp.phen --mpheno 1 --reml --out temp"
             process = subprocess.Popen(
                 bashcommand.split(), stdout=subprocess.PIPE)
             output, error = process.communicate()
@@ -399,21 +406,21 @@ def sim_experiment(nsubjectss = [100], site_comps=["IID"], nSNPss = [20],
 
 
 
-def plot_save(results, out) :
-    results["h2"] = results.sg / (results.sg + results.ss + results.se)
-    results["h2"][np.isnan(results.h2)] = 0
-    results.to_csv(out + ".csv")
+#def plot_save(results, out) :
+#    results["h2"] = results.sg / (results.sg + results.ss + results.se)
+#    results["h2"][np.isnan(results.h2)] = 0
+#    results.to_csv(out + ".csv")
 
     # Plot results and store at specified locaation
     # fig = px.violin(results, x="variable", y="value", color="variable", facet_col="h2", facet_row = "ss")
-    fig = px.box(results, x="variable", y="value",
-                 color="variable", facet_col="h2", facet_row="ss")
-    fig.update_yaxes(matches=None)
-    fig.for_each_yaxis(lambda yaxis: yaxis.update(showticklabels=True))
-    fig.update_xaxes(matches=None)
-    fig.for_each_xaxis(lambda xaxis: xaxis.update(showticklabels=True))
-    fig.update_layout(
-        font=dict(size=20)
-    )
-    plot(fig, filename=out + ".html")
+#    fig = px.box(results, x="variable", y="value",
+#                 color="variable", facet_col="h2", facet_row="ss")
+#    fig.update_yaxes(matches=None)
+#    fig.for_each_yaxis(lambda yaxis: yaxis.update(showticklabels=True))
+#    fig.update_xaxes(matches=None)
+#    fig.for_each_xaxis(lambda xaxis: xaxis.update(showticklabels=True))
+#    fig.update_layout(
+#        font=dict(size=20)
+#    )
+#    plot(fig, filename=out + ".html")
 
