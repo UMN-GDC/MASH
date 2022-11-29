@@ -13,14 +13,41 @@ import pandas as pd
 #%%
 
 def GCTA(grm, pheno_file, cov_file, PC_file, covars, nnpc, mp) : 
-    
+    """
+    A wrapper for the GCTA GREML heritability estimator.
+
+    Parameters
+    ----------
+    grm : string
+        file path prefix to GRM files.
+    pheno_file : string
+        file path to phenotype file.
+    cov_file : string
+        file path to covariates file.
+    PC_file : string
+        file path to covariates file.
+    covars : list of strings
+        list of covaraites to control for as fixed effects.
+    nnpc : int
+        number of pc's to control for as fixed effects.
+    mp : string
+        name of phenotype to estimate on.
+
+    Returns
+    -------
+    pandas dataframe.
+        Dataframe of estimated heritability and standard error
+
+    """
     # Load and select covariates
     eigs = pd.read_csv(PC_file, sep = " ", header = None)
     cols = eigs.columns.tolist()[2:]
-    eigs.columns = ["FID", "IID"] + [i -1  for i in cols]
+    eigs.columns = ["fid", "iid"] + [i -1  for i in cols]
     eigs = eigs.iloc[:,:nnpc+2]
-    cov = pd.read_csv(cov_file, sep = " ", header= 0)[["FID", "IID"] + covars]
-    cov = cov.merge(eigs, on = ["FID", "IID"])
+    cov = pd.read_csv(cov_file, sep = " ", header= 0)
+    cov.columns = [col.lower() for col in cov.columns.tolist()]
+    cov = cov[["fid", "iid"] + covars]
+    cov = cov.merge(eigs, on = ["fid", "iid"])
     # Decide which are qcovars and which are numeric covars
     discrete = [len(cov[col].unique()) < 50 for col in cov]
     # Include FID IID

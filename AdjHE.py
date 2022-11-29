@@ -26,6 +26,7 @@ from functions.traits_visualizer import covs_vs_cov_of_interest
 #######################################
 #%% For troubleshootingg
 # args= read_flags({"argfile" : "Example/basic_AdjHE.json"})
+# args= read_flags({"argfile" : "Example/basic_GCTA.json"})
 # args= read_flags({'argfile' : "simulations/Analysis_jsons/first_full.json"})
 #######################################
 #######################################
@@ -85,7 +86,7 @@ for covs in cov_combos :
     # loop over all combinations of pcs and phenotypes
     for mp, nnpc in itertools.product(mpheno, args["npc"]):
         r = load_n_estimate(
-            df=df, covars=covs, nnpc=nnpc, mp=mp, GRM= GRM, std= False, Method = args["Method"], RV = args["RV"])
+            df=df, covars=covs, nnpc=nnpc, mp=mp, GRM= GRM, std= False, Method = args["Method"], RV = args["RV"], args = args)
         results = pd.concat([results, r], ignore_index = True)
     
 # %%
