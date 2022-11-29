@@ -212,7 +212,7 @@ class AdjHE_simulator():
             self.df.Site_contrib + self.df.errors
         self.df["Y"] = self.df["Y"] - np.mean(self.df["Y"])
 
-    def GRM_vis(self, sort_by=None, location=None, npc=0):
+    def GRM_vis(self, sort_by=None, location=None, npc=0, plot_decomp = False):
         if sort_by == None:
             df = self.df
         else:
@@ -223,20 +223,40 @@ class AdjHE_simulator():
 
         if npc != 0:
             # subtract substructre from GRM
-            pcs = np.matrix(PCA(n_components=npc).fit(self.GRM).components_.T)
+            pcs = np.matrix(PCA(n_components=npc).fit(G).components_.T)
             P = pcs * np.linalg.inv(pcs.T * pcs) * pcs.T
-            G = (np.eye(self.nsubjects) - P) * self.GRM
+            G2 = (np.eye(self.nsubjects) - P) * G
+        else :
+            G2 = G
+        
+        if plot_decomp :
+            #subplot(r,c) provide the no. of rows and columns
+            fig, ax = plt.subplots(1,3) 
+            
+            # use the created array to output your multiple images. In this case I have stacked 4 images vertically
+            ax[0].imshow(G)
+            ax[1].imshow(G2)
+            P = P * G
+            ax[2].imshow(P)
+            ax[0].axis('off')  
+            ax[1].axis('off')             
+            ax[2].axis('off')             
 
-        plt.imshow(G, )
-        # major_ticks = np.unique(df.abcd_site, return_counts= True)[1].cumsum()
-        # plt.xticks(major_ticks -1)
-        # plt.yticks(np.flip(major_ticks))
-        # plt.grid(color='k', linestyle='-', linewidth=0.5)
-        plt.axis('off')
-
-        plt.title(("GRM: clusters = {c}, Site pops = {site}"
-                   .format(c=self.nclusts, site=self.site_comp)))
-        plt.colorbar()
+            ax[0].set_title('GRM')
+            ax[1].set_title('Residual relatedness')
+            ax[2].set_title('Ethnicity contrib')      
+            
+        else: 
+            plt.imshow(G2)
+            # major_ticks = np.unique(df.abcd_site, return_counts= True)[1].cumsum()
+            # plt.xticks(major_ticks -1)
+            # plt.yticks(np.flip(major_ticks))
+            # plt.grid(color='k', linestyle='-', linewidth=0.5)
+            plt.axis('off')
+    
+            plt.title(("GRM: clusters = {c}, Site pops = {site}"
+                       .format(c=self.nclusts, site=self.site_comp)))
+            plt.colorbar()
 
         if location != None:
             plt.savefig('docs/Presentations/Images/GRM_{n}_{s}_{c}_{site}.png'.format(
@@ -424,3 +444,11 @@ def sim_experiment(nsubjectss = [100], site_comps=["IID"], nSNPss = [20],
 #    )
 #    plot(fig, filename=out + ".html")
 
+
+#%%
+sim = AdjHE_simulator(1000, 10)
+sim.sim_sites()
+sim.sim_pops(nclusts= 2)
+sim.sim_genos()
+sim.GRM_vis(sort_by="subj_ancestries", npc= 0)
+sim.GRM_vis(sort_by = "subj_ancestries", plot_decomp=True, npc = 1)

@@ -248,7 +248,7 @@ Image credit: https://blogs.kcl.ac.uk/editlab/2019/05/07/if-something-is-genetic
 \begin{frame}{GRM based heritability estimation}
 \begin{itemize}
 	\item Describe variation in phenotype as random effect (LMM)
-		$$ Y' = \epsilon, \epsilon \sim N(0, \sigma_g^2 A + \sigma_e^2 I)$$
+		$$ Y' = X_c\alpha + \epsilon, \epsilon \sim N(0, \sigma_g^2 A + \sigma_e^2 I)$$
 	\item Gain: power for dispersed genetic effects
 	\item Loss: resolution on genome
 	\item GCTA uses REML which can be slow with large studies (n x n matrix)
@@ -261,7 +261,7 @@ Image credit: https://blogs.kcl.ac.uk/editlab/2019/05/07/if-something-is-genetic
 	\begin{itemize}
 		\item Two-stage Method of Moments approach
 		\item Accounts for ethnicity as PC's of GRM
-		\item Key assumption: $X_c \perp A$
+		\item Key assumption: $X_c \perp PC's$
 		\item Closed form $\therefore$ Much more efficient 
 		\item Benchmarked: ~2x faster with 4000 subjects
 		\item 10x faster with 45k subjects
@@ -273,8 +273,11 @@ Image credit: https://blogs.kcl.ac.uk/editlab/2019/05/07/if-something-is-genetic
 
 \begin{frame}{Dealing with population substructure}
 \begin{itemize}
-	\item Now relatedness contains family relations $A$ as well as structure from ethnic groups $G$
+	\item Relatedness has family relations $A$ and ethnicity $G$
 	$$ GRM = A + G$$
+	\begin{center}
+		\includegraphics[width = 0.7\textwidth]{/home/christian/Research/Stat_gen/tools/Basu_herit/docs/Presentations/Images/GRM_decomp.png}
+	\end{center}
 	\item PCA on GRM
 	$$GRM = \sum \lambda_i VV' = \sum \lambda_i A_iA_i' + \sum \lambda_i G_iG_i' $$
 	\item Suppose $G_i$ contribute more to variance
@@ -284,12 +287,13 @@ Image credit: https://blogs.kcl.ac.uk/editlab/2019/05/07/if-something-is-genetic
 
 \begin{frame}{Dealing with covariates}
 \begin{itemize}
+	\item Treat PC's as covariates ($X = [X_c, X_{pc}]$)
 	\item Project away covariates ("Residualize")
-	$$ Q = I - X_c(X_c'X_c)^{-1}X_c' $$
+	$$ Q = I - X(X'X)^{-1}X' $$
 	$$ QY'= Y = QX_c + Q\epsilon = Q\epsilon $$
-	$$ Y \sim N(0, \sigma_G^2 A + \sum \delta_i G_iG_i'+ \sigma_e^2 I) $$
+	$$ EY = 0$$ 
 	\item 2nd moment
-	$$ EYY' = Var(Y) + EYEY' = Var(Y) $$
+	$$ EYY' = Var(Y) = Q Var(\epsilon) Q $$
 	$$ = \sigma_G^2 A + \sum \delta_i G_iG_i'+ \sigma_e^2 I$$
 	\item Solve via OLS
 \end{itemize}
@@ -343,8 +347,8 @@ A \\ I
 	\end{bmatrix}\begin{bmatrix}
 	\sigma_G^2 \\ \sigma_s^2 \\ \sigma_e^2
 	\end{bmatrix}$$
-	\item OLS solution not closed form
-	\item Only involves inverson of 3x3 matrix
+	\item $X_s$ is site vector
+	\item $S$ is site similarity matrix $X_sX_s'$
 	\end{itemize}
 \end{frame}
 
@@ -404,8 +408,9 @@ A \\ I
 \begin{itemize}
 	\item AdjHE is efficient estimator and accounts for basic effect from site
 	\item Early analysis suggests volumes in adolescent brains are heritable
-	\item Consistent with ADNI results where
+	\item Estimates consistent with ADNI results
 	\item Applications to functional topology
+	\item Differing ethnicity distributions affect estimate?
 \end{itemize}
 \centering
 \includegraphics[width = 0.6\textwidth]{/home/christian/Research/Stat_gen/tools/Basu_herit/docs/Presentations/Images/Topologies.png}
