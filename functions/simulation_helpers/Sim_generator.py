@@ -16,10 +16,9 @@ import itertools
 import numpy as np
 import pandas as pd
 from sklearn.decomposition import PCA
-import matplotlib.pyplot as plt
-import seaborn as sns
-from functions.Estimation.all_estimators import Basu_estimator
+from functions.Estimation.all_estimators import Basu_estimation, load_n_estimate
 from functions.Estimation.GCTA_wrapper import GCTA 
+
 
 rng = np.random.default_rng(123)
 
@@ -29,14 +28,14 @@ rng = np.random.default_rng(123)
 
 
 # %%
-class AdjHE_simulator():
+class pheno_simulator():
     def __init__(self, nsubjects, nSNPs):
         self.nsubjects = nsubjects
         self.nSNPs = nSNPs
 
         # Seed the dataframe
-        self.df = pd.DataFrame({"fid": np.arange(start=1, stop=nsubjects + 1),
-                                "iid": np.arange(start=1, stop=nsubjects + 1),
+        self.df = pd.DataFrame({"FID": np.arange(start=1, stop=nsubjects + 1),
+                                "IID": np.arange(start=1, stop=nsubjects + 1),
                                 })
 
     def sim_sites(self, nsites=1, eq_sites=False):
@@ -142,12 +141,6 @@ class AdjHE_simulator():
                               np.sqrt(2 * allele_freqs * (1 - allele_freqs)))
         self.GRM = np.dot(genotypes, genotypes.T) / self.nSNPs
 
-    def pop_clusts(self, npc=2):
-        # Checked genotypes with coming from separate clusters
-        trans = PCA(n_components=npc).fit_transform(self.genotypes)
-        sns.scatterplot(x=trans[:, 0], y=trans[:, 1],
-                        hue=self.df.subj_ancestries)
-
     def sim_gen_effects(self, prop_causal=0.1, site_dep=False):
         nCausal = int(self.nSNPs * prop_causal)
         # select causal snos
@@ -214,56 +207,6 @@ class AdjHE_simulator():
             self.df.Site_contrib + self.df.errors
         self.df["Y"] = self.df["Y"] - np.mean(self.df["Y"])
 
-    def GRM_vis(self, sort_by=None, location=None, npc=0, plot_decomp = False):
-        if sort_by == None:
-            df = self.df
-        else:
-            df = self.df.sort_values(sort_by)
-
-        # Arrange the GRM in the same manner
-        G = self.GRM[df.index, :][:, df.index]
-
-        if npc != 0:
-            # subtract substructre from GRM
-            pcs = np.matrix(PCA(n_components=npc).fit(G).components_.T)
-            P = pcs * np.linalg.inv(pcs.T * pcs) * pcs.T
-            G2 = (np.eye(self.nsubjects) - P) * G
-        else :
-            G2 = G
-        
-        if plot_decomp :
-            #subplot(r,c) provide the no. of rows and columns
-            fig, ax = plt.subplots(1,3) 
-            
-            # use the created array to output your multiple images. In this case I have stacked 4 images vertically
-            ax[0].imshow(G)
-            ax[1].imshow(G2)
-            P = P * G
-            ax[2].imshow(P)
-            ax[0].axis('off')  
-            ax[1].axis('off')             
-            ax[2].axis('off')             
-
-            ax[0].set_title('GRM')
-            ax[1].set_title('Residual relatedness')
-            ax[2].set_title('Ethnicity contrib')      
-            
-        else: 
-            plt.imshow(G2)
-            # major_ticks = np.unique(df.abcd_site, return_counts= True)[1].cumsum()
-            # plt.xticks(major_ticks -1)
-            # plt.yticks(np.flip(major_ticks))
-            # plt.grid(color='k', linestyle='-', linewidth=0.5)
-            plt.axis('off')
-    
-            plt.title(("GRM: clusters = {c}, Site pops = {site}"
-                       .format(c=self.nclusts, site=self.site_comp)))
-            plt.colorbar()
-
-        if location != None:
-            plt.savefig('docs/Presentations/Images/GRM_{n}_{s}_{c}_{site}.png'.format(
-                n=self.nsubjects, s=self.nsites, c=self.nclusts, site=self.site_comp),
-                dpi=200)
 
     def estimate(self, Method=None, RV=None, nnpc=0, covars=[], silent=True):
         
@@ -414,7 +357,7 @@ def sim_experiment(nsubjectss = [100], site_comps=["IID"], nSNPss = [20],
 #    plot(fig, filename=out + ".html")
 
 #%%
-sim = AdjHE_simulator(nsubjects= 1000, nSNPs = 50)
+sim = pheno_simulator(nsubjects= 1000, nSNPs = 50)
 # Run through full simulation and estimation
 sim.sim_sites(nsites= 30, eq_sites=False)
 sim.sim_pops(theta_alleles=0.5, nclusts=3, site_comp= "IID", dominance=2)
@@ -422,20 +365,36 @@ sim.sim_genos()
 sim.sim_gen_effects(prop_causal=0.1, site_dep= False)
 sim.sim_pheno(var_comps=[0.5,0,0.5])
 
+ests = Basu_estimation()
+ests.df= sim.df
+ests.GRM = sim.GRM
+ests.mpheno = ["Y"]
+ests.cov_combos = [[]]
+ests.estimate(npc = [0], Method = "AdjHE", RV = None)
+#%%
+
+ests.GRM_vis(sort_by = "subj_ancestries", npc =2)
+ests.pop_clusts()
+
+
+
+
+
+
 sim.estimate(Method = "AdjHE", nnpc=2)
 #%%
-sim.full_sim(sigma = [0.5,0.25,0.25], site_comp="IID",
-                        nsites=30, theta_alleles=0.5, nclusts=5, dominance=5,
-                        prop_causal=0.7, site_dep=False, nsubjects=1000,
-                        nnpc=0)
-#%%
+# sim.full_sim(sigma = [0.5,0.25,0.25], site_comp="IID",
+#                         nsites=30, theta_alleles=0.5, nclusts=5, dominance=5,
+#                         prop_causal=0.7, site_dep=False, nsubjects=1000,
+#                         nnpc=0)
+# #%%
 
-sim.GRM_vis(sort_by="subj_ancestries", npc= 0)
-sim.GRM_vis(sort_by = "subj_ancestries", plot_decomp=True, npc = 1)
+# sim.GRM_vis(sort_by="subj_ancestries", npc= 0)
+# sim.GRM_vis(sort_by = "subj_ancestries", plot_decomp=True, npc = 1)
 
 
-#%%
-results = sim_experiment(nsubjectss = [100], site_comps=["IID"], nSNPss = [20],
-                    nsitess=[30], theta_alleless=[0.5], nclustss=[5], dominances=[5],
-                    prop_causals=[0.7], site_deps=[False], reps=25,
-                    nnpcs=[0], sigmas = [[0.5,0.25,0.25]])
+# #%%
+# results = sim_experiment(nsubjectss = [100], site_comps=["IID"], nSNPss = [20],
+#                     nsitess=[30], theta_alleless=[0.5], nclustss=[5], dominances=[5],
+#                     prop_causals=[0.7], site_deps=[False], reps=25,
+#                     nnpcs=[0], sigmas = [[0.5,0.25,0.25]])

@@ -19,6 +19,7 @@ from functions.Estimation.AdjHE_estimator import load_n_MOM
 from functions.Estimation.PredLMM_estimator import load_n_PredLMM
 from functions.Estimation.Estimate_helpers import create_formula
 from functions.Estimation.GCTA_wrapper import GCTA
+from functions.simulation_helpers.Sim_generator import pheno_simulator
 
 
 #%%
@@ -102,10 +103,18 @@ def load_n_estimate(df, covars, nnpc, mp, GRM, std = False, Method = "AdjHE", RV
    
 #%%
 class Basu_estimation() :
-    def __init__(self, prefix, pheno_file, cov_file=None, PC_file=None, k=0, ids = None):
-        # load data
-        print("Loading data...")
-        self.df, self.GRM, self.phenotypes = load_everything(prefix, pheno_file, cov_file, PC_file, k, ids)
+    def __init__(self, prefix = None, pheno_file=None, cov_file=None, PC_file=None, k=0, ids = None, Simulation = False) :
+        if prefix == None :
+            print("Enter preloaded values...")
+            self.df = None
+            self.GRM = None
+            self.phenotypes = "Y"
+            self.simulation=True
+        
+        else : 
+            print("Loading data...")
+            self.df, self.GRM, self.phenotypes = load_everything(prefix, pheno_file, cov_file, PC_file, k, ids)
+            self.simulation = False
     
     def looping(self, covars, npc, mpheno, loop_covars = False) :
         # Create list of covariate sets to regress over
@@ -131,10 +140,20 @@ class Basu_estimation() :
         print("Estimating")
         # create empty list to store heritability estimates
         results = pd.DataFrame()
+        
+        
+        # project GRM onto pc space
+        pcs = pd.DataFrame(PCA(n_components=20).fit_transform(self.GRM))
+        pcs.columns = ["pc_" + str(col + 1) for col in pcs.columns]
+        # add the pcs to the dataframe
+        self.df = pd.concat([self.df, pcs], axis=1)
+
 
         # Forcing type to be integer for a little easier use
         if npc == None :
             npc = [0]
+        
+        
 
         # Loop over each set of covariate combos
         for covs in self.cov_combos :
@@ -146,7 +165,7 @@ class Basu_estimation() :
                     df=self.df, covars=covs, nnpc=nnpc, mp=mp, GRM= self.GRM, std= False, Method = Method, RV = RV)
                 results = pd.concat([results, r], ignore_index = True)
                 
-        self.results
+        self.results = results
         return self.results
     
     def pop_clusts(self, npc=2, groups = None):

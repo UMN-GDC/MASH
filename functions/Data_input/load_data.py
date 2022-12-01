@@ -66,8 +66,6 @@ def data_loader(file) :
     # check if it's the pc or covar or pheno file  (pc file won't have a header)
     if check_header(file) :
         df = pd.read_table(file, sep = "\s+", header = 0)
-        # # standardize column names by making them all lowercase
-        # df.columns = [col_name.lower() for col_name in df.columns]
 
     # if not it's the PC file
     else:
@@ -132,7 +130,6 @@ def load_everything(prefix, pheno_file, cov_file=None, PC_file=None, k=0, ids = 
    
     # Get the phenotype names
     phenotypes = pd.read_table(pheno_file, sep = "\s+", header = 0, nrows= 0).columns.tolist()
-    # phenotypes = [phenotype.lower() for phenotype in phenotypes]
     phenotypes.remove("FID")
     phenotypes.remove("IID")
     return df, GRM, phenotypes 
