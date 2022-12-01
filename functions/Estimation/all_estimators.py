@@ -6,9 +6,13 @@ Created on Tue Nov  8 03:22:59 2022
 @author: christian
 """
 
+import numpy as np
 import pandas as pd
 import statsmodels.formula.api as smf
 import itertools
+from sklearn.decomposition import PCA
+import matplotlib.pyplot as plt
+import seaborn as sns
 from functions.Data_input.load_data import load_everything
 from functions.Estimation.AdjHE_estimator import load_n_AdjHE
 from functions.Estimation.AdjHE_estimator import load_n_MOM
@@ -18,58 +22,6 @@ from functions.Estimation.GCTA_wrapper import GCTA
 
 
 #%%
-
-class Basu_estimation() :
-    def __init__(self, prefix, pheno_file, cov_file=None, PC_file=None, k=0, ids = None):
-        # load data
-        self.df, self.GRM, self.phenotypes = load_everything(prefix, pheno_file, cov_file, PC_file, k, ids)
-    
-    def looping(self, covars, npc, mpheno, loop_covars = False) :
-        # Create list of covariate sets to regress over
-        if covars != None :
-            # Create the sets of covarates over which we can loop
-            # This will return a list of lists of covariate names to regress on
-            cov_combos = [covars[0:idx+1] for idx, c in enumerate(covars)]
-            # If we don't want to loop, just grab the last item of the generated list assuming the user wants all of those variables included 
-            if not loop_covars : 
-                cov_combos = [cov_combos[-1]]
-        else :
-            cov_combos = [[]]
-            
-        self.cov_combos = cov_combos
-
-        if mpheno == "all" :
-            self.mpheno = self.phenotypes
-        else :
-            # make them lowercase
-            self.mpheno =  mpheno
-            
-    def estimate(self, npc, Method = None, RV = None) : 
-        # create empty list to store heritability estimates
-        results = pd.DataFrame()
-
-        # Forcing type to be integer for a little easier use
-        if npc == None :
-            npc = [0]
-
-        # Loop over each set of covariate combos
-        for covs in self.cov_combos :
-            # For each set of covariates recalculate the projection matrix
-            
-            # loop over all combinations of pcs and phenotypes
-            for mp, nnpc in itertools.product(self.mpheno, npc):
-                r = load_n_estimate(
-                    df=self.df, covars=covs, nnpc=nnpc, mp=mp, GRM= self.GRM, std= False, Method = Method, RV = RV)
-                results = pd.concat([results, r], ignore_index = True)
-                
-        self.results
-        return self.results
-
-
-            
-            
-            
-                
     
 
 def load_n_estimate(df, covars, nnpc, mp, GRM, std = False, Method = "AdjHE", RV = None, silent=False):
@@ -148,4 +100,116 @@ def load_n_estimate(df, covars, nnpc, mp, GRM, std = False, Method = "AdjHE", RV
     return pd.DataFrame(result, index = [0])
 
    
+#%%
+class Basu_estimation() :
+    def __init__(self, prefix, pheno_file, cov_file=None, PC_file=None, k=0, ids = None):
+        # load data
+        print("Loading data...")
+        self.df, self.GRM, self.phenotypes = load_everything(prefix, pheno_file, cov_file, PC_file, k, ids)
+    
+    def looping(self, covars, npc, mpheno, loop_covars = False) :
+        # Create list of covariate sets to regress over
+        if covars != None :
+            # Create the sets of covarates over which we can loop
+            # This will return a list of lists of covariate names to regress on
+            cov_combos = [covars[0:idx+1] for idx, c in enumerate(covars)]
+            # If we don't want to loop, just grab the last item of the generated list assuming the user wants all of those variables included 
+            if not loop_covars : 
+                cov_combos = [cov_combos[-1]]
+        else :
+            cov_combos = [[]]
+            
+        self.cov_combos = cov_combos
+
+        if mpheno == "all" :
+            self.mpheno = self.phenotypes
+        else :
+            # make them lowercase
+            self.mpheno =  mpheno
+            
+    def estimate(self, npc, Method = None, RV = None) : 
+        print("Estimating")
+        # create empty list to store heritability estimates
+        results = pd.DataFrame()
+
+        # Forcing type to be integer for a little easier use
+        if npc == None :
+            npc = [0]
+
+        # Loop over each set of covariate combos
+        for covs in self.cov_combos :
+            # For each set of covariates recalculate the projection matrix
+            
+            # loop over all combinations of pcs and phenotypes
+            for mp, nnpc in itertools.product(self.mpheno, npc):
+                r = load_n_estimate(
+                    df=self.df, covars=covs, nnpc=nnpc, mp=mp, GRM= self.GRM, std= False, Method = Method, RV = RV)
+                results = pd.concat([results, r], ignore_index = True)
+                
+        self.results
+        return self.results
+    
+    def pop_clusts(self, npc=2, groups = None):
+        print("Generating PCA cluster visualization...")
+        # Checked genotypes with coming from separate clusters
+        trans = PCA(n_components=npc).fit_transform(self.GRM)
+
+        if groups == None :
+            sns.scatterplot(x=trans[:, 0], y=trans[:, 1])
+
+        else: 
+            sns.scatterplot(x=trans[:, 0], y=trans[:, 1],
+                            hue=groups)
+
+    def GRM_vis(self, sort_by=None, location=None, npc=0, plot_decomp = False):
+        print("Generating GRM visualization...")
+        if sort_by == None:
+            df = self.df
+        else:
+            df = self.df.sort_values(sort_by)
+
+        # Arrange the GRM in the same manner
+        G = self.GRM[df.index, :][:, df.index]
+
+        if npc != 0:
+            # subtract substructre from GRM
+            pcs = np.matrix(PCA(n_components=npc).fit(G).components_.T)
+            P = pcs * np.linalg.inv(pcs.T * pcs) * pcs.T
+            G2 = (np.eye(self.GRM.shape[0]) - P) * G
+        else :
+            G2 = G
+        
+        if plot_decomp :
+            #subplot(r,c) provide the no. of rows and columns
+            fig, ax = plt.subplots(1,3) 
+            
+            # use the created array to output your multiple images. In this case I have stacked 4 images vertically
+            ax[0].imshow(G)
+            ax[1].imshow(G2)
+            P = P * G
+            ax[2].imshow(P)
+            ax[0].axis('off')  
+            ax[1].axis('off')             
+            ax[2].axis('off')             
+
+            ax[0].set_title('GRM')
+            ax[1].set_title('Residual relatedness')
+            ax[2].set_title('Ethnicity contrib')      
+            
+        else: 
+            plt.imshow(G2)
+            # major_ticks = np.unique(df.abcd_site, return_counts= True)[1].cumsum()
+            # plt.xticks(major_ticks -1)
+            # plt.yticks(np.flip(major_ticks))
+            # plt.grid(color='k', linestyle='-', linewidth=0.5)
+            plt.axis('off')
+    
+            plt.title("GRM")
+            plt.colorbar()
+
+        if location != None:
+            plt.savefig('docs/Presentations/Images/GRM_{n}_{s}_{c}_{site}.png'.format(
+                n=self.nsubjects, s=self.nsites, c=self.nclusts, site=self.site_comp),
+                dpi=200)
+
     

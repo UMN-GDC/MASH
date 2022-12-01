@@ -18,7 +18,7 @@ import pandas as pd
 from sklearn.decomposition import PCA
 import matplotlib.pyplot as plt
 import seaborn as sns
-from functions.Estimation.all_estimators import load_n_estimate
+from functions.Estimation.all_estimators import Basu_estimator
 from functions.Estimation.GCTA_wrapper import GCTA 
 
 rng = np.random.default_rng(123)
@@ -276,9 +276,9 @@ class AdjHE_simulator():
             self.df = pd.concat([self.df, pcs], axis=1)
 
             # subtract substructre from GRM
-            # pcs = np.matrix(PCA(n_components=nnpc).fit(self.GRM).components_.T)
-            # P = pcs * np.linalg.inv(pcs.T * pcs) * pcs.T
-            # G = (np.eye(self.nsubjects) - P) * self.GRM
+            pcs = np.matrix(PCA(n_components=nnpc).fit(self.GRM).components_.T)
+            P = pcs * np.linalg.inv(pcs.T * pcs) * pcs.T
+            G = (np.eye(self.nsubjects) - P) * self.GRM
         
             
         # else:
@@ -422,7 +422,7 @@ sim.sim_genos()
 sim.sim_gen_effects(prop_causal=0.1, site_dep= False)
 sim.sim_pheno(var_comps=[0.5,0,0.5])
 
-sim.estimate(Method = "AdjHE", nnpc=0)
+sim.estimate(Method = "AdjHE", nnpc=2)
 #%%
 sim.full_sim(sigma = [0.5,0.25,0.25], site_comp="IID",
                         nsites=30, theta_alleles=0.5, nclusts=5, dominance=5,

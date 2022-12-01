@@ -15,10 +15,6 @@ Last Updated 2022-06-06
 import os
 os.chdir("/home/christian/Research/Stat_gen/tools/Basu_herit")
 #os.chdir("/panfs/roc/groups/3/rando149/coffm049/tools/Basu_herit")
-import pandas as pd
-import itertools
-from functions.Estimation.all_estimators import load_n_estimate
-from functions.Data_input.load_data import load_everything
 from functions.Data_input.parser import get_args, read_flags
 from functions.traits_visualizer import covs_vs_cov_of_interest
 from functions.Estimation.all_estimators import Basu_estimation
@@ -38,7 +34,6 @@ args= read_flags({"argfile" : "Example/basic_AdjHE.json"})
 args = read_flags(get_args())
 print("These are the list of arguments that were input:")
 print(args)
-
 
 #%% Read in all data
 ests = Basu_estimation(prefix = args["prefix"],
