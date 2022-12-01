@@ -8,17 +8,19 @@ Created on Thu Oct 13 09:25:44 2022
 """
 #from plotly.offline import plot
 #import plotly.express as px
-import itertools
-#import os
-#os.chdir("/home/christian/Research/Stat_gen/tools/Basu_herit")
+import os
+os.chdir("/home/christian/Research/Stat_gen/tools/Basu_herit")
 
+import subprocess
+import itertools
 import numpy as np
 import pandas as pd
-from functions.Estimation.all_estimators import load_n_estimate
 from sklearn.decomposition import PCA
 import matplotlib.pyplot as plt
 import seaborn as sns
-import subprocess
+from functions.Estimation.all_estimators import load_n_estimate
+from functions.Estimation.GCTA_wrapper import GCTA 
+
 rng = np.random.default_rng(123)
 
 
@@ -146,7 +148,7 @@ class AdjHE_simulator():
         sns.scatterplot(x=trans[:, 0], y=trans[:, 1],
                         hue=self.df.subj_ancestries)
 
-    def sim_gen_effects(self, prop_causal=0.05, site_dep=False):
+    def sim_gen_effects(self, prop_causal=0.1, site_dep=False):
         nCausal = int(self.nSNPs * prop_causal)
         # select causal snos
         causals = rng.choice(self.nSNPs, nCausal, replace=False, shuffle=False)
@@ -264,61 +266,28 @@ class AdjHE_simulator():
                 dpi=200)
 
     def estimate(self, Method=None, RV=None, nnpc=0, covars=[], silent=True):
-
+        
+        # Residualize GRM and construct RV if needed
         if (nnpc != 0) and (RV != None):
-            # project data onto pc space
+            # project GRM onto pc space
             pcs = pd.DataFrame(PCA(n_components=nnpc).fit_transform(self.GRM))
             pcs.columns = ["pc_" + str(col + 1) for col in pcs.columns]
             # add the pcs to the dataframe
             self.df = pd.concat([self.df, pcs], axis=1)
 
             # subtract substructre from GRM
-            pcs = np.matrix(PCA(n_components=nnpc).fit(self.GRM).components_.T)
-            P = pcs * np.linalg.inv(pcs.T * pcs) * pcs.T
-            G = (np.eye(self.nsubjects) - P) * self.GRM
-        else:
-            G = self.GRM
+            # pcs = np.matrix(PCA(n_components=nnpc).fit(self.GRM).components_.T)
+            # P = pcs * np.linalg.inv(pcs.T * pcs) * pcs.T
+            # G = (np.eye(self.nsubjects) - P) * self.GRM
+        
+            
+        # else:
+        #     G = self.GRM
+        G = self.GRM
 
-        if Method == "GCTA":
-            # Get lower triangle indices
-            l = np.tril_indices(self.nsubjects)
-
-            # Save the GRM and phenotype for use
-            self.GRM[l].astype('f4').tofile("temp.grm.bin")
-            self.df[["fid", "iid", "Y"]].to_csv(
-                "temp.phen", sep=" ", index=False, header=False)
-            self.df[["fid", "iid"]].to_csv(
-                "temp.grm.id", sep=" ", index=False, header=False)
-
-            # Estimate using GCTA
-            # Find filepath to GCTA
-            gcta = "whereis gcta64"
-            gcta, __ = subprocess.Popen(
-                gcta.split(), stdout=subprocess.PIPE).communicate()
-
-            gcta= gcta.split()[1].decode("utf-8")
-
-            bashcommand = gcta + " --grm temp --pheno temp.phen --mpheno 1 --reml --out temp"
-            process = subprocess.Popen(
-                bashcommand.split(), stdout=subprocess.PIPE)
-            output, error = process.communicate()
-
-            # read the GCTA results
-            df = pd.read_table("temp.hsq", sep="\t")
-
-            self.result = {"h2": df["Variance"][df.Source == "V(G)/Vp"].item(),
-                           "SE": df["SE"][df.Source == "V(G)/Vp"].item(),
-                           "Pheno": "Y",
-                           "PCs": nnpc,
-                           "Covariates": "NONE",
-                           "Time for analysis(s)": 0,
-                           "Memory Usage": 0}
-
-        elif Method == "AdjHE":
-            self.result = load_n_estimate(df=self.df, covars=covars,  nnpc=nnpc, mp="Y", GRM=G,
-                                          std=False, Method=Method, RV=RV, silent=silent)
-
-        elif Method == "Naive":
+        self.result = load_n_estimate(self.df, covars, nnpc, "Y", G, std = False, Method = Method, RV = None, silent=False)
+        
+        if Method == "Naive":
             # Empty results list
             results = pd.DataFrame({"Estimate": [],
                                    "Size": []})
@@ -349,9 +318,9 @@ class AdjHE_simulator():
                            "Time for analysis(s)": 0,
                            "Memory Usage": 0}
             
-    def sim_n_est(self, sigma, site_comp="IID",
+    def full_sim(self, sigma, site_comp="IID",
                         nsites=30, theta_alleles=0.5, nclusts=5, dominance=5,
-                        prop_causal=0.7, site_dep=False,
+                        prop_causal=0.7, site_dep=False, nsubjects=1000,
                         nnpc=0):
         # Run through full simulation and estimation
         self.sim_sites(nsites= nsites, eq_sites=False)
@@ -423,7 +392,7 @@ def sim_experiment(nsubjectss = [100], site_comps=["IID"], nSNPss = [20],
     # Return results in a tall dataframe
     return sim_results
 
-
+#%%
 
 
 #def plot_save(results, out) :
@@ -444,11 +413,29 @@ def sim_experiment(nsubjectss = [100], site_comps=["IID"], nSNPss = [20],
 #    )
 #    plot(fig, filename=out + ".html")
 
-
 #%%
-sim = AdjHE_simulator(1000, 10)
-sim.sim_sites()
-sim.sim_pops(nclusts= 2)
+sim = AdjHE_simulator(nsubjects= 1000, nSNPs = 50)
+# Run through full simulation and estimation
+sim.sim_sites(nsites= 30, eq_sites=False)
+sim.sim_pops(theta_alleles=0.5, nclusts=3, site_comp= "IID", dominance=2)
 sim.sim_genos()
+sim.sim_gen_effects(prop_causal=0.1, site_dep= False)
+sim.sim_pheno(var_comps=[0.5,0,0.5])
+
+sim.estimate(Method = "AdjHE", nnpc=0)
+#%%
+sim.full_sim(sigma = [0.5,0.25,0.25], site_comp="IID",
+                        nsites=30, theta_alleles=0.5, nclusts=5, dominance=5,
+                        prop_causal=0.7, site_dep=False, nsubjects=1000,
+                        nnpc=0)
+#%%
+
 sim.GRM_vis(sort_by="subj_ancestries", npc= 0)
 sim.GRM_vis(sort_by = "subj_ancestries", plot_decomp=True, npc = 1)
+
+
+#%%
+results = sim_experiment(nsubjectss = [100], site_comps=["IID"], nSNPss = [20],
+                    nsitess=[30], theta_alleless=[0.5], nclustss=[5], dominances=[5],
+                    prop_causals=[0.7], site_deps=[False], reps=25,
+                    nnpcs=[0], sigmas = [[0.5,0.25,0.25]])

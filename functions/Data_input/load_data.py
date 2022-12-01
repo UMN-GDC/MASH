@@ -31,7 +31,7 @@ def ReadGRMBin(prefix, sub_ids = None):
 
     # Read IDs
     ids = pd.DataFrame(np.loadtxt(prefix + ".grm.id",
-                                  delimiter = '\t', dtype = str), columns = ["fid", "iid"], dtype = str)
+                                  delimiter = '\t', dtype = str), columns = ["FID", "IID"], dtype = str)
     n = ids.shape[0]
 
     ## Read GRM from binary 
@@ -46,9 +46,9 @@ def ReadGRMBin(prefix, sub_ids = None):
     
     if sub_ids != None :
         ids2 = pd.read_csv(sub_ids, sep = "\t", header = None, dtype = str)
-        ids2.columns = ["fid", "iid"]
+        ids2.columns = ["FID", "IID"]
         # keep the ids that overlap with the additionally specified ids
-        ids = ids.merge(ids2, on = ["fid", "iid"])
+        ids = ids.merge(ids2, on = ["FID", "IID"])
         # Subset the GRM too
         GRM = GRM[ids.index, :][:, ids.index]        
 
@@ -66,18 +66,18 @@ def data_loader(file) :
     # check if it's the pc or covar or pheno file  (pc file won't have a header)
     if check_header(file) :
         df = pd.read_table(file, sep = "\s+", header = 0)
-        # standardize column names by making them all lowercase
-        df.columns = [col_name.lower() for col_name in df.columns]
+        # # standardize column names by making them all lowercase
+        # df.columns = [col_name.lower() for col_name in df.columns]
 
     # if not it's the PC file
     else:
         df = pd.read_table(file, sep= "\s+", header=None)
-        df.columns = ["fid", "iid"] + ["pc_" + str(s) for s in range(1, df.shape[1]-1)]
-        df.fid = df.fid.astype("Int64")
+        df.columns = ["FID", "IID"] + ["pc_" + str(s) for s in range(1, df.shape[1]-1)]
+        df.FID = df.FID.astype("Int64")
 
-    # make sure fid and iid are objects to join with the ids from the GRM
-    df["fid"] = df.fid.astype(str)
-    df["iid"] = df.iid.astype(str)
+    # make sure FID and IID are objects to join with the ids from the GRM
+    df["FID"] = df.FID.astype(str)
+    df["IID"] = df.IID.astype(str)
     return df
 
 def load_tables(ids, list_of_files) :
@@ -86,7 +86,7 @@ def load_tables(ids, list_of_files) :
         if file != None: 
             newdf = data_loader(file)
             # merge always using the left keys such that it always aligns with the GRM
-            ids = pd.merge(ids, newdf, on = ["fid", "iid"], how = "left")
+            ids = pd.merge(ids, newdf, on = ["FID", "IID"], how = "left")
     return ids
 
 
@@ -132,8 +132,8 @@ def load_everything(prefix, pheno_file, cov_file=None, PC_file=None, k=0, ids = 
    
     # Get the phenotype names
     phenotypes = pd.read_table(pheno_file, sep = "\s+", header = 0, nrows= 0).columns.tolist()
-    phenotypes = [phenotype.lower() for phenotype in phenotypes]
-    phenotypes.remove("fid")
-    phenotypes.remove("iid")
+    # phenotypes = [phenotype.lower() for phenotype in phenotypes]
+    phenotypes.remove("FID")
+    phenotypes.remove("IID")
     return df, GRM, phenotypes 
 

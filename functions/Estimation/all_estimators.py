@@ -8,6 +8,8 @@ Created on Tue Nov  8 03:22:59 2022
 
 import pandas as pd
 import statsmodels.formula.api as smf
+import itertools
+from functions.Data_input.load_data import load_everything
 from functions.Estimation.AdjHE_estimator import load_n_AdjHE
 from functions.Estimation.AdjHE_estimator import load_n_MOM
 from functions.Estimation.PredLMM_estimator import load_n_PredLMM
@@ -17,7 +19,60 @@ from functions.Estimation.GCTA_wrapper import GCTA
 
 #%%
 
-def load_n_estimate(df, covars, nnpc, mp, GRM, std = False, Method = "AdjHE", RV = None, silent=False, args = None):
+class Basu_estimation() :
+    def __init__(self, prefix, pheno_file, cov_file=None, PC_file=None, k=0, ids = None):
+        # load data
+        self.df, self.GRM, self.phenotypes = load_everything(prefix, pheno_file, cov_file, PC_file, k, ids)
+    
+    def looping(self, covars, npc, mpheno, loop_covars = False) :
+        # Create list of covariate sets to regress over
+        if covars != None :
+            # Create the sets of covarates over which we can loop
+            # This will return a list of lists of covariate names to regress on
+            cov_combos = [covars[0:idx+1] for idx, c in enumerate(covars)]
+            # If we don't want to loop, just grab the last item of the generated list assuming the user wants all of those variables included 
+            if not loop_covars : 
+                cov_combos = [cov_combos[-1]]
+        else :
+            cov_combos = [[]]
+            
+        self.cov_combos = cov_combos
+
+        if mpheno == "all" :
+            self.mpheno = self.phenotypes
+        else :
+            # make them lowercase
+            self.mpheno =  mpheno
+            
+    def estimate(self, npc, Method = None, RV = None) : 
+        # create empty list to store heritability estimates
+        results = pd.DataFrame()
+
+        # Forcing type to be integer for a little easier use
+        if npc == None :
+            npc = [0]
+
+        # Loop over each set of covariate combos
+        for covs in self.cov_combos :
+            # For each set of covariates recalculate the projection matrix
+            
+            # loop over all combinations of pcs and phenotypes
+            for mp, nnpc in itertools.product(self.mpheno, npc):
+                r = load_n_estimate(
+                    df=self.df, covars=covs, nnpc=nnpc, mp=mp, GRM= self.GRM, std= False, Method = Method, RV = RV)
+                results = pd.concat([results, r], ignore_index = True)
+                
+        self.results
+        return self.results
+
+
+            
+            
+            
+                
+    
+
+def load_n_estimate(df, covars, nnpc, mp, GRM, std = False, Method = "AdjHE", RV = None, silent=False):
     """
     Estimates heritability, but solves a full OLS problem making it slower than the closed form solution. Takes 
     a dataframe, selects only the necessary columns (so that when we do complete cases it doesnt exclude too many samples)
@@ -61,7 +116,7 @@ def load_n_estimate(df, covars, nnpc, mp, GRM, std = False, Method = "AdjHE", RV
     if Method != "GCTA" :
         
     
-        ids = df[["fid", "iid"]]
+        ids = df[["FID", "IID"]]
         # seed empty result vector
         # result.columns = ["h2", "SE", "Pheno", "PCs", "Time for analysis(s)", "Memory Usage", "formula"]
         # create the regression formula and columns for seelcting temporary
@@ -73,27 +128,24 @@ def load_n_estimate(df, covars, nnpc, mp, GRM, std = False, Method = "AdjHE", RV
         # Potentially could use this to control for random effects
         # smf.mixedlm(formula= form, data = temp, groups=temp["scan_site"])
         # keep portion of GRM without missingess for the phenotypes or covariates
-        nonmissing = ids[ids.iid.isin(temp.iid)].index
+        nonmissing = ids[ids.IID.isin(temp.IID)].index
         GRM_nonmissing = GRM[nonmissing,:][:,nonmissing]
         print(temp.columns)
 
     # Select method of estimation
     if Method == "AdjHE": 
         result = load_n_AdjHE(temp, covars, nnpc, mp, GRM_nonmissing, std = False, RV = RV)
-
     elif Method == "MOM": 
         result = load_n_MOM(temp, covars, nnpc, mp, GRM_nonmissing, std = False, RV = RV)
     elif Method == "PredlMM" : 
         result = load_n_PredLMM(temp, covars, nnpc, mp, GRM_nonmissing, std = False, RV = RV)
     elif Method == "GCTA" :
+        result=  GCTA(df, covars, nnpc, mp, GRM, std = False, Method = "AdjHE", RV = None, silent=False)
         
-        result = GCTA(grm = args["prefix"], pheno_file = args["pheno"], cov_file = args["covar"], PC_file = args["PC"], covars = covars, 
-                      nnpc = nnpc, mp = mp)
-
     if not silent :
         print(result["h2"])
     
-    return(pd.DataFrame(result))
+    return pd.DataFrame(result, index = [0])
 
    
     

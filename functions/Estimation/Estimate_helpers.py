@@ -53,7 +53,7 @@ def create_formula(nnpc, covars, mp, RV = None):
 
     """
     # Get indices for ID variables
-    id_cols = ["fid", "iid"] 
+    id_cols = ["FID", "IID"] 
     # Get the full range of pc columns
     pc_cols = ["pc_" + str(p) for p in range(1, nnpc +1)]
     # Create formula string
