@@ -19,7 +19,6 @@ from functions.Estimation.AdjHE_estimator import load_n_MOM
 from functions.Estimation.PredLMM_estimator import load_n_PredLMM
 from functions.Estimation.Estimate_helpers import create_formula
 from functions.Estimation.GCTA_wrapper import GCTA
-from functions.simulation_helpers.Sim_generator import pheno_simulator
 
 
 #%%
@@ -93,7 +92,7 @@ def load_n_estimate(df, covars, nnpc, mp, GRM, std = False, Method = "AdjHE", RV
     elif Method == "PredlMM" : 
         result = load_n_PredLMM(temp, covars, nnpc, mp, GRM_nonmissing, std = False, RV = RV)
     elif Method == "GCTA" :
-        result=  GCTA(df, covars, nnpc, mp, GRM, std = False, Method = "AdjHE", RV = None, silent=False)
+        result=  GCTA(df, covars, nnpc, mp, GRM, silent=False)
         
     if not silent :
         print(result["h2"])
@@ -136,24 +135,25 @@ class Basu_estimation() :
             # make them lowercase
             self.mpheno =  mpheno
             
-    def estimate(self, npc, Method = None, RV = None) : 
+    def estimate(self, npc, Method = None, RV = None, Naive = False, covars= False) : 
         print("Estimating")
         # create empty list to store heritability estimates
         results = pd.DataFrame()
         
         
         # project GRM onto pc space
-        pcs = pd.DataFrame(PCA(n_components=20).fit_transform(self.GRM))
-        pcs.columns = ["pc_" + str(col + 1) for col in pcs.columns]
-        # add the pcs to the dataframe
-        self.df = pd.concat([self.df, pcs], axis=1)
+        # pcs = pd.DataFrame(PCA(n_components=20).fit_transform(self.GRM))
+        # pcs.columns = ["pc_" + str(col + 1) for col in pcs.columns]
+        # # add the pcs to the dataframe
+        # self.df = pd.concat([self.df, pcs], axis=1)
 
 
         # Forcing type to be integer for a little easier use
         if npc == None :
             npc = [0]
         
-        
+        if not covars :
+            cov_combos = [[]]
 
         # Loop over each set of covariate combos
         for covs in self.cov_combos :
@@ -161,9 +161,41 @@ class Basu_estimation() :
             
             # loop over all combinations of pcs and phenotypes
             for mp, nnpc in itertools.product(self.mpheno, npc):
-                r = load_n_estimate(
-                    df=self.df, covars=covs, nnpc=nnpc, mp=mp, GRM= self.GRM, std= False, Method = Method, RV = RV)
+                if not Naive :
+                    r = load_n_estimate(
+                        df=self.df, covars=covs, nnpc=nnpc, mp=mp, GRM= self.GRM, std= False, Method = Method, RV = RV)
+                else :
+                    # Empty results list
+                    sub_results = pd.DataFrame({"Estimate": [],
+                                           "Size": []})
+
+                    # loop over  all sites
+                    for site in np.unique(self.df[RV]):
+                        # Grab the portion that lies within a given site
+                        sub = self.df.loc[self.df.abcd_site == site, :]
+                        # Get size
+                        sub_n = sub.shape[0]
+                        # Estimate just on the supsample
+                        sub_result = load_n_estimate(df=sub, covars=[],  nnpc=0, mp= mp, GRM=self.GRM, std=False, Method= Method, RV=None,
+                                                 silent=True)
+                        sub_result = pd.DataFrame({"Estimate": [sub_result["h2"][0]],
+                                               "Size": [sub_n]})
+                        # Add to the list of estimates
+                        sub_results = sub_results.append(sub_result, ignore_index=True)
+
+                    # Pool the estimates
+                    sub_results["nh2"] = (
+                        sub_results["Size"] * sub_results["Estimate"]) / self.GRM.shape[0]
+                    r = np.sum(sub_results["nh2"])
+                    r = {"h2" : r, "ss": 0, "se" : 0, "var(sg)" : 0}
+                    r = pd.DataFrame(r, index= [0])
+
+                    
+                    
+                # Store each result
                 results = pd.concat([results, r], ignore_index = True)
+
+
                 
         self.results = results
         return self.results

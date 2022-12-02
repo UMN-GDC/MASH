@@ -7,21 +7,22 @@ Created on Mon Nov 21 07:35:15 2022
 """
 import os
 import subprocess
+import numpy as np
 import pandas as pd 
 from functions.Data_input.load_data import load_everything
 # os.chdir("/home/christian/Research/Stat_gen/tools/Basu_herit")
 
 #%%
-def GCTA(df, covars, nnpc, mp, GRM, std = False, Method = "AdjHE", RV = None, silent=False):
+def GCTA(df, covars, nnpc, mp, GRM, silent=False):
     # write the phenotype file
-    df[["fid", "iid", mp]].to_csv("temp_pheno.txt", sep = " ", header = False, index= False, na_rep = "NA")
+    df[["FID", "IID", mp]].to_csv("temp_pheno.txt", sep = " ", header = False, index= False, na_rep = "NA")
     
     # Select the remaining variables of interest
     pcs =  ["pc_" + str(s) for s in range(1, nnpc)]
-    df = df[["fid", "iid"] + covars + pcs]
+    df = df[["FID", "IID"] + covars + pcs]
 
 
-    # Decide which are qcovars and which are numeric covars
+    # Decide which are qcovars and which are discrete covars
     discrete = [(len(df[col].unique()) < 50) and (len(df[col].unique()) > 1) for col in df]
     # Include FID IID
     cont = [not v for v in discrete]
@@ -33,6 +34,22 @@ def GCTA(df, covars, nnpc, mp, GRM, std = False, Method = "AdjHE", RV = None, si
         df.iloc[:,discrete].to_csv("temp_Discrete.txt", sep = " ", header = False, index= False, na_rep = "NA")
     if sum(cont) > 2:
         df.iloc[:,cont].to_csv("temp_Cont.txt", sep = " ", header= False, index= False, na_rep = "NA")
+    
+    #######################
+    # Write GRM and ids
+    # Specify information about binary GRM format
+    dt = np.dtype('f4') # Relatedness is stored as a float of size 4 in the binary file
+    
+    
+    # Write IDs
+    df[["FID", "IID"]].to_csv("temp.grm.id", sep = " ", header= False, index= False)
+    n = df.shape[0]
+    
+    l= np.tril_indices(n)
+    
+    # Write GRM to binary 
+    GRM[l].astype("f4").tofile("temp.grm.bin")    
+    ##############################
         
     # Format string for controlling variables
     covars = " "
@@ -49,7 +66,7 @@ def GCTA(df, covars, nnpc, mp, GRM, std = False, Method = "AdjHE", RV = None, si
 
     
     # run gcta
-    bashcommand = gcta + f" --grm {GRM} --pheno temp_pheno.txt --mpheno 1 --reml --out temp" + covars
+    bashcommand = gcta + " --grm temp --pheno temp_pheno.txt --mpheno 1 --reml --out temp" + covars
     process = subprocess.Popen(bashcommand.split(), stdout=subprocess.PIPE)
     __output, __error = process.communicate()
 

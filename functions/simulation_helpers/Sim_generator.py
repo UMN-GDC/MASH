@@ -11,13 +11,9 @@ Created on Thu Oct 13 09:25:44 2022
 import os
 os.chdir("/home/christian/Research/Stat_gen/tools/Basu_herit")
 
-import subprocess
-import itertools
 import numpy as np
 import pandas as pd
 from sklearn.decomposition import PCA
-from functions.Estimation.all_estimators import Basu_estimation, load_n_estimate
-from functions.Estimation.GCTA_wrapper import GCTA 
 
 
 rng = np.random.default_rng(123)
@@ -140,6 +136,12 @@ class pheno_simulator():
         genotypes = np.matrix((self.genotypes - 2 * allele_freqs) /
                               np.sqrt(2 * allele_freqs * (1 - allele_freqs)))
         self.GRM = np.dot(genotypes, genotypes.T) / self.nSNPs
+        # project GRM onto pc space
+        pcs = pd.DataFrame(PCA(n_components=20).fit_transform(self.GRM))
+        pcs.columns = ["pc_" + str(col + 1) for col in pcs.columns]
+        # add the pcs to the dataframe
+        self.df = pd.concat([self.df, pcs], axis=1)
+
 
     def sim_gen_effects(self, prop_causal=0.1, site_dep=False):
         nCausal = int(self.nSNPs * prop_causal)
@@ -208,62 +210,10 @@ class pheno_simulator():
         self.df["Y"] = self.df["Y"] - np.mean(self.df["Y"])
 
 
-    def estimate(self, Method=None, RV=None, nnpc=0, covars=[], silent=True):
-        
-        # Residualize GRM and construct RV if needed
-        if (nnpc != 0) and (RV != None):
-            # project GRM onto pc space
-            pcs = pd.DataFrame(PCA(n_components=nnpc).fit_transform(self.GRM))
-            pcs.columns = ["pc_" + str(col + 1) for col in pcs.columns]
-            # add the pcs to the dataframe
-            self.df = pd.concat([self.df, pcs], axis=1)
-
-            # subtract substructre from GRM
-            pcs = np.matrix(PCA(n_components=nnpc).fit(self.GRM).components_.T)
-            P = pcs * np.linalg.inv(pcs.T * pcs) * pcs.T
-            G = (np.eye(self.nsubjects) - P) * self.GRM
-        
-            
-        # else:
-        #     G = self.GRM
-        G = self.GRM
-
-        self.result = load_n_estimate(self.df, covars, nnpc, "Y", G, std = False, Method = Method, RV = None, silent=False)
-        
-        if Method == "Naive":
-            # Empty results list
-            results = pd.DataFrame({"Estimate": [],
-                                   "Size": []})
-
-            # loop over  all sites
-            for site in np.unique(self.df.abcd_site):
-                # Grab the portion that lies within a given site
-                subdf = self.df.loc[self.df.abcd_site == site, :]
-                # Get size
-                size = subdf.shape[0]
-                # Estimate just on the supsample
-                result = load_n_estimate(df=subdf, covars=[],  nnpc=0, mp="Y", GRM=self.GRM, std=False, Method="AdjHE", RV=None,
-                                         silent=silent)
-                result = pd.DataFrame({"Estimate": [result["h2"][0]],
-                                       "Size": [size]})
-                # Add to the list of estimates
-                results = results.append(result, ignore_index=True)
-
-            # Pool the estimates
-            results["nXbar"] = (
-                results["Size"] * results["Estimate"]) / self.nsubjects
-            final_result = np.sum(results["nXbar"])
-            self.result = {"h2": final_result,
-                           "SE": 0,
-                           "Pheno": "Y",
-                           "PCs": nnpc,
-                           "Covariates": "NONE",
-                           "Time for analysis(s)": 0,
-                           "Memory Usage": 0}
             
     def full_sim(self, sigma, site_comp="IID",
                         nsites=30, theta_alleles=0.5, nclusts=5, dominance=5,
-                        prop_causal=0.7, site_dep=False, nsubjects=1000,
+                        prop_causal=0.25, site_dep=False, nsubjects=1000,
                         nnpc=0):
         # Run through full simulation and estimation
         self.sim_sites(nsites= nsites, eq_sites=False)
@@ -274,127 +224,35 @@ class pheno_simulator():
 
         # Make estimates
 
-        # Fit basic AdjHE with RV
-        self.estimate(nnpc=nnpc, Method="AdjHE", RV="abcd_site")
-        Site_RE = self.result["h2"][0]
+        # # Fit basic AdjHE with RV
+        # self.estimate(nnpc=nnpc, Method="AdjHE", RV="abcd_site")
+        # Site_RE = self.result["h2"][0]
 
-        # Fit basic AdjHE
-        self.estimate(nnpc=nnpc, Method="AdjHE")
-        Basic_est = self.result["h2"][0]
+        # # Fit basic AdjHE
+        # self.estimate(nnpc=nnpc, Method="AdjHE")
+        # Basic_est = self.result["h2"][0]
 
-        # Fit AdjHE with Site fixed effect
-        self.estimate(nnpc=nnpc, Method="AdjHE", covars=["abcd_site"])
-        Site_FE = self.result["h2"][0]
+        # # Fit AdjHE with Site fixed effect
+        # self.estimate(nnpc=nnpc, Method="AdjHE", covars=["abcd_site"])
+        # Site_FE = self.result["h2"][0]
 
-        # Fit AdjHE naively pooling between sites
-        self.estimate(nnpc=nnpc, Method="Naive")
-        Naive = self.result["h2"]
+        # # Fit AdjHE naively pooling between sites
+        # self.estimate(nnpc=nnpc, Method="Naive")
+        # Naive = self.result["h2"]
 
         # Fit MOM
         #sim1.estimate(nnpc = 0, fast = False, covars= ["abcd_site"])
         # MOM = sim1.result["h2"][0]
         
         # Fit GCTA
-        self.estimate(Method="GCTA")
-        GCTA = self.result["h2"]
+        # self.estimate(Method="GCTA")
+        # GCTA_result = self.result["h2"]
         
-        # return results
-        self.result = pd.DataFrame({"sg" : sigma[0], "ss" : sigma[1], "se" : sigma[2],                  # Store variance parameters
-                      "nsub" : self.nsubjects, "nsites" : nsites, "nclusts" : nclusts,            # Store count parameters
-                      "prop_causal" : prop_causal, "site_comp" : site_comp, "nSNPs" : self.nSNPs, # Store other parameters
-                      "theta_alleles" : theta_alleles, "dominance" : dominance, "npc" : nnpc,
-                      "Site_RE" : Site_RE, "Basic_est" : Basic_est, "Site_FE" :Site_FE, "Naive_AdjHE" : Naive, "GCTA" : GCTA # Store estimates
-                      }, index = [0])
+        # # return results
+        # self.result = pd.DataFrame({"sg" : sigma[0], "ss" : sigma[1], "se" : sigma[2],                  # Store variance parameters
+        #               "nsub" : self.nsubjects, "nsites" : nsites, "nclusts" : nclusts,            # Store count parameters
+        #               "prop_causal" : prop_causal, "site_comp" : site_comp, "nSNPs" : self.nSNPs, # Store other parameters
+        #               "theta_alleles" : theta_alleles, "dominance" : dominance, "npc" : nnpc,
+        #               "Site_RE" : Site_RE, "Basic_est" : Basic_est, "Site_FE" :Site_FE, "Naive_AdjHE" : Naive, "GCTA" : GCTA_result # Store estimates
+        #               }, index = [0])
         
-def sim_experiment(nsubjectss = [100], site_comps=["IID"], nSNPss = [20],
-                    nsitess=[30], theta_alleless=[0.5], nclustss=[5], dominances=[5],
-                    prop_causals=[0.7], site_deps=[False], reps=25,
-                    nnpcs=[0], sigmas = [[0.5,0.25,0.25]]) :
-    # Seed empty dataframe
-    sim_results = pd.DataFrame()
-    # loop over all simulation variables and number of repetitions
-    for nsubjects, sigma, site_comp, nsites, theta_alleles, nclusts, dominance, prop_causal, site_dep, nnpc, __, nSNPs in itertools.product(nsubjectss, sigmas, site_comps, nsitess,
-                                                                                                                theta_alleless, nclustss, dominances, 
-                                                                                                                prop_causals, site_deps, 
-                                                                                                                nnpcs, range(reps), nSNPss) :
-        sim = AdjHE_simulator(nsubjects = nsubjects, nSNPs = nSNPs)
-        sim.sim_n_est(sigma = sigma, site_comp = site_comp,
-                            nsites= nsites, theta_alleles = theta_alleles, nclusts = nclusts, dominance= dominance,
-                            prop_causal=prop_causal, site_dep=site_dep, nnpc=0)
-        
-        sim_results = pd.concat([sim_results, sim.result], ignore_index = True)
-        
-    # specify parameters and estimate  column names
-    params = ['sg', 'ss', 'se', 'nsub','nsites', 'nclusts', 'prop_causal', 'site_comp',
-              'nSNPs', 'theta_alleles', "dominance", 'npc']
-    ests = ['Site_RE', 'Basic_est', 'Site_FE', 'Naive_AdjHE', 'GCTA']
-    # Make results tall
-    sim_results = (pd.DataFrame(sim_results)
-               .melt(id_vars= params, value_vars= ests)
-               )
-    # Return results in a tall dataframe
-    return sim_results
-
-#%%
-
-
-#def plot_save(results, out) :
-#    results["h2"] = results.sg / (results.sg + results.ss + results.se)
-#    results["h2"][np.isnan(results.h2)] = 0
-#    results.to_csv(out + ".csv")
-
-    # Plot results and store at specified locaation
-    # fig = px.violin(results, x="variable", y="value", color="variable", facet_col="h2", facet_row = "ss")
-#    fig = px.box(results, x="variable", y="value",
-#                 color="variable", facet_col="h2", facet_row="ss")
-#    fig.update_yaxes(matches=None)
-#    fig.for_each_yaxis(lambda yaxis: yaxis.update(showticklabels=True))
-#    fig.update_xaxes(matches=None)
-#    fig.for_each_xaxis(lambda xaxis: xaxis.update(showticklabels=True))
-#    fig.update_layout(
-#        font=dict(size=20)
-#    )
-#    plot(fig, filename=out + ".html")
-
-#%%
-sim = pheno_simulator(nsubjects= 1000, nSNPs = 50)
-# Run through full simulation and estimation
-sim.sim_sites(nsites= 30, eq_sites=False)
-sim.sim_pops(theta_alleles=0.5, nclusts=3, site_comp= "IID", dominance=2)
-sim.sim_genos()
-sim.sim_gen_effects(prop_causal=0.1, site_dep= False)
-sim.sim_pheno(var_comps=[0.5,0,0.5])
-
-ests = Basu_estimation()
-ests.df= sim.df
-ests.GRM = sim.GRM
-ests.mpheno = ["Y"]
-ests.cov_combos = [[]]
-ests.estimate(npc = [0], Method = "AdjHE", RV = None)
-#%%
-
-ests.GRM_vis(sort_by = "subj_ancestries", npc =2)
-ests.pop_clusts()
-
-
-
-
-
-
-sim.estimate(Method = "AdjHE", nnpc=2)
-#%%
-# sim.full_sim(sigma = [0.5,0.25,0.25], site_comp="IID",
-#                         nsites=30, theta_alleles=0.5, nclusts=5, dominance=5,
-#                         prop_causal=0.7, site_dep=False, nsubjects=1000,
-#                         nnpc=0)
-# #%%
-
-# sim.GRM_vis(sort_by="subj_ancestries", npc= 0)
-# sim.GRM_vis(sort_by = "subj_ancestries", plot_decomp=True, npc = 1)
-
-
-# #%%
-# results = sim_experiment(nsubjectss = [100], site_comps=["IID"], nSNPss = [20],
-#                     nsitess=[30], theta_alleless=[0.5], nclustss=[5], dominances=[5],
-#                     prop_causals=[0.7], site_deps=[False], reps=25,
-#                     nnpcs=[0], sigmas = [[0.5,0.25,0.25]])

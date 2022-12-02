@@ -127,7 +127,7 @@ def AdjHE_rv_estimator(A,df, mp, rv, npc=0, std=False) :
     # Reorder df by the random variable
     # then reorder the GRM to match
     df = df.reset_index().drop("index", axis = 1)
-    df = df.sort_values(rv).dropna(subset= [rv])
+    df = df.sort_values(["IID", rv]).dropna(subset= [rv])
     A = np.matrix(A[df.index,:][:,df.index])
     n = A.shape[0]
     
