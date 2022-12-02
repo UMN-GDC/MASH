@@ -9,7 +9,7 @@ Created on Thu Oct 13 09:25:44 2022
 #from plotly.offline import plot
 #import plotly.express as px
 import os
-os.chdir("/home/christian/Research/Stat_gen/tools/Basu_herit")
+# os.chdir("/home/christian/Research/Stat_gen/tools/Basu_herit")
 
 import numpy as np
 import pandas as pd

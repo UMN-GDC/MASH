@@ -4,7 +4,7 @@
 * (C) 2010-present, Jian Yang, The University of Queensland
 * Please report bugs to Jian Yang <jian.yang.qt@gmail.com>
 *******************************************************************
-Analysis started at 19:56:10 CST on Thu Dec 01 2022.
+Analysis started at 08:06:19 CST on Fri Dec 02 2022.
 Hostname: christian-laptop
 
 Accepted options:
@@ -18,58 +18,59 @@ Accepted options:
 Note: This is a multi-thread program. You could specify the number of threads by the --thread-num option to speed up the computation if there are multiple processors in your machine.
 
 Reading IDs of the GRM from [temp.grm.id].
-32 IDs read from [temp.grm.id].
+59 IDs read from [temp.grm.id].
 Reading the GRM from [temp.grm.bin].
-GRM for 32 individuals are included from [temp.grm.bin].
+GRM for 59 individuals are included from [temp.grm.bin].
 Reading phenotypes from [temp_pheno.txt].
-Non-missing phenotypes of 32 individuals are included from [temp_pheno.txt].
+Non-missing phenotypes of 59 individuals are included from [temp_pheno.txt].
 Reading quantitative covariates from [temp_Cont.txt].
 4 quantitative covariate(s) of 1000 individuals read from [temp_Cont.txt].
 
 4 quantitative variable(s) included as covariate(s).
-32 individuals are in common in these files.
+59 individuals are in common in these files.
 
 Performing  REML analysis ... (Note: may take hours depending on sample size).
-32 observations, 5 fixed effect(s), and 2 variance component(s)(including residual variance).
+59 observations, 5 fixed effect(s), and 2 variance component(s)(including residual variance).
 Calculating prior values of variance components by EM-REML ...
-Updated prior values: 1.23785 1.38398
-logL: -39.6214
+Updated prior values: 0.277575 0.409903
+logL: -33.964
 Running AI-REML algorithm ...
 Iter.	logL	V(G)	V(e)	
-1	-39.21	0.00000	1.45969	(1 component(s) constrained)
-2	-36.17	0.00000	1.53696	(1 component(s) constrained)
-3	-36.10	0.00000	1.53832	(1 component(s) constrained)
-4	-36.10	0.00000	1.54127	(1 component(s) constrained)
-5	-36.10	0.00000	1.54127	(1 component(s) constrained)
-6	-36.10	0.00000	1.54127	(1 component(s) constrained)
+1	-31.30	0.21880	0.43119	
+2	-30.92	0.18659	0.44779	
+3	-30.74	0.12274	0.48802	
+4	-30.57	0.11902	0.49698	
+5	-30.56	0.11779	0.49786	
+6	-30.56	0.11749	0.49804	
+7	-30.56	0.11742	0.49808	
+8	-30.56	0.11740	0.49810	
 Log-likelihood ratio converged.
 
 Calculating the logLikelihood for the reduced model ...
 (variance component 1 is dropped from the model)
 Calculating prior values of variance components by EM-REML ...
-Updated prior values: 1.85035
-logL: -37.89690
+Updated prior values: 0.60946
+logL: -31.17856
 Running AI-REML algorithm ...
 Iter.	logL	V(e)	
-1	-36.15	1.78012	
-2	-36.10	1.73647	
-3	-36.08	1.64762	
-4	-36.07	1.65193	
-5	-36.07	1.65194	
+1	-31.13	0.61044	
+2	-31.13	0.61257	
+3	-31.13	0.61258	
+4	-31.13	0.61258	
 Log-likelihood ratio converged.
 
 Summary result of REML analysis:
 Source	Variance	SE
-V(G)	0.000003	0.307835
-V(e)	1.541274	0.476348
-Vp	1.541277	0.409230
-V(G)/Vp	0.000002	0.199727
+V(G)	0.117403	0.104087
+V(e)	0.498095	0.114163
+Vp	0.615499	0.124898
+V(G)/Vp	0.190745	0.152805
 
 Sampling variance/covariance of the estimates of variance components:
-9.476217e-02	-7.710034e-02	
--7.710034e-02	2.269073e-01	
+1.083419e-02	-4.133958e-03	
+-4.133958e-03	1.303317e-02	
 
 Summary result of REML analysis has been saved in the file [temp.hsq].
 
-Analysis finished at 19:56:10 CST on Thu Dec 01 2022
+Analysis finished at 08:06:19 CST on Fri Dec 02 2022
 Overall computational time: 0.01 sec.

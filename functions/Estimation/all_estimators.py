@@ -137,6 +137,9 @@ class Basu_estimation() :
             
     def estimate(self, npc, Method = None, RV = None, Naive = False, covars= False) : 
         print("Estimating")
+        print(Method)
+        if RV != None :
+            print("RV: " + RV)
         # create empty list to store heritability estimates
         results = pd.DataFrame()
         
