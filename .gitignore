@@ -8,6 +8,9 @@
 *Simulated*
 *phenotypes*
 *.csv
+temp*
+slurm*
 
 !Example/
 !Genes_n_sims/
+
