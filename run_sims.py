@@ -148,15 +148,15 @@ for sg, ss, se in itertools.product(sgs, sss, ses) :
             sigmas += [[sg, ss, se]]
             
 #%%
-cool_results = sim_experiment(nsubjectss = [500], site_comps=["IID"], nSNPss = [200],
-                    nsitess=[2], theta_alleless=[0.85], nclustss=[30], dominances=[5],
-                    prop_causals=[0.25], site_deps=[False], reps=10,
+cool_results = sim_experiment(nsubjectss = [500, 1000], site_comps=["IID"], nSNPss = [200],
+                    nsitess=[30], theta_alleless=[0.5, 0.75, 0.85], nclustss=[5], dominances=[5],
+                    prop_causals=[0.05, 0.25], site_deps=[False], reps=25,
                     nnpcs=[5], sigmas = sigmas, phenss = [2])
 g = sns.FacetGrid(cool_results, col="sg",  row="ss", sharey = False)
 g.map(sns.boxplot, "Estimator", "Estimate")
 g.set_xticklabels(rotation=30)
 #%%
-cool_results.to_csv("Simulations/Sim_results2.csv", header=  True, index= False)
+cool_results.to_csv("Simulations/Sim_explore.csv", header=  True, index= False)
 
 #%%
 
