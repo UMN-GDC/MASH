@@ -12,6 +12,7 @@ import os
 
 import numpy as np
 import pandas as pd
+import seaborn as sns
 import itertools
 from functions.simulation_helpers.Sim_generator import pheno_simulator
 from functions.Estimation.all_estimators import Basu_estimation
@@ -20,13 +21,13 @@ rng = np.random.default_rng(123)
 
 #%%
 
-nsubjects = 100; sigma = [0.5,0.25, 0.25]; site_comp = "IID"
-nsites = 2; theta_alleles =0.5; nclusts =1
-dominance=3; prop_causal=0.25; site_dep=False
-nnpc = 1
-nSNPs=20
-rep = 2
-phens = 2
+# nsubjects = 100; sigma = [0.5,0.25, 0.25]; site_comp = "IID"
+# nsites = 2; theta_alleles =0.5; nclusts =1
+# dominance=3; prop_causal=0.25; site_dep=False
+# nnpc = 1
+# nSNPs=20
+# rep = 2
+# phens = 2
 
 
 def sim_experiment(nsubjectss = [100], site_comps=["IID"], nSNPss = [20],
@@ -77,10 +78,16 @@ def sim_experiment(nsubjectss = [100], site_comps=["IID"], nSNPss = [20],
 
         
         # Make a list of lists with estmiator and estimates
-        result = [[est, eval(est)] for est in ["GCTA_est", "nGCTA_est", "nAdjHE_est", 
-                                               "AdjHE_FE", "SWD_est", "Combat_est", 
-                                               "AdjHE_RE"#, "MOM_est"
-                                               ]]
+        #result = [[est, eval(est)] for est in [#]]
+        result = [["GCTA_est", GCTA_est],
+                  ["nGCTA_est", nGCTA_est],
+                  ["nAdjHE_est", nAdjHE_est],
+                  ["AdjHE_FE", AdjHE_FE],
+                  ["SWD_est", SWD_est],
+                  ["Combat_est", Combat_est],
+                  ["AdjHE_RE", AdjHE_RE],
+                  #["MOM_est",MOM_est]
+                  ]
        
         
         # Make it a dataframe
@@ -109,23 +116,23 @@ def sim_experiment(nsubjectss = [100], site_comps=["IID"], nSNPss = [20],
 #%%
 
 
-#def plot_save(results, out) :
-#    results["h2"] = results.sg / (results.sg + results.ss + results.se)
-#    results["h2"][np.isnan(results.h2)] = 0
-#    results.to_csv(out + ".csv")
+def plot_save(results, out) :
+    results["h2"] = results.sg / (results.sg + results.ss + results.se)
+    results["h2"][np.isnan(results.h2)] = 0
+    results.to_csv(out + ".csv")
 
     # Plot results and store at specified locaation
-    # fig = px.violin(results, x="variable", y="value", color="variable", facet_col="h2", facet_row = "ss")
-#    fig = px.box(results, x="variable", y="value",
-#                 color="variable", facet_col="h2", facet_row="ss")
-#    fig.update_yaxes(matches=None)
-#    fig.for_each_yaxis(lambda yaxis: yaxis.update(showticklabels=True))
-#    fig.update_xaxes(matches=None)
-#    fig.for_each_xaxis(lambda xaxis: xaxis.update(showticklabels=True))
-#    fig.update_layout(
-#        font=dict(size=20)
-#    )
-#    plot(fig, filename=out + ".html")
+    fig = px.violin(results, x="variable", y="value", color="variable", facet_col="h2", facet_row = "ss")
+    fig = px.box(results, x="variable", y="value",
+                 color="variable", facet_col="h2", facet_row="ss")
+    fig.update_yaxes(matches=None)
+    fig.for_each_yaxis(lambda yaxis: yaxis.update(showticklabels=True))
+    fig.update_xaxes(matches=None)
+    fig.for_each_xaxis(lambda xaxis: xaxis.update(showticklabels=True))
+    fig.update_layout(
+        font=dict(size=20)
+    )
+    plot(fig, filename=out + ".html")
 
 #%% Create domain for simulations
 sgs = [0, 0.25, 0.5]
@@ -141,12 +148,16 @@ for sg, ss, se in itertools.product(sgs, sss, ses) :
             sigmas += [[sg, ss, se]]
             
 #%%
-cool_results = sim_experiment(nsubjectss = [100], site_comps=["IID"], nSNPss = [20],
-                    nsitess=[2], theta_alleless=[0.75], nclustss=[5], dominances=[5],
-                    prop_causals=[0.25], site_deps=[False], reps=2,
+cool_results = sim_experiment(nsubjectss = [500], site_comps=["IID"], nSNPss = [200],
+                    nsitess=[2], theta_alleless=[0.85], nclustss=[30], dominances=[5],
+                    prop_causals=[0.25], site_deps=[False], reps=10,
                     nnpcs=[5], sigmas = sigmas, phenss = [2])
+g = sns.FacetGrid(cool_results, col="sg",  row="ss", sharey = False)
+g.map(sns.boxplot, "Estimator", "Estimate")
+g.set_xticklabels(rotation=30)
+#%%
+cool_results.to_csv("Simulations/Sim_results2.csv", header=  True, index= False)
 
 #%%
 
-cool_results.to_csv("Simulations/Sim_results2.csv", header=  True, index= False)
 
