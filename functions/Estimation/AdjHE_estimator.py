@@ -294,7 +294,7 @@ def load_n_MOM(df, covars, nnpc, mp, GRM, std = False, RV  = None):
         # get dependent from outter product of residualized phenotypes
         #"yyt" : np.outer(temp[mp], temp[mp])[np.triu_indices(len(temp[mp]))].flatten(),
         # get GRM
-        "A" : GRM[np.triu_indices(len(df[mp]))].flatten(),
+        "A" : np.array(GRM)[np.triu_indices(len(df[mp]))],
         # get I matrix
         "I" : np.identity(len(df[mp]))[np.triu_indices(len(df[mp]))].flatten()})
     # Get outer product of eigen loadings

@@ -48,7 +48,7 @@ def first_level_reg(data, dep_var, fixed) :
     
     return model.resid
 
-def second_level_reg(data, resids, GRM, RV = None) : 
+def second_level_reg(resids, GRM, RV = None) : 
     """
     2nd level regression of the residuals of the first model vs the GRM and the second specified random variable
 
@@ -75,11 +75,11 @@ def second_level_reg(data, resids, GRM, RV = None) :
     # symmetric
     df = pd.DataFrame({
         "yy" : np.outer(resids,  resids)[np.tril_indices(n)],
-        "GRM" : GRM[np.tril_indices(n)],
+        "GRM" : np.array(GRM)[np.tril_indices(n)],
         "II" : np.identity(n)[np.tril_indices(n)]})
     # Allow option to not specify additional RV
     if RV != None :
-        df["RV"] = RV[np.tril_indices(n)]
+        df[RV] = RV[np.tril_indices(n)]
         model = smf.ols("yy ~ GRM + RV + II-1 ", data = df).fit()
     else :
         model = smf.ols("yy ~ GRM + II-1 ", data = df).fit()
@@ -90,7 +90,7 @@ def two_level_regression(data, GRM, fixed, dep_var, RV = None) :
     # fit the first level model
     m1 = first_level_reg(data, dep_var, fixed)
     # pass the first model fit to the second level
-    m2 = second_level_reg(data, m1, GRM, RV)
+    m2 = second_level_reg(m1, GRM, RV)
     return m2
 
 

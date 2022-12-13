@@ -20,21 +20,29 @@ rng = np.random.default_rng(123)
 
 #%%
 
+nsubjects = 100; sigma = [0.5,0.25, 0.25]; site_comp = "IID"
+nsites = 2; theta_alleles =0.5; nclusts =1
+dominance=3; prop_causal=0.25; site_dep=False
+nnpc = 1
+nSNPs=20
+rep = 2
+phens = 2
+
 
 def sim_experiment(nsubjectss = [100], site_comps=["IID"], nSNPss = [20],
                     nsitess=[30], theta_alleless=[0.5], nclustss=[5], dominances=[5],
                     prop_causals=[0.7], site_deps=[False], reps=25,
-                    nnpcs=[0], sigmas = [[0.5,0.25,0.25]]) :
+                    nnpcs=[0], sigmas = [[0.5,0.25,0.25]], phenss = [2]) :
     # Seed empty dataframe
     sim_results = pd.DataFrame()
     # loop over all simulation variables and number of repetitions
-    for nsubjects, sigma, site_comp, nsites, theta_alleles, nclusts, dominance, prop_causal, site_dep, nnpc, __, nSNPs in itertools.product(nsubjectss, sigmas, site_comps, nsitess,
+    for nsubjects, sigma, site_comp, nsites, theta_alleles, nclusts, dominance, prop_causal, site_dep, nnpc, __, nSNPs, phens in itertools.product(nsubjectss, sigmas, site_comps, nsitess,
                                                                                                                 theta_alleless, nclustss, dominances, 
                                                                                                                 prop_causals, site_deps, 
-                                                                                                                nnpcs, range(reps), nSNPss) :
+                                                                                                                nnpcs, range(reps), nSNPss, phenss) :
         sim = pheno_simulator(nsubjects= nsubjects, nSNPs = nSNPs)
         # Run through full simulation and estimation
-        sim.full_sim(nsites= nsites, sigma=sigma)
+        sim.full_sim(nsites= nsites, sigma=sigma, phens = phens)
         
         ests = Basu_estimation()
         ests.df= sim.df
@@ -53,12 +61,30 @@ def sim_experiment(nsubjectss = [100], site_comps=["IID"], nSNPss = [20],
         nAdjHE_est = ests.estimate(npc = [nnpc], Method = "AdjHE", Naive = True, RV = "abcd_site")["h2"][0]
         # Fixed effects AdjHE
         AdjHE_FE = ests.estimate(npc = [nnpc], Method = "AdjHE", Naive = False, covars = True)["h2"][0]
+        # SWD
+        SWD_est = ests.estimate(npc = [nnpc], Method = "SWD", Naive = False, RV = "abcd_site")["h2"][0]
+
+        # COMBAT
+        Combat_est = ests.estimate(npc = [nnpc], Method = "Combat", Naive = False, RV = "abcd_site")["h2"][0]
+
+        
         # Random effects AdjHE
         ests.looping(covars=  None, npc = [nnpc], mpheno = ["Y"], loop_covars = False)
         AdjHE_RE = ests.estimate(npc = [nnpc], Method = "AdjHE", Naive = False, RV = "abcd_site")["h2"][0]
         
-        result = pd.DataFrame({"Estimator" : ["GCTA", "Naive_GCTA", "Naive_AdjHE", "AdjHE_FE", "AdjHE_RE"],
-                               "Estimate" :  [GCTA_est, nGCTA_est, nAdjHE_est, AdjHE_FE, AdjHE_RE]}, index = range(5))
+        # MOM estimator
+        # MOM_est = ests.estimate(npc = [nnpc], Method = "MOM", Naive = False, covars= ["abcd_site"])["h2"][0]
+
+        
+        # Make a list of lists with estmiator and estimates
+        result = [[est, eval(est)] for est in ["GCTA_est", "nGCTA_est", "nAdjHE_est", 
+                                               "AdjHE_FE", "SWD_est", "Combat_est", 
+                                               "AdjHE_RE"#, "MOM_est"
+                                               ]]
+       
+        
+        # Make it a dataframe
+        result = pd.DataFrame(result, columns = ["Estimator", "Estimate"])
         
         # add simulation details
         result["sg"] = sigma[0]
@@ -115,12 +141,12 @@ for sg, ss, se in itertools.product(sgs, sss, ses) :
             sigmas += [[sg, ss, se]]
             
 #%%
-cool_results = sim_experiment(nsubjectss = [1000], site_comps=["IID"], nSNPss = [20],
-                    nsitess=[30], theta_alleless=[0.25, 0.75], nclustss=[5], dominances=[5],
-                    prop_causals=[0.25, 0.75], site_deps=[False], reps=100,
-                    nnpcs=[0], sigmas = sigmas)
+cool_results = sim_experiment(nsubjectss = [100], site_comps=["IID"], nSNPss = [20],
+                    nsitess=[2], theta_alleless=[0.75], nclustss=[5], dominances=[5],
+                    prop_causals=[0.25], site_deps=[False], reps=2,
+                    nnpcs=[5], sigmas = sigmas, phenss = [2])
 
-
+#%%
 
 cool_results.to_csv("Simulations/Sim_results2.csv", header=  True, index= False)
 

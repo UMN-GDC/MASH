@@ -172,7 +172,7 @@ class pheno_simulator():
         # genetic contribution
         self.df["Gene_contrib"] = Gene_contrib
 
-    def sim_pheno(self, var_comps=[0.5, 0.25, 0.25]):
+    def sim_pheno(self, var_comps=[0.5, 0.25, 0.25], phen = 1):
         # make sure no zero variance components
         for i, v in enumerate(var_comps):
             if v == 0:
@@ -205,22 +205,27 @@ class pheno_simulator():
         self.df["errors"] = (
             errors / np.sqrt(error_variance_scaling)).flatten()
         # Sim phenotype
-        self.df["Y"] = self.df.Gene_contrib + \
-            self.df.Site_contrib + self.df.errors
-        self.df["Y"] = self.df["Y"] - np.mean(self.df["Y"])
+        if phen==0 :
+            phenoname = "Y"
+        else :
+            phenoname = "Y" + str(phen)
+        self.df[phenoname] = self.df.Gene_contrib + self.df.Site_contrib + self.df.errors
+        self.df[phenoname] = self.df[phenoname] - np.mean(self.df[phenoname])
 
 
             
     def full_sim(self, sigma, site_comp="IID",
                         nsites=30, theta_alleles=0.5, nclusts=5, dominance=5,
                         prop_causal=0.25, site_dep=False, nsubjects=1000,
-                        nnpc=0):
+                        nnpc=0, phens = 2):
         # Run through full simulation and estimation
         self.sim_sites(nsites= nsites, eq_sites=False)
         self.sim_pops(theta_alleles=0.5, nclusts=nclusts, site_comp= site_comp, dominance=2)
         self.sim_genos()
         self.sim_gen_effects(prop_causal=prop_causal, site_dep= site_dep)
-        self.sim_pheno(var_comps=sigma)
+        
+        for i in range(phens) :
+            self.sim_pheno(var_comps=sigma, phen = i)
 
         # Make estimates
 

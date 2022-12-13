@@ -19,6 +19,8 @@ from functions.Estimation.AdjHE_estimator import load_n_MOM
 from functions.Estimation.PredLMM_estimator import load_n_PredLMM
 from functions.Estimation.Estimate_helpers import create_formula
 from functions.Estimation.GCTA_wrapper import GCTA
+from functions.Estimation.combat import neuroCombat
+
 
 
 #%%
@@ -62,7 +64,8 @@ def load_n_estimate(df, covars, nnpc, mp, GRM, std = False, Method = "AdjHE", RV
         - maximum memory usage
     """
     if not silent :
-        print(Method + "Estimation...")
+        print(Method + " Estimation...")
+        print(df.columns.tolist())
 
     # Remove missingness for in-house estimators
     if Method != "GCTA" :
@@ -93,6 +96,30 @@ def load_n_estimate(df, covars, nnpc, mp, GRM, std = False, Method = "AdjHE", RV
         result = load_n_PredLMM(temp, covars, nnpc, mp, GRM_nonmissing, std = False, RV = RV)
     elif Method == "GCTA" :
         result=  GCTA(df, covars, nnpc, mp, GRM, silent=False)
+    elif Method == "SWD" :
+        # Find site wise means
+        temp = temp.T.drop_duplicates().T
+        means = temp[[RV, mp]].groupby(RV).transform("mean")
+        
+        # Subtract sitewise means from Y
+        temp[mp] = temp[mp] - means[mp]
+        # temp = temp.reset_index(drop = True)
+        result = load_n_AdjHE(temp, [], nnpc, mp, GRM_nonmissing, std = False, RV = None)
+    # Else use the Combat method
+    elif Method == "Combat" :
+        # Format data for Harmonization tool
+        temp["Y1"] = df["Y1"]
+        tempy = temp[["Y", "Y1"]].T
+
+        #Harmonization step:
+        data_combat = neuroCombat(dat=tempy,
+            covars=df[["pc_" + str(i + 1) for i in range(nnpc)] + ["abcd_site"]],
+            batch_col="abcd_site")["data"]
+        
+        # Grab the first column of the harmonized data
+        temp[mp] = data_combat[0,:].T
+        result = load_n_AdjHE(temp, [], nnpc, mp, GRM_nonmissing, std = False, RV = None)
+
         
     if not silent :
         print(result["h2"])
