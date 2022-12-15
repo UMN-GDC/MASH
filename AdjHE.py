@@ -22,7 +22,7 @@ from functions.Estimation.all_estimators import Basu_estimation
 #######################################
 #######################################
 #%% For troubleshootingg
-args= read_flags({"argfile" : "Example/basic_AdjHE.json"})
+# args= read_flags({"argfile" : "Example/basic_AdjHE.json"})
 # args= read_flags({"argfile" : "Example/basic_GCTA.json"})
 # args= read_flags({'argfile' : "simulations/Analysis_jsons/first_full.json"})
 #######################################
