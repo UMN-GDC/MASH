@@ -107,10 +107,6 @@ def sim_n_est(nsubjects = 1000, sigma = [0.5,0.25, 0.25], site_comp = "IID", nsi
     return results
 
 #%%
-df = sim_n_est(nsubjects = 200, reps = 3)
-
-
-#%%
 
 def sim_experiment(nsubjectss = [1000], sigmas = [[0.5,0.25, 0.25]], site_comps = ["IID"], nsites = [25],
               theta_alleless = [0.9], nclustss = [5], dominances= [3], prop_causals= [0.05], site_deps= [False], nnpcs = [1],
@@ -145,7 +141,7 @@ for sg, ss, se in itertools.product(sgs, sss, ses) :
             sigmas += [[sg, ss, se]]
             
 #%%
-df = sim_experiment(nsubjectss= [250], reps= 2, site_comps = ["EQUAL", "IID"], sigmas = sigmas)
+df = sim_experiment(nsubjectss= [2000], reps= 25, site_comps = ["EQUAL", "IID"], sigmas = sigmas)
 df.to_csv("Simulations/Sim_working_Combat1.csv", header=  True, index= False)
 
 
