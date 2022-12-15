@@ -234,13 +234,9 @@ class Basu_estimation() :
         print("Generating PCA cluster visualization...")
         # Checked genotypes with coming from separate clusters
         trans = PCA(n_components=npc).fit_transform(self.GRM)
-
-        if groups == None :
-            sns.scatterplot(x=trans[:, 0], y=trans[:, 1])
-
-        else: 
-            sns.scatterplot(x=trans[:, 0], y=trans[:, 1],
-                            hue=groups)
+        
+        sns.scatterplot(x=trans[:, 0], y=trans[:, 1],
+                        hue=self.df[groups].astype(str))
 
     def GRM_vis(self, sort_by=None, location=None, npc=0, plot_decomp = False):
         print("Generating GRM visualization...")
