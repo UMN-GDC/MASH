@@ -1,10 +1,10 @@
 #!/bin/bash -l        
-#SBATCH --time=4:00:00
+#SBATCH --time=5:00:00
 #SBATCH --ntasks=1
 #SBATCH --mem=10g
 #SBATCH --mail-type=ALL  
 #SBATCH --mail-user=coffm049@umn.edu
-#SBATCH --array=1 
+#SBATCH --array=1-4 
 
 
 

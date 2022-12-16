@@ -13,7 +13,7 @@ Last Updated 2022-06-06
 ##############################################################
 
 import os
-os.chdir("/home/christian/Research/Stat_gen/tools/Basu_herit")
+#os.chdir("/home/christian/Research/Stat_gen/tools/Basu_herit")
 #os.chdir("/panfs/roc/groups/3/rando149/coffm049/tools/Basu_herit")
 from functions.Data_input.parser import get_args, read_flags
 from functions.traits_visualizer import covs_vs_cov_of_interest
@@ -46,7 +46,7 @@ ests = Basu_estimation(prefix = args["prefix"],
 
 #%%
 ests.looping(covars = args["covars"], npc = args["npc"], mpheno = args["mpheno"], loop_covars = args["loop_covars"])
-ests.estimate(Method = "AdjHE", npc = [5])
+ests.estimate(Method = args["Method"], npc = args["npc"])
 # %%
 print("Writing results")
 ests.results.to_csv(args["out"], index=False, na_rep='NA')

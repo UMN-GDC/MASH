@@ -14,8 +14,13 @@ from functions.Data_input.load_data import load_everything
 
 #%%
 def GCTA(df, covars, nnpc, mp, GRM, silent=False):
+    # Store random integer to save to temp file name
+    rng = np.random.default_rng()    
+    numb = rng.integers(10000)
+    temp_name = "temp" + str(numb)
+
     # write the phenotype file
-    df[["FID", "IID", mp]].to_csv("temp_pheno.txt", sep = " ", header = False, index= False, na_rep = "NA")
+    df[["FID", "IID", mp]].to_csv(temp_name + "_pheno.txt", sep = " ", header = False, index= False, na_rep = "NA")
     
     # Select the remaining variables of interest
     pcs =  ["pc_" + str(s) for s in range(1, nnpc)]
@@ -31,9 +36,9 @@ def GCTA(df, covars, nnpc, mp, GRM, silent=False):
     
     # Svae temp files if there were any covariates in either category
     if sum(discrete) > 2:
-        df.iloc[:,discrete].to_csv("temp_Discrete.txt", sep = " ", header = False, index= False, na_rep = "NA")
+        df.iloc[:,discrete].to_csv(temp_name + "_Discrete.txt", sep = " ", header = False, index= False, na_rep = "NA")
     if sum(cont) > 2:
-        df.iloc[:,cont].to_csv("temp_Cont.txt", sep = " ", header= False, index= False, na_rep = "NA")
+        df.iloc[:,cont].to_csv(temp_name + "_Cont.txt", sep = " ", header= False, index= False, na_rep = "NA")
     
     #######################
     # Write GRM and ids
@@ -42,21 +47,21 @@ def GCTA(df, covars, nnpc, mp, GRM, silent=False):
     
     
     # Write IDs
-    df[["FID", "IID"]].to_csv("temp.grm.id", sep = " ", header= False, index= False)
+    df[["FID", "IID"]].to_csv(temp_name + ".grm.id", sep = " ", header= False, index= False)
     n = df.shape[0]
     
     l= np.tril_indices(n)
     
     # Write GRM to binary 
-    GRM[l].astype("f4").tofile("temp.grm.bin")    
+    GRM[l].astype("f4").tofile(temp_name + ".grm.bin")    
     ##############################
         
     # Format string for controlling variables
     covars = " "
-    if os.path.exists("temp_Cont.txt") :
-        covars += " --qcovar temp_Cont.txt "
-    if os.path.exists("temp_Discrete.txt") : 
-        covars += " --covar temp_Discrete.txt "
+    if os.path.exists(temp_name + "_Cont.txt") :
+        covars += " --qcovar " + temp_name + "_Cont.txt "
+    if os.path.exists(temp_name + "_Discrete.txt") : 
+        covars += " --covar " + temp_name + "_Discrete.txt "
     
     # Find GCTA
     gcta = "whereis gcta64"
@@ -66,12 +71,12 @@ def GCTA(df, covars, nnpc, mp, GRM, silent=False):
 
     
     # run gcta
-    bashcommand = gcta + " --grm temp --pheno temp_pheno.txt --mpheno 1 --reml --out temp" + covars
+    bashcommand = gcta + " --grm temp --pheno " + temp_name + "_pheno.txt --mpheno 1 --reml --out " + temp_name + " " + covars
     process = subprocess.Popen(bashcommand.split(), stdout=subprocess.PIPE)
     __output, __error = process.communicate()
 
     # parse output for estimate
-    df = pd.read_table("temp" + ".hsq", sep="\t").query( "Source == 'V(G)/Vp'").reset_index()
+    df = pd.read_table(temp_name + ".hsq", sep="\t").query( "Source == 'V(G)/Vp'").reset_index()
     
     result = {"h2" : df.Variance[0],
               "SE" : df.SE[0],
@@ -82,10 +87,10 @@ def GCTA(df, covars, nnpc, mp, GRM, silent=False):
               "Memory Usage" : 0}
     
     # tidy up by removing temporary files
-    if os.path.exists("temp_Discrete.txt") : 
-        os.remove("temp_Discrete.txt")
-    if os.path.exists("temp_Discrete.txt") : 
-        os.remove("temp_Cont.txt")
+    if os.path.exists(temp_name + "_Discrete.txt") : 
+        os.remove(temp_name + "_Discrete.txt")
+    if os.path.exists(temp_name + "_Discrete.txt") : 
+        os.remove(temp_name + "_Cont.txt")
     
     # Return the fit results
     return pd.DataFrame(result, index = [0])
