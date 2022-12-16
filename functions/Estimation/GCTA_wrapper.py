@@ -89,7 +89,7 @@ def GCTA(df, covars, nnpc, mp, GRM, silent=False):
     # tidy up by removing temporary files
     if os.path.exists(temp_name + "_Discrete.txt") : 
         os.remove(temp_name + "_Discrete.txt")
-    if os.path.exists(temp_name + "_Discrete.txt") : 
+    if os.path.exists(temp_name + "_Cont.txt") : 
         os.remove(temp_name + "_Cont.txt")
     if os.path.exists(temp_name + ".hsq") : 
         os.remove(temp_name + ".hsq")
