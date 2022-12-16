@@ -16,7 +16,7 @@ import pandas as pd
 from sklearn.decomposition import PCA
 
 
-rng = np.random.default_rng(123)
+rng = np.random.default_rng()
 
 
 # TO DO:

@@ -12,12 +12,12 @@ import os
 
 import numpy as np
 import pandas as pd
-import seaborn as sns
+#import seaborn as sns
 import itertools
 from functions.simulation_helpers.Sim_generator import pheno_simulator
 from functions.Estimation.all_estimators import Basu_estimation
 
-rng = np.random.default_rng(123)
+rng = np.random.default_rng()
 
 #%%
 
