@@ -11,8 +11,8 @@ Last Updated 2022-06-06
 # Simulation runner for AdjHE package 
 ##############################################################
 
-import os
-os.chdir("/home/christian/Research/Stat_gen/tools/Basu_herit")
+#import os
+#os.chdir("/home/christian/Research/Stat_gen/tools/Basu_herit")
 from functions.Data_input.sim_parser import get_args
 from run_sims import sim_experiment
 import itertools
