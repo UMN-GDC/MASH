@@ -1,5 +1,5 @@
 #!/bin/bash -l        
-#SBATCH --time=8:00:00
+#SBATCH --time=4:00:00
 #SBATCH --ntasks=1
 #SBATCH --mem=10g
 #SBATCH --mail-type=ALL  
@@ -14,6 +14,6 @@ cd /panfs/roc/groups/3/rando149/coffm049/tools/Basu2
 
 module load python3
 
-python Simulator.py --argfile Simulations/IID_Sim.json --out IID_sims/$SLURM_ARRAY_TASK_ID
+python Simulator.py --argfile Simulations/IID_Sim.json --out IID_sims/2000/$SLURM_ARRAY_TASK_ID
 
 

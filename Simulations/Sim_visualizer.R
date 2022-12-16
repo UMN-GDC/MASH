@@ -2,7 +2,13 @@ library(tidyverse)
 library(ggpattern)
 
 # Read data
-df <- read_csv("Research/Stat_gen/tools/Basu_herit/Simulations/Sim_working_Combat1.csv")
+files <- dir(c("Research/Stat_gen/tools/Basu_herit/Simulations/IID_sims",
+               "Research/Stat_gen/tools/Basu_herit/Simulations/EQUAL_sims"), full.names = T, pattern = "*.csv", recursive = T)
+
+df <- files %>% 
+  map(read_csv) %>%
+  reduce(rbind)
+
 
 # Annotate Estimators with family
 df <- df %>%
@@ -47,6 +53,7 @@ df %>%
   Custom_vis() +
   facet_grid(rows = vars(ss), cols = vars(sg),
              labeller = labeller(.rows = label_both, .cols = label_both))
+
 
 
 
