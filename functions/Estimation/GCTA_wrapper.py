@@ -71,7 +71,7 @@ def GCTA(df, covars, nnpc, mp, GRM, silent=False):
 
     
     # run gcta
-    bashcommand = gcta + " --grm temp --pheno " + temp_name + "_pheno.txt --mpheno 1 --reml --out " + temp_name + " " + covars
+    bashcommand = gcta + " --grm " + temp_name + " --pheno " + temp_name + "_pheno.txt --mpheno 1 --reml --out " + temp_name + " " + covars
     process = subprocess.Popen(bashcommand.split(), stdout=subprocess.PIPE)
     __output, __error = process.communicate()
 
@@ -91,6 +91,12 @@ def GCTA(df, covars, nnpc, mp, GRM, silent=False):
         os.remove(temp_name + "_Discrete.txt")
     if os.path.exists(temp_name + "_Discrete.txt") : 
         os.remove(temp_name + "_Cont.txt")
+    if os.path.exists(temp_name + ".hsq") : 
+        os.remove(temp_name + ".hsq")
+    if os.path.exists(temp_name + ".log") : 
+        os.remove(temp_name + ".log")
+
+
     
     # Return the fit results
     return pd.DataFrame(result, index = [0])
