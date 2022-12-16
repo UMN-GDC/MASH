@@ -7,7 +7,6 @@
 *.npy
 *Simulated*
 *phenotypes*
-*.csv
 temp*
 slurm*
 
