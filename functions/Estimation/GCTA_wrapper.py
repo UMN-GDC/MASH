@@ -95,6 +95,12 @@ def GCTA(df, covars, nnpc, mp, GRM, silent=False):
         os.remove(temp_name + ".hsq")
     if os.path.exists(temp_name + ".log") : 
         os.remove(temp_name + ".log")
+    if os.path.exists(temp_name + "_pheno.txt") :
+        os.remove(temp_name + "_pheno.txt")
+    if os.path.exists(temp_name + ".grm.bin") :
+        os.remove(temp_name + ".grm.bin")
+    if os.path.exists(temp_name + ".grm.id") :
+        os.remove(temp_name + ".grm.id")
 
 
     
