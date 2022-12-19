@@ -16,8 +16,15 @@ files <- dir(opt$d, full.names = T, pattern = "*.csv", recursive = T)
 
 df <- files %>% 
   map(read_csv) %>%
-  reduce(rbind) %>%
-  write_csv(opt$out)
+  reduce(rbind) 
+
+if (file.exists(paste0(opt$d, ".csv"))) {
+	df <- read_csv(paste0(opt$d, ".csv")) %>%
+		rbind(df)
+}
+write_csv(df, opt$out)
+
+
 
 
 # Remove the folder that used to hold the separate results
