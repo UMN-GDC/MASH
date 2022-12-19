@@ -146,13 +146,13 @@ def sim_experiment(nsubjectss = [1000], sigmas = [[0.5,0.25, 0.25]], site_comps 
 # sss = [0.25]
 # ses = [0.25]
 
-sigmas = []
-for sg, ss, se in itertools.product(sgs, sss, ses) :
-    if sg + ss + se == 1 :
-        if sg != 0 :
-            sigmas += [[sg, ss, se]]
-        elif (sg ==0) and (ss == 0) :
-            sigmas += [[sg, ss, se]]
+# sigmas = []
+# for sg, ss, se in itertools.product(sgs, sss, ses) :
+#     if sg + ss + se == 1 :
+#         if sg != 0 :
+#             sigmas += [[sg, ss, se]]
+#         elif (sg ==0) and (ss == 0) :
+#             sigmas += [[sg, ss, se]]
 #%%  
 # N  = 1000
 # ns = 25

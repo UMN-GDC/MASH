@@ -47,7 +47,8 @@ df = sim_experiment(nsubjectss = args["nsubjectss"],
               nnpcs = args["nnpcs"],
               nSNPss= args["nSNPss"],
               phenss= args["phenss"],
-              reps = args["reps"])
+              reps = args["reps"],
+	      all_ests = args["all_ests"])
 
 
 # write to out
