@@ -12,7 +12,8 @@ import os
 
 import numpy as np
 import pandas as pd
-#import seaborn as sns
+import matplotlib.pyplot as plt
+import seaborn as sns
 import itertools
 from functions.simulation_helpers.Sim_generator import pheno_simulator
 from functions.Estimation.all_estimators import Basu_estimation
@@ -33,7 +34,7 @@ rng = np.random.default_rng()
 
 def sim_n_est(nsubjects = 1000, sigma = [0.5,0.25, 0.25], site_comp = "IID", nsites = 30,
               theta_alleles =0.5, nclusts =1, dominance=3, prop_causal=0.25, site_dep=False, nnpc = 1,
-              nSNPs=20, phens = 2, reps = 10) :
+              nSNPs=20, phens = 2, reps = 10, all_ests = True) :
     
     results = pd.DataFrame({})
     for i in range(reps):
@@ -48,23 +49,32 @@ def sim_n_est(nsubjects = 1000, sigma = [0.5,0.25, 0.25], site_comp = "IID", nsi
         ests.looping(covars = ["abcd_site"], npc = [nnpc], mpheno = ["Y"], loop_covars = False)
         
         
-        # SWD
-        SWD_est = ests.estimate(npc = [nnpc], Method = "SWD", Naive = False, RV = "abcd_site")["h2"][0]
+        if all_ests :
+        
+            # SWD
+            SWD_est = ests.estimate(npc = [nnpc], Method = "SWD", Naive = False, RV = "abcd_site")["h2"][0]
+        
+            # COMBAT
+            Combat_est = ests.estimate(npc = [nnpc], Method = "Combat", Naive = False, RV = "abcd_site")["h2"][0]
+        
+            
+            # Naive GCTA
+            nGCTA_est = ests.estimate(npc = [nnpc], Method = "GCTA", Naive = True, RV = "abcd_site")["h2"][0]
+            
+            # Naive AdjHE
+            nAdjHE_est = ests.estimate(npc = [nnpc], Method = "AdjHE", Naive = True, RV = "abcd_site")["h2"][0]
+            # Fixed effects AdjHE
+            AdjHE_FE = ests.estimate(npc = [nnpc], Method = "AdjHE", Naive = False, covars = True)["h2"][0]
     
-        # COMBAT
-        Combat_est = ests.estimate(npc = [nnpc], Method = "Combat", Naive = False, RV = "abcd_site")["h2"][0]
-    
+        else :
+            SWD_est = np.nan
+            Combat_est = np.nan
+            nGCTA_est = np.nan
+            nAdjHE_est = np.nan
+            AdjHE_FE = np.nan
+        
         # Standard GCTA
         GCTA_est = ests.estimate(npc = [nnpc], Method = "GCTA", Naive = False)["h2"][0]
-        
-        # Naive GCTA
-        nGCTA_est = ests.estimate(npc = [nnpc], Method = "GCTA", Naive = True, RV = "abcd_site")["h2"][0]
-        
-        # Naive AdjHE
-        nAdjHE_est = ests.estimate(npc = [nnpc], Method = "AdjHE", Naive = True, RV = "abcd_site")["h2"][0]
-        # Fixed effects AdjHE
-        AdjHE_FE = ests.estimate(npc = [nnpc], Method = "AdjHE", Naive = False, covars = True)["h2"][0]
-    
         
         # Random effects AdjHE
         ests.looping(covars=  None, npc = [nnpc], mpheno = ["Y"], loop_covars = False)
@@ -110,7 +120,7 @@ def sim_n_est(nsubjects = 1000, sigma = [0.5,0.25, 0.25], site_comp = "IID", nsi
 
 def sim_experiment(nsubjectss = [1000], sigmas = [[0.5,0.25, 0.25]], site_comps = ["IID"], nsites = [25],
               theta_alleless = [0.9], nclustss = [5], dominances= [3], prop_causals= [0.05], site_deps= [False], nnpcs = [1],
-              nSNPss= [200], phenss= [2], reps = 10) :
+              nSNPss= [200], phenss= [2], reps = 10, all_ests = True) :
     # Seed empty dataframe
     sim_results = pd.DataFrame()
     
@@ -120,7 +130,7 @@ def sim_experiment(nsubjectss = [1000], sigmas = [[0.5,0.25, 0.25]], site_comps 
         result = sim_n_est(nsubjects = nsubjects, sigma = sigma, site_comp = site_comp, nsites = nsite,
                            theta_alleles = theta_alleles, nclusts = nclusts, dominance= dominance, prop_causal= prop_causal, 
                            site_dep= site_dep, nnpc = nnpc,
-                           nSNPs=nSNPs, phens = phens, reps = reps)
+                           nSNPs=nSNPs, phens = phens, reps = reps, all_ests = all_ests)
         sim_results= sim_results.append(result, ignore_index = True)
     
     return sim_results
@@ -132,20 +142,33 @@ def sim_experiment(nsubjectss = [1000], sigmas = [[0.5,0.25, 0.25]], site_comps 
 # sss = [0, 0.25]
 # ses = [0, 0.25, 0.5, 0.75, 1]
 
-# sigmas = []
-# for sg, ss, se in itertools.product(sgs, sss, ses) :
-#     if sg + ss + se == 1 :
-#         if sg != 0 :
-#             sigmas += [[sg, ss, se]]
-#         elif (sg ==0) and (ss == 0) :
-#             sigmas += [[sg, ss, se]]
-            
-# #%%
-# df = sim_experiment(nsubjectss= [2000], reps= 25, site_comps = ["EQUAL", "IID"], sigmas = sigmas)
-# df.to_csv("Simulations/Sim_working_Combat1.csv", header=  True, index= False)
+# sgs = [0.5]
+# sss = [0.25]
+# ses = [0.25]
 
+sigmas = []
+for sg, ss, se in itertools.product(sgs, sss, ses) :
+    if sg + ss + se == 1 :
+        if sg != 0 :
+            sigmas += [[sg, ss, se]]
+        elif (sg ==0) and (ss == 0) :
+            sigmas += [[sg, ss, se]]
+#%%  
+# N  = 1000
+# ns = 25
+# nc = 5
+# # #%%
+# df = sim_experiment(nsubjectss= [N], reps= 25, nsites=[ns], site_comps = ["EQUAL"], sigmas = sigmas, nnpcs = [5], nclustss=[nc],
+#                     all_ests = False)
+# df.to_csv("Simulations/Sim_working_Combat1.csv", header=  True, index= False)
 
 # g = sns.FacetGrid(df, col="sg",  row="ss", sharey = False)
 # g.map(sns.boxplot, "Estimator", "Estimate")
-# g.set_xticklabels(rotation=30)
+# 
+#%%
+# g = sns.boxplot(data = df, x= "Estimator", y="Estimate")
+# g.axhline(0.5)
+# plt.xticks(rotation=45)
+# plt.title("N = " + str(N) + ", #sites= " + str(ns) + ", #clusts=" + str(nc))
 
+# df[["Estimator", "Estimate"]].groupby("Estimator").agg(['mean', 'std'])

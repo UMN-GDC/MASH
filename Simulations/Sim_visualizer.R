@@ -2,8 +2,8 @@ library(tidyverse)
 library(ggpattern)
 
 # Read data
-files <- dir(c("Research/Stat_gen/tools/Basu_herit/Simulations/IID_sims",
-               "Research/Stat_gen/tools/Basu_herit/Simulations/EQUAL_sims"), full.names = T, pattern = "*.csv", recursive = T)
+files <- dir(c("Research/Stat_gen/tools/Basu_herit/Simulations/IID_sims/5000",
+               "Research/Stat_gen/tools/Basu_herit/Simulations/EQUAL_sims/5000"), full.names = T, pattern = "*.csv", recursive = T)
 
 df <- files %>% 
   map(read_csv) %>%

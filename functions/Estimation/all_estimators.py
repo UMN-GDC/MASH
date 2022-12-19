@@ -26,7 +26,7 @@ from functions.Estimation.combat import neuroCombat
 #%%
     
 
-def load_n_estimate(df, covars, nnpc, mp, GRM, std = False, Method = "AdjHE", RV = None, silent=False):
+def load_n_estimate(df, covars, nnpc, mp, GRM, std = False, Method = "AdjHE", RV = None, silent=False, homo= True):
     """
     Estimates heritability, but solves a full OLS problem making it slower than the closed form solution. Takes 
     a dataframe, selects only the necessary columns (so that when we do complete cases it doesnt exclude too many samples)
@@ -89,7 +89,7 @@ def load_n_estimate(df, covars, nnpc, mp, GRM, std = False, Method = "AdjHE", RV
 
     # Select method of estimation
     if Method == "AdjHE": 
-        result = load_n_AdjHE(temp, covars, nnpc, mp, GRM_nonmissing, std = False, RV = RV)
+        result = load_n_AdjHE(temp, covars, nnpc, mp, GRM_nonmissing, std = False, RV = RV, homo = homo)
     elif Method == "MOM": 
         result = load_n_MOM(temp, covars, nnpc, mp, GRM_nonmissing, std = False, RV = RV)
     elif Method == "PredlMM" : 
@@ -162,7 +162,7 @@ class Basu_estimation() :
             # make them lowercase
             self.mpheno =  mpheno
             
-    def estimate(self, npc, Method = None, RV = None, Naive = False, covars= False) : 
+    def estimate(self, npc, Method = None, RV = None, Naive = False, covars= False, homo = True) : 
         print("Estimating")
         print(Method)
         if RV != None :
@@ -193,7 +193,7 @@ class Basu_estimation() :
             for mp, nnpc in itertools.product(self.mpheno, npc):
                 if not Naive :
                     r = load_n_estimate(
-                        df=self.df, covars=covs, nnpc=nnpc, mp=mp, GRM= self.GRM, std= False, Method = Method, RV = RV)
+                        df=self.df, covars=covs, nnpc=nnpc, mp=mp, GRM= self.GRM, std= False, Method = Method, RV = RV, homo = homo)
                 else :
                     # Empty results list
                     sub_results = pd.DataFrame({"Estimate": [],
@@ -206,8 +206,8 @@ class Basu_estimation() :
                         # Get size
                         sub_n = sub.shape[0]
                         # Estimate just on the supsample
-                        sub_result = load_n_estimate(df=sub, covars=[],  nnpc=0, mp= mp, GRM=self.GRM, std=False, Method= Method, RV=None,
-                                                 silent=True)
+                        sub_result = load_n_estimate(df=sub, covars=[],  nnpc=nnpc, mp= mp, GRM=self.GRM, std=False, Method= Method, RV=None,
+                                                 silent=True, homo = homo)
                         sub_result = pd.DataFrame({"Estimate": [sub_result["h2"][0]],
                                                "Size": [sub_n]})
                         # Add to the list of estimates

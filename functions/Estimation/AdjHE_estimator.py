@@ -186,7 +186,7 @@ def AdjHE_rv_estimator(A,df, mp, rv, npc=0, std=False) :
  
 
 
-def load_n_AdjHE(df, covars, nnpc, mp, GRM, std = False, RV = None):
+def load_n_AdjHE(df, covars, nnpc, mp, GRM, std = False, RV = None, homo = True):
     """
     Estimates heritability using the efficient AdjHE closed form solution. Takes a dataframe, selects only the
     necessary columns (so that when we do complete cases it doesnt exclude too many samples) residualizes the 
@@ -228,7 +228,10 @@ def load_n_AdjHE(df, covars, nnpc, mp, GRM, std = False, RV = None):
     if RV == None :
         result = AdjHE_estimator(A= GRM, df = df, mp = mp, npc=nnpc, std=std)
     else :
-        result = AdjHE_rv_estimator(A= GRM, df = df, mp = mp,rv=RV, npc=nnpc, std=std)
+        if homo == True :
+            result = AdjHE_rv_estimator(A= GRM, df = df, mp = mp,rv=RV, npc=nnpc, std=std)
+        else : 
+            result = AdjHE_rv_estimator_homo(A= GRM, df = df, mp = mp,rv=RV, npc=nnpc, std=std)
     # Get time for each estimate
     t = timeit.default_timer() - start_est
     # Get memory for each step (in Mb) (This is a little sketchy)
@@ -325,5 +328,77 @@ def load_n_MOM(df, covars, nnpc, mp, GRM, std = False, RV  = None):
     return(pd.DataFrame(result, index = [0]))
 
 
+# def AdjHE_rv_estimator_homo(A,df, mp, rv, npc=0, std=False) :
+#     """
+#     Estimate the heritability of the presence of an additional random effect.
 
+#     Parameters
+#     ----------
+#     A : numpy array  
+#         n x n array containing the GRM values.
+#     df : pandas dataframe
+#         A dataframe containing all covariates, principal components, and phenotype that has been residualized if necessary.
+#     mp : int
+#         1 based index specifying the phenotype to be estimated on.
+#     rv : string
+#         specifying the name of the column to be used as a random variable.
+#     npc : int, optional
+#         number of prinicpal components to adjust for. The default is 0.
+#     std : bool, optional
+#         Specify whether or not to standaridize the variables before estimation. The default is False.
 
+#     Returns
+#     -------
+#     tuple(scalar, scalar)
+#         h2 - heritability estimate.
+#         standard error estimate
+#     """
+#     # Reorder df by the random variable
+#     # then reorder the GRM to match
+#     df = df.reset_index().drop("index", axis = 1)
+#     df = df.sort_values(rv).dropna(subset= [rv])
+#     A = np.matrix(A[df.index,:][:,df.index])
+#     n = A.shape[0]
+    
+#     df["Intercept"] = 1
+#     X_sites= df[rv]
+
+#     # Get dummies for categoricals if they exist
+#     X = np.matrix(pd.get_dummies(df.drop(["FID", "IID", rv], axis = 1),  drop_first = True))
+#     y = np.matrix(df[mp])
+
+#     # Create S similarity matrix 
+#     site, sizes= np.unique(df[rv], return_counts = True)
+#     # Construct the block diagonal
+#     diags = [np.ones((size,size)) for size in sizes]
+#     S = np.matrix(block_diag(*diags))
+#     # Standardize S
+#     # S = (S - S.mean(axis = 1))/ S.std(axis = 1)
+
+#     # diags = [np.ones((size,size))* size for size in sizes]
+#     # S2 = np.matrix(block_diag(*diags) )
+    
+#     # Construct the orthogonal projection matrix Q utilizing QR decomposition
+#     q, r = np.linalg.qr(X)
+#     Q = np.identity(n) - X.dot(np.linalg.inv(r).dot(q.T))
+#     Q = np.matrix(Q)
+        
+#     # Compute elements of 3x3 matrix
+#     QSQ = Q * S * Q
+    
+#     # find necessary traces
+#     trA2 = np.trace(A ** 2)
+#     trQSQA = np.trace(QSQ * A)
+#     trQSQQSQ = np.trace(QSQ * QSQ)
+
+#     youter = np.matrix(np.outer(y,y))
+
+#     denom = trA2 * trQSQQSQ - trQSQA **2 
+#     top = (A * trQSQQSQ - QSQ * trQSQA) * youter / denom
+#     bottom = (QSQ* trA2 - A * trQSQA) * youter / denom
+
+    
+#     results = {"sg" : top, "ss": bottom, "se" : 0, "var(sg)" : 0}
+    
+#     # return heritability estimate
+#     return results

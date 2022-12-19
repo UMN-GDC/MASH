@@ -6,7 +6,8 @@
 #SBATCH --mail-user=coffm049@umn.edu
 #SBATCH --array=1-4 
 
-
+# 2 hours for 2000
+# 7 hours for 5000
 
 
 cd /panfs/roc/groups/3/rando149/coffm049/tools/Basu2
