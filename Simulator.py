@@ -11,7 +11,7 @@ Last Updated 2022-06-06
 # Simulation runner for AdjHE package 
 ##############################################################
 
-#import os
+import os
 #os.chdir("/home/christian/Research/Stat_gen/tools/Basu_herit")
 from functions.Data_input.sim_parser import get_args
 from run_sims import sim_experiment
@@ -50,6 +50,10 @@ df = sim_experiment(nsubjectss = args["nsubjectss"],
               reps = args["reps"],
 	      all_ests = args["all_ests"])
 
+
+# python program to check if a path exists
+#if path doesn’t exist we create a new path
+os.makedirs(os.path.dirname(args["out"]), exist_ok = True)
 
 # write to out
 df.to_csv("Simulations/" + args["out"] + ".csv", 
