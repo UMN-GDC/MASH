@@ -2,13 +2,7 @@ library(tidyverse)
 library(ggpattern)
 
 # Read data
-files <- dir(c("Research/Stat_gen/tools/Basu_herit/Simulations/IID_sims/5000",
-               "Research/Stat_gen/tools/Basu_herit/Simulations/EQUAL_sims/5000"), full.names = T, pattern = "*.csv", recursive = T)
-
-df <- files %>% 
-  map(read_csv) %>%
-  reduce(rbind)
-
+df <- read_csv("Research/Stat_gen/tools/Basu_herit/Simulations/No_clust/Results.csv")
 
 # Annotate Estimators with family
 df <- df %>%

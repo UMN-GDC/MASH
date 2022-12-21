@@ -144,15 +144,15 @@ class Basu_estimation() :
     
     def looping(self, covars, npc, mpheno, loop_covars = False) :
         # Create list of covariate sets to regress over
-        if covars != None :
+        if (covars == None) or (covars == []) :
+            cov_combos = [[]]
+        else :
             # Create the sets of covarates over which we can loop
             # This will return a list of lists of covariate names to regress on
             cov_combos = [covars[0:idx+1] for idx, c in enumerate(covars)]
             # If we don't want to loop, just grab the last item of the generated list assuming the user wants all of those variables included 
             if not loop_covars : 
                 cov_combos = [cov_combos[-1]]
-        else :
-            cov_combos = [[]]
             
         self.cov_combos = cov_combos
 

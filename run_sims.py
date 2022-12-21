@@ -9,7 +9,6 @@ Created on Thu Dec  1 18:08:00 2022
 
 import os
 # os.chdir("/home/christian/Research/Stat_gen/tools/Basu_herit")
-
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -46,8 +45,14 @@ def sim_n_est(nsubjects = 1000, sigma = [0.5,0.25, 0.25], site_comp = "IID", nsi
         ests.df= sim.df
         ests.GRM = sim.GRM
         ests.mpheno = ["Y"]
-        ests.looping(covars = ["abcd_site"], npc = [nnpc], mpheno = ["Y"], loop_covars = False)
+        if nsites  == 1 :
+            cs = None
+        else :
+            cs = ["abcd_site"]
+        ests.looping(covars = cs, npc = [nnpc], mpheno = ["Y"], loop_covars = False)
         
+        # Fixed effects AdjHE
+        AdjHE_FE = ests.estimate(npc = [nnpc], Method = "AdjHE", Naive = False, covars = True)["h2"][0]
         
         if all_ests :
         
@@ -63,15 +68,12 @@ def sim_n_est(nsubjects = 1000, sigma = [0.5,0.25, 0.25], site_comp = "IID", nsi
             
             # Naive AdjHE
             nAdjHE_est = ests.estimate(npc = [nnpc], Method = "AdjHE", Naive = True, RV = "abcd_site")["h2"][0]
-            # Fixed effects AdjHE
-            AdjHE_FE = ests.estimate(npc = [nnpc], Method = "AdjHE", Naive = False, covars = True)["h2"][0]
     
         else :
             SWD_est = np.nan
             Combat_est = np.nan
             nGCTA_est = np.nan
             nAdjHE_est = np.nan
-            AdjHE_FE = np.nan
         
         # Standard GCTA
         GCTA_est = ests.estimate(npc = [nnpc], Method = "GCTA", Naive = False)["h2"][0]

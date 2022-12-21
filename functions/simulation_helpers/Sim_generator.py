@@ -172,14 +172,25 @@ class pheno_simulator():
         # genetic contribution
         self.df["Gene_contrib"] = Gene_contrib
 
-    def sim_pheno(self, var_comps=[0.5, 0.25, 0.25], phen = 1):
+    def sim_pheno(self, var_comps=[0.5, 0.25, 0.25], phen = 1, site_het = False):
         # make sure no zero variance components
         for i, v in enumerate(var_comps):
             if v == 0:
                 var_comps[i] = 1e-6
 
         # Sim errors
-        errors = rng.normal(0, 1, size=self.nsubjects)
+        if site_het :
+            # Sample the site variances
+            site_var = rng.gamma(4, 4, self.nsites)
+            # Sample error from the specified variance
+            errors = []
+            for i in range(self.nsubjects):
+                # determine the persons site
+                site = self.df["abcd_site"][i]
+                # Sample their errors given that sites' variance
+                errors += [rng.normal(0, site_var[site -1 ])]
+        else : 
+            errors = rng.normal(0, 1, size=self.nsubjects)
 
         # Calculate desired variance ratios
         StoG = var_comps[1]/var_comps[0]
@@ -217,7 +228,7 @@ class pheno_simulator():
     def full_sim(self, sigma, site_comp="IID",
                         nsites=30, theta_alleles=0.5, nclusts=5, dominance=5,
                         prop_causal=0.25, site_dep=False, nsubjects=1000,
-                        nnpc=0, phens = 2):
+                        nnpc=0, phens = 2, site_het = False):
         # Run through full simulation and estimation
         self.sim_sites(nsites= nsites, eq_sites=False)
         self.sim_pops(theta_alleles=0.5, nclusts=nclusts, site_comp= site_comp, dominance=2)
@@ -225,39 +236,6 @@ class pheno_simulator():
         self.sim_gen_effects(prop_causal=prop_causal, site_dep= site_dep)
         
         for i in range(phens) :
-            self.sim_pheno(var_comps=sigma, phen = i)
+            self.sim_pheno(var_comps=sigma, phen = i, site_dep = site_dep)
 
-        # Make estimates
-
-        # # Fit basic AdjHE with RV
-        # self.estimate(nnpc=nnpc, Method="AdjHE", RV="abcd_site")
-        # Site_RE = self.result["h2"][0]
-
-        # # Fit basic AdjHE
-        # self.estimate(nnpc=nnpc, Method="AdjHE")
-        # Basic_est = self.result["h2"][0]
-
-        # # Fit AdjHE with Site fixed effect
-        # self.estimate(nnpc=nnpc, Method="AdjHE", covars=["abcd_site"])
-        # Site_FE = self.result["h2"][0]
-
-        # # Fit AdjHE naively pooling between sites
-        # self.estimate(nnpc=nnpc, Method="Naive")
-        # Naive = self.result["h2"]
-
-        # Fit MOM
-        #sim1.estimate(nnpc = 0, fast = False, covars= ["abcd_site"])
-        # MOM = sim1.result["h2"][0]
-        
-        # Fit GCTA
-        # self.estimate(Method="GCTA")
-        # GCTA_result = self.result["h2"]
-        
-        # # return results
-        # self.result = pd.DataFrame({"sg" : sigma[0], "ss" : sigma[1], "se" : sigma[2],                  # Store variance parameters
-        #               "nsub" : self.nsubjects, "nsites" : nsites, "nclusts" : nclusts,            # Store count parameters
-        #               "prop_causal" : prop_causal, "site_comp" : site_comp, "nSNPs" : self.nSNPs, # Store other parameters
-        #               "theta_alleles" : theta_alleles, "dominance" : dominance, "npc" : nnpc,
-        #               "Site_RE" : Site_RE, "Basic_est" : Basic_est, "Site_FE" :Site_FE, "Naive_AdjHE" : Naive, "GCTA" : GCTA_result # Store estimates
-        #               }, index = [0])
         
