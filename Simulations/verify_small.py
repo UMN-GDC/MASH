@@ -25,19 +25,20 @@ import seaborn as sns
 # ests.estimate(Method = "AdjHE", npc = [1], covars= None)
 #%%
 N = 1000
-nc = 5
-ns = 25
+nc = 3
+ns = 2
+site_het = True
 
 
 df = sim_experiment(nsubjectss = [N], sigmas = [[0.5,0.25, 0.25]], site_comps = ["EQUAL"], nsites = [ns],
-              theta_alleless = [0.9], nclustss = [nc], dominances= [3], prop_causals= [0.05], site_deps= [False], nnpcs = [1],
-              nSNPss= [200], phenss= [2], reps = 10, all_ests = True)
+              theta_alleless = [0.9], nclustss = [nc], dominances= [3], prop_causals= [0.05], site_deps= [False], nnpcs = [nc],
+              nSNPss= [200], phenss= [2], reps = 10, all_ests = False, site_het = site_het)
 
 
 sns.boxplot(data= df, x=  "Estimator", y = "Estimate")
 plt.axhline(0.5)
 plt.xticks(rotation=45)
-plt.title(f"N: {N}, #Clust: {nc}, #Sites: {ns}")
+plt.title(f"N: {N}, #Clust: {nc}, #Sites: {ns}, Het: {site_het}")
 
-plt.savefig(f"Simulations/Small_verifications/N{N}_C{nc}_S{ns}.png")
+plt.savefig(f"Simulations/Small_verifications/N{N}_C{nc}_S{ns}_Het{site_het}.png")
 

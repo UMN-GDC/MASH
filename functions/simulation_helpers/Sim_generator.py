@@ -14,6 +14,9 @@ import os
 import numpy as np
 import pandas as pd
 from sklearn.decomposition import PCA
+import statsmodels.api as sm
+import statsmodels.formula.api as smf
+
 
 
 rng = np.random.default_rng()
@@ -195,9 +198,20 @@ class pheno_simulator():
         # Calculate desired variance ratios
         StoG = var_comps[1]/var_comps[0]
         EtoG = var_comps[2]/var_comps[0]
-
-        # Calculate empricial variance ratios
-        gen_var = np.var(self.df["Gene_contrib"])
+        
+        if self.nclusts > 1 : 
+            # Get pc column names
+            pcs = ["pc_" + str(i + 1) for i in range(self.nclusts)]
+            # Build regression equation
+            form= "Gene_contrib ~ " + " + ".join(pcs)
+            # Find the Genetic_contribution after accountring for race
+            resid = smf.ols(formula = form, data = self.df).fit().resid
+            # Find the emprical variance after accounting for race
+            gen_var = np.var(resid)
+        else :
+            gen_var = np.var(self.df["Gene_contrib"])
+            
+        # Calculate empricial variance due to site
         site_var = np.var(self.df["Site_contrib"])
 
         # Find the empirical ratio of variances
@@ -223,7 +237,6 @@ class pheno_simulator():
         self.df[phenoname] = self.df.Gene_contrib + self.df.Site_contrib + self.df.errors
         self.df[phenoname] = self.df[phenoname] - np.mean(self.df[phenoname])
 
-
             
     def full_sim(self, sigma, site_comp="IID",
                         nsites=30, theta_alleles=0.5, nclusts=5, dominance=5,
@@ -236,6 +249,6 @@ class pheno_simulator():
         self.sim_gen_effects(prop_causal=prop_causal, site_dep= site_dep)
         
         for i in range(phens) :
-            self.sim_pheno(var_comps=sigma, phen = i, site_dep = site_dep)
+            self.sim_pheno(var_comps=sigma, phen = i, site_het = site_het)
 
         
