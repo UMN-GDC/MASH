@@ -10,11 +10,11 @@
   "dominances" : [3],
   "prop_causals" : [0.05],
   "site_deps" : [false],
-  "nnpcs" :[1],
+  "nnpcs" :[0],
   "nSNPss" : [200],
   "phenss" : [2],
   "reps" : 10,
-  "all_ests" : true
+  "all_ests" : false
 }
 
 

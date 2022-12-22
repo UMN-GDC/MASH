@@ -4,7 +4,7 @@
 #SBATCH --mem=10g
 #SBATCH --mail-type=ALL  
 #SBATCH --mail-user=coffm049@umn.edu
-#SBATCH --array=1-10 
+#SBATCH --array=8 
 
 
 

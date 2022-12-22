@@ -63,12 +63,16 @@ def sim_n_est(nsubjects = 1000, sigma = [0.5,0.25, 0.25], site_comp = "IID", nsi
             Combat_est = ests.estimate(npc = [nnpc], Method = "Combat", Naive = False, RV = "abcd_site")["h2"][0]
         
             
-            # Naive GCTA
-            nGCTA_est = ests.estimate(npc = [nnpc], Method = "GCTA", Naive = True, RV = "abcd_site")["h2"][0]
-            
             # Naive AdjHE
             nAdjHE_est = ests.estimate(npc = [nnpc], Method = "AdjHE", Naive = True, RV = "abcd_site")["h2"][0]
-    
+            
+            # Naive GCTA (put in try except loop since it often fails due to sample size problems
+            try : 
+                nGCTA_est = ests.estimate(npc = [nnpc], Method = "GCTA", Naive = True, RV = "abcd_site")["h2"][0]
+            except FileNotFoundError :
+                print("GCTA wasn't able to provide an estimate, probably due to having too small of a sample size.")
+                nGCTA_est = np.nan
+
         else :
             SWD_est = np.nan
             Combat_est = np.nan
@@ -76,7 +80,11 @@ def sim_n_est(nsubjects = 1000, sigma = [0.5,0.25, 0.25], site_comp = "IID", nsi
             nAdjHE_est = np.nan
         
         # Standard GCTA
-        GCTA_est = ests.estimate(npc = [nnpc], Method = "GCTA", Naive = False)["h2"][0]
+        try :
+            GCTA_est = ests.estimate(npc = [nnpc], Method = "GCTA", Naive = False)["h2"][0]
+        except FileNotFoundError :
+            print("GCTA wasn't able to provide an estimate, probably due to having too small of a sample size.")
+            GCTA_est = np.nan
         
         # Random effects AdjHE
         ests.looping(covars=  None, npc = [nnpc], mpheno = ["Y"], loop_covars = False)
