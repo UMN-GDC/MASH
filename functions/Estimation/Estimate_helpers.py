@@ -69,6 +69,9 @@ def create_formula(nnpc, covars, mp, RV = None):
     cols = id_cols + [mp] + covars + pc_cols
     if RV != None :
         cols = cols + [RV]
+        
+    # Remove duplicates
+    cols = [*set(cols)]
 
     # return the formula and columns
     return(form, cols)

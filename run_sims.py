@@ -33,105 +33,81 @@ rng = np.random.default_rng()
 
 def sim_n_est(nsubjects = 1000, sigma = [0.5,0.25, 0.25], site_comp = "IID", nsites = 30,
               theta_alleles =0.5, nclusts =1, dominance=3, prop_causal=0.25, site_dep=False, nnpc = 1,
-              nSNPs=20, phens = 2, reps = 10, all_ests = True, site_het = False) :
-    
-    results = pd.DataFrame({})
-    for i in range(reps):
-        sim = pheno_simulator(nsubjects= nsubjects, nSNPs = nSNPs)
-        # Run through full simulation and estimation
-        sim.full_sim(nsites= nsites, sigma=sigma, phens = phens, site_het = site_het)
-        
-        ests = Basu_estimation()
-        ests.df= sim.df
-        ests.GRM = sim.GRM
-        ests.mpheno = ["Y"]
-        if nsites  == 1 :
-            cs = None
-        else :
-            cs = ["abcd_site"]
-        ests.looping(covars = cs, npc = [nnpc], mpheno = ["Y"], loop_covars = False)
-        
-        # Fixed effects AdjHE
-        AdjHE_FE = ests.estimate(npc = [nnpc], Method = "AdjHE", Naive = False, covars = True)["h2"][0]
-        
-        if all_ests :
-        
-            # SWD
-            SWD_est = ests.estimate(npc = [nnpc], Method = "SWD", Naive = False, RV = "abcd_site")["h2"][0]
-        
-            # COMBAT
-            Combat_est = ests.estimate(npc = [nnpc], Method = "Combat", Naive = False, RV = "abcd_site")["h2"][0]
-        
-            
-            # Naive AdjHE
-            nAdjHE_est = ests.estimate(npc = [nnpc], Method = "AdjHE", Naive = True, RV = "abcd_site")["h2"][0]
-            
-            # Naive GCTA (put in try except loop since it often fails due to sample size problems
-            try : 
-                nGCTA_est = ests.estimate(npc = [nnpc], Method = "GCTA", Naive = True, RV = "abcd_site")["h2"][0]
-            except FileNotFoundError :
-                print("GCTA wasn't able to provide an estimate, probably due to having too small of a sample size.")
-                nGCTA_est = np.nan
+              nSNPs=20, phens = 2, site_het = False) :
+    sim = pheno_simulator(nsubjects= nsubjects, nSNPs = nSNPs)
+    # Run through full simulation and estimation
+    sim.full_sim(nsites= nsites, sigma= sigma, phens = phens, nclusts = nclusts)
 
-        else :
-            SWD_est = np.nan
-            Combat_est = np.nan
-            nGCTA_est = np.nan
-            nAdjHE_est = np.nan
-        
-        # Standard GCTA
-        try :
-            GCTA_est = ests.estimate(npc = [nnpc], Method = "GCTA", Naive = False)["h2"][0]
-        except FileNotFoundError :
-            print("GCTA wasn't able to provide an estimate, probably due to having too small of a sample size.")
-            GCTA_est = np.nan
-        
-        # Random effects AdjHE
-        ests.looping(covars=  None, npc = [nnpc], mpheno = ["Y"], loop_covars = False)
-        AdjHE_RE = ests.estimate(npc = [nnpc], Method = "AdjHE", Naive = False, RV = "abcd_site")["h2"][0]
-        
-        # MOM estimator
-        # MOM_est = ests.estimate(npc = [nnpc], Method = "MOM", Naive = False, covars= ["abcd_site"])["h2"][0]
+    ests = Basu_estimation()
+    ests.df= sim.df
+    ests.GRM = sim.GRM
+    ests.mpheno = ["Y"] 
     
+    # Cretae covariates for sites if necessary    
+    if nsites > 1:
+        cs = ["abcd_site"]
+    else :
+        cs = None
         
-        # Make a list of lists with estmiator and estimates
-        #result = [[est, eval(est)] for est in [#]]
-        result = [["GCTA_est", GCTA_est],
-                  ["nGCTA_est", nGCTA_est],
-                  ["nAdjHE_est", nAdjHE_est],
-                  ["AdjHE_FE", AdjHE_FE],
-                  ["SWD_est", SWD_est],
-                  ["Combat_est", Combat_est],
-                  ["AdjHE_RE", AdjHE_RE],
-                  #["MOM_est",MOM_est]
-                  ]
-        result= pd.DataFrame(result, columns = ["Estimator", "Estimate"])
-        # add it to list of results
-        results = results.append(result, ignore_index = True)
+    # Estimate always
+    AdjHE = ests.estimate(Method = "AdjHE", npc = [nnpc], covars = cs, mpheno = ["Y"], Naive = False)["h2"][0]
+    GCTA_est = ests.estimate(Method = "GCTA", npc = [nnpc], covars = cs, mpheno = ["Y"], Naive = False)["h2"][0]
+    
+    # Estimate when greater than one site
+    if nsites > 1 :
+        nAdjHE = ests.estimate(Method = "AdjHE", npc = [nnpc], covars = cs, mpheno = ["Y"], RV = "abcd_site", Naive = True)["h2"][0]
+        AdjHE_RE = ests.estimate(Method = "AdjHE", npc = [nnpc], covars = cs, mpheno = ["Y"], RV = "abcd_site", Naive = False)["h2"][0]
+        try :
+            nGCTA = ests.estimate(Method = "GCTA", npc = [nnpc], covars = cs, mpheno = ["Y"], RV = "abcd_site", Naive = True)["h2"][0]
+        except FileNotFoundError :
+            print("No estimate since sample size too small for GCTA")
+            nGCTA = np.nan
+
+        # hard coded no npcs for the time being should fix!!!
+        SWD = ests.estimate(Method = "SWD", npc = [0], covars = cs, mpheno = ["Y"], RV = "abcd_site", Naive = False)["h2"][0]
+        Combat = ests.estimate(Method = "Combat", npc = [0], covars = cs, mpheno = ["Y"], RV = "abcd_site", Naive = False)["h2"][0]
+
+    else :
+        nAdjHE = np.nan
+        AdjHE_RE = np.nan
+        nGCTA = np.nan
+        GCTA = np.nan
+        SWD = np.nan
+        Combat = np.nan
         
+    result = [["GCTA", GCTA_est],
+              ["nGCTA", nGCTA],
+              ["nAdjHE", nAdjHE],
+              ["AdjHE", AdjHE],
+              ["SWD", SWD],
+              ["Combat", Combat],
+              ["AdjHE_RE", AdjHE_RE],
+              #["MOM_est",MOM_est]
+              ]
+    result= pd.DataFrame(result, columns = ["Estimator", "Estimate"])        
         
     # store simulation details
-    results["sg"] = sigma[0]
-    results["ss"] = sigma[1]
-    results["se"] = sigma[2]
-    results["nsubjects"] = nsubjects
-    results["nsites"] = nsites
-    results["theta_alleles"] = theta_alleles
-    results["nclusts"] = nclusts
-    results["prop_causal"] = prop_causal
-    results["nnpc"] = nnpc
-    results["nSNPs"] = nSNPs
-    results["site_comp"] = site_comp
-    results["dominance"] = dominance
-    results["site_dep"] = site_dep
-    results["site_het"] = site_het
-    return results
+    result["sg"] = sigma[0]
+    result["ss"] = sigma[1]
+    result["se"] = sigma[2]
+    result["nsubjects"] = nsubjects
+    result["nsites"] = nsites
+    result["theta_alleles"] = theta_alleles
+    result["nclusts"] = nclusts
+    result["prop_causal"] = prop_causal
+    result["nnpc"] = nnpc
+    result["nSNPs"] = nSNPs
+    result["site_comp"] = site_comp
+    result["dominance"] = dominance
+    result["site_dep"] = site_dep
+    result["site_het"] = site_het
+    return result
 
 #%%
 
 def sim_experiment(nsubjectss = [1000], sigmas = [[0.5,0.25, 0.25]], site_comps = ["IID"], nsites = [25],
               theta_alleless = [0.9], nclustss = [5], dominances= [3], prop_causals= [0.05], site_deps= [False], nnpcs = [1],
-              nSNPss= [200], phenss= [2], reps = 10, all_ests = True, site_het = False) :
+              nSNPss= [200], phenss= [2], reps = 10, site_het = False) :
     # Seed empty dataframe
     sim_results = pd.DataFrame()
     
@@ -141,7 +117,7 @@ def sim_experiment(nsubjectss = [1000], sigmas = [[0.5,0.25, 0.25]], site_comps 
         result = sim_n_est(nsubjects = nsubjects, sigma = sigma, site_comp = site_comp, nsites = nsite,
                            theta_alleles = theta_alleles, nclusts = nclusts, dominance= dominance, prop_causal= prop_causal, 
                            site_dep= site_dep, nnpc = nnpc,
-                           nSNPs=nSNPs, phens = phens, reps = reps, all_ests = all_ests, site_het = site_het)
+                           nSNPs=nSNPs, phens = phens, reps = reps, site_het = site_het)
         sim_results= sim_results.append(result, ignore_index = True)
     
     return sim_results

@@ -5,15 +5,22 @@ Created on Mon Nov 21 07:35:15 2022
 
 @author: christian
 """
+import sys
 import os
 import subprocess
 import numpy as np
 import pandas as pd 
-from functions.Data_input.load_data import load_everything
 # os.chdir("/home/christian/Research/Stat_gen/tools/Basu_herit")
 
+
+# Find GCTA
+gcta = subprocess.run(["whereis", "gcta64"], capture_output=True
+                      ).stdout.split(
+                          )[1].decode("utf-8")
+
+
 #%%
-def GCTA(df, covars, nnpc, mp, GRM, silent=False):
+def GCTA(df, covars, nnpc, mp, GRM, gcta, silent=False):
     # Store random integer to save to temp file name
     rng = np.random.default_rng()    
     numb = rng.integers(10000)
@@ -23,12 +30,12 @@ def GCTA(df, covars, nnpc, mp, GRM, silent=False):
     df[["FID", "IID", mp]].to_csv(temp_name + "_pheno.txt", sep = " ", header = False, index= False, na_rep = "NA")
     
     # Select the remaining variables of interest
-    pcs =  ["pc_" + str(s) for s in range(1, nnpc)]
+    pcs =  ["pc_" + str(s + 1) for s in range(nnpc)]
     df = df[["FID", "IID"] + covars + pcs]
 
 
-    # Decide which are qcovars and which are discrete covars
-    discrete = [(len(df[col].unique()) < 50) and (len(df[col].unique()) > 1) for col in df]
+    # Decide which are qcovars and which are discrete covars, also elimnate completely in common variables
+    discrete = [(len(df[col].unique()) < 35) and (len(df[col].unique()) > 1) for col in df]
     # Include FID IID
     cont = [not v for v in discrete]
     discrete[0:2] = [True, True]
@@ -63,12 +70,6 @@ def GCTA(df, covars, nnpc, mp, GRM, silent=False):
     if os.path.exists(temp_name + "_Discrete.txt") : 
         covars += " --covar " + temp_name + "_Discrete.txt "
     
-    # Find GCTA
-    gcta = "whereis gcta64"
-    gcta, __ = subprocess.Popen(
-        gcta.split(), stdout=subprocess.PIPE).communicate()
-    gcta= gcta.split()[1].decode("utf-8")
-
     
     # run gcta
     bashcommand = gcta + " --grm " + temp_name + " --pheno " + temp_name + "_pheno.txt --mpheno 1 --reml --out " + temp_name + " " + covars
@@ -87,20 +88,20 @@ def GCTA(df, covars, nnpc, mp, GRM, silent=False):
               "Memory Usage" : 0}
     
     # tidy up by removing temporary files
-    if os.path.exists(temp_name + "_Discrete.txt") : 
-        os.remove(temp_name + "_Discrete.txt")
-    if os.path.exists(temp_name + "_Cont.txt") : 
-        os.remove(temp_name + "_Cont.txt")
-    if os.path.exists(temp_name + ".hsq") : 
-        os.remove(temp_name + ".hsq")
-    if os.path.exists(temp_name + ".log") : 
-        os.remove(temp_name + ".log")
-    if os.path.exists(temp_name + "_pheno.txt") :
-        os.remove(temp_name + "_pheno.txt")
-    if os.path.exists(temp_name + ".grm.bin") :
-        os.remove(temp_name + ".grm.bin")
-    if os.path.exists(temp_name + ".grm.id") :
-        os.remove(temp_name + ".grm.id")
+    # if os.path.exists(temp_name + "_Discrete.txt") : 
+    #     os.remove(temp_name + "_Discrete.txt")
+    # if os.path.exists(temp_name + "_Cont.txt") : 
+    #     os.remove(temp_name + "_Cont.txt")
+    # if os.path.exists(temp_name + ".hsq") : 
+    #     os.remove(temp_name + ".hsq")
+    # if os.path.exists(temp_name + ".log") : 
+    #     os.remove(temp_name + ".log")
+    # if os.path.exists(temp_name + "_pheno.txt") :
+    #     os.remove(temp_name + "_pheno.txt")
+    # if os.path.exists(temp_name + ".grm.bin") :
+    #     os.remove(temp_name + ".grm.bin")
+    # if os.path.exists(temp_name + ".grm.id") :
+    #     os.remove(temp_name + ".grm.id")
 
 
     

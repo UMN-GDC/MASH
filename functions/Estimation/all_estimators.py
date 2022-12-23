@@ -18,15 +18,14 @@ from functions.Estimation.AdjHE_estimator import load_n_AdjHE
 from functions.Estimation.AdjHE_estimator import load_n_MOM
 from functions.Estimation.PredLMM_estimator import load_n_PredLMM
 from functions.Estimation.Estimate_helpers import create_formula
-from functions.Estimation.GCTA_wrapper import GCTA
+from functions.Estimation.GCTA_wrapper import gcta, GCTA
 from functions.Estimation.combat import neuroCombat
 
 
+# %%
 
-#%%
-    
 
-def load_n_estimate(df, covars, nnpc, mp, GRM, std = False, Method = "AdjHE", RV = None, silent=False, homo= True):
+def load_n_estimate(df, covars, nnpc, mp, GRM, std=False, Method="AdjHE", RV=None, silent=False, homo=True, gcta=gcta):
     """
     Estimates heritability, but solves a full OLS problem making it slower than the closed form solution. Takes 
     a dataframe, selects only the necessary columns (so that when we do complete cases it doesnt exclude too many samples)
@@ -63,141 +62,143 @@ def load_n_estimate(df, covars, nnpc, mp, GRM, std = False, Method = "AdjHE", RV
         - time for analysis
         - maximum memory usage
     """
-    if not silent :
+    if not silent:
         print(Method + " Estimation...")
         print(df.columns.tolist())
 
     # Remove missingness for in-house estimators
-    if Method != "GCTA" :
-        
-    
+    if Method != "GCTA":
+
         ids = df[["FID", "IID"]]
         # seed empty result vector
         # result.columns = ["h2", "SE", "Pheno", "PCs", "Time for analysis(s)", "Memory Usage", "formula"]
         # create the regression formula and columns for seelcting temporary
-        form, cols  = create_formula(nnpc, covars, mp, RV)
+        form, cols = create_formula(nnpc, covars, mp, RV)
         # save a temporary dataframe
         temp = df[cols].dropna()
         # Save residuals of selected phenotype after regressing out PCs and covars
-        temp[mp] = smf.ols(formula = form, data = temp, missing = 'drop').fit().resid
+        temp[mp] = smf.ols(formula=form, data=temp, missing='drop').fit().resid
         # Potentially could use this to control for random effects
         # smf.mixedlm(formula= form, data = temp, groups=temp["scan_site"])
         # keep portion of GRM without missingess for the phenotypes or covariates
         nonmissing = ids[ids.IID.isin(temp.IID)].index
-        GRM_nonmissing = GRM[nonmissing,:][:,nonmissing]
+        GRM_nonmissing = GRM[nonmissing, :][:, nonmissing]
         print(temp.columns)
-
     # Select method of estimation
-    if Method == "AdjHE": 
-        result = load_n_AdjHE(temp, covars, nnpc, mp, GRM_nonmissing, std = False, RV = RV, homo = homo)
-    elif Method == "MOM": 
-        result = load_n_MOM(temp, covars, nnpc, mp, GRM_nonmissing, std = False, RV = RV)
-    elif Method == "PredlMM" : 
-        result = load_n_PredLMM(temp, covars, nnpc, mp, GRM_nonmissing, std = False, RV = RV)
-    elif Method == "GCTA" :
-        result=  GCTA(df, covars, nnpc, mp, GRM, silent=False)
-    elif Method == "SWD" :
+    if Method == "AdjHE":
+        result = load_n_AdjHE(temp, covars, nnpc, mp,
+                              GRM_nonmissing, std=False, RV=RV, homo=homo)
+    elif Method == "MOM":
+        result = load_n_MOM(temp, covars, nnpc, mp,
+                            GRM_nonmissing, std=False, RV=RV)
+    elif Method == "PredlMM":
+        result = load_n_PredLMM(temp, covars, nnpc, mp,
+                                GRM_nonmissing, std=False, RV=RV)
+    elif Method == "GCTA":
+        result = GCTA(df, covars, nnpc, mp, GRM, gcta=gcta, silent=False)
+    elif Method == "SWD":
         # Find site wise means
         temp = temp.T.drop_duplicates().T
         means = temp[[RV, mp]].groupby(RV).transform("mean")
-        
+
         # Subtract sitewise means from Y
         temp[mp] = temp[mp] - means[mp]
         # temp = temp.reset_index(drop = True)
-        result = load_n_AdjHE(temp, [], nnpc, mp, GRM_nonmissing, std = False, RV = None)
+        result = load_n_AdjHE(temp, [], nnpc, mp,
+                              GRM_nonmissing, std=False, RV=None)
     # Else use the Combat method
-    elif Method == "Combat" :
+    elif Method == "Combat":
         # Format data for Harmonization tool
         temp["Y1"] = df["Y1"]
         tempy = temp[["Y", "Y1"]].T
 
-        #Harmonization step:
+        # Harmonization step:
         data_combat = neuroCombat(dat=tempy,
-            covars=df[["pc_" + str(i + 1) for i in range(nnpc)] + ["abcd_site"]],
-            batch_col="abcd_site")["data"]
-        
+                                  covars=df[[
+                                      "pc_" + str(i + 1) for i in range(nnpc)] + ["abcd_site"]],
+                                  batch_col="abcd_site")["data"]
+
         # Grab the first column of the harmonized data
-        temp[mp] = data_combat[0,:].T
-        result = load_n_AdjHE(temp, [], nnpc, mp, GRM_nonmissing, std = False, RV = None)
+        temp[mp] = data_combat[0, :].T
+        result = load_n_AdjHE(temp, [], nnpc, mp,
+                              GRM_nonmissing, std=False, RV=None)
+    else:
+        print("Not an accepted method")
 
-        
-    if not silent :
-        print(result["h2"])
-    
-    return pd.DataFrame(result, index = [0])
+    return pd.DataFrame(result, index=[0])
 
-   
-#%%
-class Basu_estimation() :
-    def __init__(self, prefix = None, pheno_file=None, cov_file=None, PC_file=None, k=0, ids = None, Simulation = False) :
-        if prefix == None :
+
+# %%
+class Basu_estimation():
+    def __init__(self, prefix=None, pheno_file=None, cov_file=None, PC_file=None, k=0, ids=None, Simulation=False):
+        if prefix == None:
             print("Enter preloaded values...")
             self.df = None
             self.GRM = None
             self.phenotypes = "Y"
-            self.simulation=True
-        
-        else : 
+            self.simulation = True
+
+        else:
             print("Loading data...")
-            self.df, self.GRM, self.phenotypes = load_everything(prefix, pheno_file, cov_file, PC_file, k, ids)
+            self.df, self.GRM, self.phenotypes = load_everything(
+                prefix, pheno_file, cov_file, PC_file, k, ids)
             self.simulation = False
-    
-    def looping(self, covars, npc, mpheno, loop_covars = False) :
+
+    def estimate(self, npc, mpheno="all", Method=None, RV=None, Naive=False, covars=None, homo=True, loop_covars=False):
         # Create list of covariate sets to regress over
-        if (covars == None) or (covars == []) :
+        if (covars == None) or (covars == []):
             cov_combos = [[]]
-        else :
+        else:
             # Create the sets of covarates over which we can loop
             # This will return a list of lists of covariate names to regress on
             cov_combos = [covars[0:idx+1] for idx, c in enumerate(covars)]
-            # If we don't want to loop, just grab the last item of the generated list assuming the user wants all of those variables included 
-            if not loop_covars : 
+            # If we don't want to loop, just grab the last item of the generated list assuming the user wants all of those variables included
+            if not loop_covars:
                 cov_combos = [cov_combos[-1]]
-            
-        self.cov_combos = cov_combos
 
-        if mpheno == "all" :
+        if mpheno == "all":
             self.mpheno = self.phenotypes
-        else :
+        else:
             # make them lowercase
-            self.mpheno =  mpheno
-            
-    def estimate(self, npc, Method = None, RV = None, Naive = False, covars= False, homo = True) : 
+            self.mpheno = mpheno
+
         print("Estimating")
         print(Method)
-        if RV != None :
+        if RV != None:
             print("RV: " + RV)
         # create empty list to store heritability estimates
         results = pd.DataFrame()
-        
-        
+
         # project GRM onto pc space
         # pcs = pd.DataFrame(PCA(n_components=20).fit_transform(self.GRM))
         # pcs.columns = ["pc_" + str(col + 1) for col in pcs.columns]
         # # add the pcs to the dataframe
         # self.df = pd.concat([self.df, pcs], axis=1)
 
-
         # Forcing type to be integer for a little easier use
-        if npc == None :
+        if npc == None:
             npc = [0]
-        
-        if not covars :
-            cov_combos = [[]]
 
         # Loop over each set of covariate combos
-        for covs in self.cov_combos :
+        for covs in cov_combos:
             # For each set of covariates recalculate the projection matrix
-            
+
             # loop over all combinations of pcs and phenotypes
             for mp, nnpc in itertools.product(self.mpheno, npc):
-                if not Naive :
-                    r = load_n_estimate(
-                        df=self.df, covars=covs, nnpc=nnpc, mp=mp, GRM= self.GRM, std= False, Method = Method, RV = RV, homo = homo)
-                else :
+                if not Naive:
+                    try:
+                        r = load_n_estimate(
+                            df=self.df, covars=covs, nnpc=nnpc, mp=mp, GRM=self.GRM, std=False, Method=Method, RV=RV, homo=homo)
+                    except FileNotFoundError:
+                        print(
+                            "Estimations were not made. Usually this is due to small sample sizes for GCTA")
+                        r = {"h2": np.nan, "SE": np.nan, "Pheno": mp, "PCs": nnpc, "Covariates": "+".join(covars), "Time for analysis(s)": np.nan,
+                             "Memory Usage": np.nan}
+
+                else:
                     # Empty results list
                     sub_results = pd.DataFrame({"Estimate": [],
-                                           "Size": []})
+                                                "Size": []})
 
                     # loop over  all sites
                     for site in np.unique(self.df[RV]):
@@ -206,39 +207,36 @@ class Basu_estimation() :
                         # Get size
                         sub_n = sub.shape[0]
                         # Estimate just on the supsample
-                        sub_result = load_n_estimate(df=sub, covars=[],  nnpc=nnpc, mp= mp, GRM=self.GRM, std=False, Method= Method, RV=None,
-                                                 silent=True, homo = homo)
+                        sub_result = load_n_estimate(df=sub, covars=[],  nnpc=nnpc, mp=mp, GRM=self.GRM, std=False, Method=Method, RV=None,
+                                                     silent=True, homo=homo)
                         sub_result = pd.DataFrame({"Estimate": [sub_result["h2"][0]],
-                                               "Size": [sub_n]})
+                                                   "Size": [sub_n]})
                         # Add to the list of estimates
-                        sub_results = sub_results.append(sub_result, ignore_index=True)
+                        sub_results = sub_results.append(
+                            sub_result, ignore_index=True)
 
                     # Pool the estimates
                     sub_results["nh2"] = (
                         sub_results["Size"] * sub_results["Estimate"]) / self.GRM.shape[0]
                     r = np.sum(sub_results["nh2"])
-                    r = {"h2" : r, "ss": 0, "se" : 0, "var(sg)" : 0}
-                    r = pd.DataFrame(r, index= [0])
+                    r = {"h2": r, "ss": 0, "se": 0, "var(sg)": 0}
+                    r = pd.DataFrame(r, index=[0])
 
-                    
-                    
                 # Store each result
-                results = pd.concat([results, r], ignore_index = True)
+                results = pd.concat([results, r], ignore_index=True)
 
-
-                
         self.results = results
         return self.results
-    
-    def pop_clusts(self, npc=2, groups = None):
+
+    def pop_clusts(self, npc=2, groups=None):
         print("Generating PCA cluster visualization...")
         # Checked genotypes with coming from separate clusters
         trans = PCA(n_components=npc).fit_transform(self.GRM)
-        
+
         sns.scatterplot(x=trans[:, 0], y=trans[:, 1],
                         hue=self.df[groups].astype(str))
 
-    def GRM_vis(self, sort_by=None, location=None, npc=0, plot_decomp = False):
+    def GRM_vis(self, sort_by=None, location=None, npc=0, plot_decomp=False):
         print("Generating GRM visualization...")
         if sort_by == None:
             df = self.df
@@ -253,34 +251,34 @@ class Basu_estimation() :
             pcs = np.matrix(PCA(n_components=npc).fit(G).components_.T)
             P = pcs * np.linalg.inv(pcs.T * pcs) * pcs.T
             G2 = (np.eye(self.GRM.shape[0]) - P) * G
-        else :
+        else:
             G2 = G
-        
-        if plot_decomp :
-            #subplot(r,c) provide the no. of rows and columns
-            fig, ax = plt.subplots(1,3) 
-            
+
+        if plot_decomp:
+            # subplot(r,c) provide the no. of rows and columns
+            fig, ax = plt.subplots(1, 3)
+
             # use the created array to output your multiple images. In this case I have stacked 4 images vertically
             ax[0].imshow(G)
             ax[1].imshow(G2)
             P = P * G
             ax[2].imshow(P)
-            ax[0].axis('off')  
-            ax[1].axis('off')             
-            ax[2].axis('off')             
+            ax[0].axis('off')
+            ax[1].axis('off')
+            ax[2].axis('off')
 
             ax[0].set_title('GRM')
             ax[1].set_title('Residual relatedness')
-            ax[2].set_title('Ethnicity contrib')      
-            
-        else: 
+            ax[2].set_title('Ethnicity contrib')
+
+        else:
             plt.imshow(G2)
             # major_ticks = np.unique(df.abcd_site, return_counts= True)[1].cumsum()
             # plt.xticks(major_ticks -1)
             # plt.yticks(np.flip(major_ticks))
             # plt.grid(color='k', linestyle='-', linewidth=0.5)
             plt.axis('off')
-    
+
             plt.title("GRM")
             plt.colorbar()
 
@@ -288,5 +286,3 @@ class Basu_estimation() :
             plt.savefig('docs/Presentations/Images/GRM_{n}_{s}_{c}_{site}.png'.format(
                 n=self.nsubjects, s=self.nsites, c=self.nclusts, site=self.site_comp),
                 dpi=200)
-
-    
