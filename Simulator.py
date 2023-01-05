@@ -48,7 +48,6 @@ df = sim_experiment(nsubjectss = args["nsubjectss"],
               nSNPss= args["nSNPss"],
               phenss= args["phenss"],
               reps = args["reps"],
-	      all_ests = args["all_ests"],
 	      site_het = args["site_het"])
 
 
