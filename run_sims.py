@@ -50,12 +50,12 @@ def sim_n_est(nsubjects = 1000, sigma = [0.5,0.25, 0.25], site_comp = "IID", nsi
         cs = None
         
     # Estimate always
-    AdjHE = ests.estimate(Method = "AdjHE", npc = [nnpc], covars = cs, mpheno = ["Y"], Naive = False)["h2"][0]
+    AdjHE = ests.estimate(Method = "AdjHE", npc = [0], covars = cs, mpheno = ["Y"], Naive = False)["h2"][0]
     GCTA_est = ests.estimate(Method = "GCTA", npc = [nnpc], covars = cs, mpheno = ["Y"], Naive = False)["h2"][0]
     
     # Estimate when greater than one site
     if nsites > 1 :
-        nAdjHE = ests.estimate(Method = "AdjHE", npc = [nnpc], covars = cs, mpheno = ["Y"], RV = "abcd_site", Naive = True)["h2"][0]
+        nAdjHE = ests.estimate(Method = "AdjHE", npc = [0], covars = cs, mpheno = ["Y"], RV = "abcd_site", Naive = True)["h2"][0]
         AdjHE_RE = ests.estimate(Method = "AdjHE", npc = [nnpc], covars = cs, mpheno = ["Y"], RV = "abcd_site", Naive = False)["h2"][0]
         try :
             nGCTA = ests.estimate(Method = "GCTA", npc = [nnpc], covars = cs, mpheno = ["Y"], RV = "abcd_site", Naive = True)["h2"][0]
@@ -120,7 +120,7 @@ def sim_experiment(nsubjectss = [1000], sigmas = [[0.5,0.25, 0.25]], site_comps 
                                 site_deps, nnpcs, nSNPss, phenss,
                                 range(reps)) :
                                 
-        nnpc = 2 * nclusts
+        # nnpc = 2 * nclusts
                                 
         result = sim_n_est(nsubjects = nsubjects, sigma = sigma, site_comp = site_comp, nsites = nsite,
                            theta_alleles = theta_alleles, nclusts = nclusts, dominance= dominance, prop_causal= prop_causal, 

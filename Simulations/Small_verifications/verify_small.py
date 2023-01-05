@@ -18,13 +18,13 @@ import itertools
 
 #%%
 N = 1000
-nc = 1
+nc = 5
 ns = 5
 site_het = False
 
 
 df = sim_n_est(nsubjects = N, sigma = [0.5,0.01, 0.5], site_comp = "IID", nsites = ns,
-              theta_alleles =0.5, nclusts =nc,  dominance=3, prop_causal=0.25, site_dep=False, nnpc = nc,
+              theta_alleles =0.5, nclusts =nc,  dominance=3, prop_causal=0.25, site_dep=False, nnpc = 0,
               nSNPs=20, phens = 2, site_het = False) 
 print(df)
 
@@ -48,8 +48,8 @@ for sg, ss, se in itertools.product(sgs, sss, ses) :
 
 N  = 1000
 ns = 25
-nc = 1
-site_het = False
+nc = 5
+site_het = True
 # #%%
 df = sim_experiment(nsubjectss= [N], reps= 10, nsites=[ns], site_comps = ["EQUAL"], sigmas = sigmas, nnpcs = [nc], nclustss=[nc],
                     site_het = site_het)
@@ -64,7 +64,7 @@ plt.savefig(f"Simulations/Small_verifications/N{N}_C{nc}_S{ns}_Het{site_het}.png
 
 #%%
 ns = 5
-nc = 1
+nc = 4
 N = 500
 site_het = False
 
@@ -83,8 +83,8 @@ if ns > 1:
 else :
     cs = None
 
-GCTA_est, subs = ests.estimate(Method = "AdjHE", npc = [0 ], covars = cs, mpheno = ["Y"], RV = "abcd_site", Naive = True)
-print(subs)
+
+GCTA_est = ests.estimate(Method = "AdjHE", npc = [0], covars = cs, mpheno = ["Y"], RV = None, Naive = False)
 print(GCTA_est)
 
 #%%

@@ -83,7 +83,7 @@ def load_n_estimate(df, covars, nnpc, mp, GRM, std=False, Method="AdjHE", RV=Non
         # keep portion of GRM without missingess for the phenotypes or covariates
         nonmissing = ids[ids.IID.isin(temp.IID)].index
         GRM_nonmissing = GRM[nonmissing, :][:, nonmissing]
-        print(temp.columns)
+        print(temp.columns.tolist())
     # Select method of estimation
     if Method == "AdjHE":
         result = load_n_AdjHE(temp, covars, nnpc, mp,
