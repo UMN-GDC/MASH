@@ -1,0 +1,197 @@
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{amsfonts}
+\usepackage{hyperref}
+\usepackage[utf8]{inputenc}
+
+\title{Model Misspecifcation}
+
+\begin{document}
+Here we will test how each method fairs under each set of conditions. Since we are estimating the heritability it's useful to note that heritability from the lens of a linear model is the partial $R^2$ value associated with genetic variation ($R^2_G$). Since in all cases the $R^2$ values will share the same denominator ($\hat Var(Y)$), we only need to consider the numerator, the expected sum of squares.
+
+
+\section{$H_0$: AdjHE + site effect}
+\begin{align*}
+	Y & =  \begin{bmatrix} X_g \\ X_c \\ X_s \\ I \end{bmatrix} \begin{bmatrix}
+	\beta_g & \beta_c & \beta_s & \epsilon 
+\end{bmatrix}	 \\
+	Q_cY & =  \begin{bmatrix} X_g \\ X_s \\ I \end{bmatrix} \begin{bmatrix}
+	\beta_g & \beta_s & \epsilon 
+\end{bmatrix}, E\beta_g = E\beta_s = E\epsilon = 0 \\
+	EQ_cY & = 0  \tag{First Moment}	 \\
+	\forall i \in \{1..M\} \forall j \in \{1..N_s\}, Var(\beta_{gi}, \beta_{sj}, \epsilon) & = \begin{bmatrix}
+	\sigma_g^2 & 0 & 0 \\
+	0 & \sigma_s^2 & 0 \\
+	0 & 0 & \sigma_e^2 
+	\end{bmatrix}\\
+	EYY' & = Var(Y) + EYEY' = EYY' \tag{Second Moment} \\
+	YY' & = A\sigma_G^2 + S\sigma_S^2 + I \sigma_E^2 \tag{Regression Equation}\\
+	X_c & \perp X_s, X_g 
+\end{align*}
+
+\section{AdjHE Estimator}
+From previous paper the expectation of the AdjHE estimator is 
+\begin{align*}
+	E\hat h^2 & = h^2 \frac{tr(A  -I)Q(A^* - I - \sigma_S^2 S- X_c\beta_c\beta_c'X_c')Q}{tr(A -  I)Q(A - I) Q} \\
+\end{align*}
+Where Q is a projection matrix defined for the variance effecting terms (i.e. not fixed effect terms). The most basic to account for population substructure is the project ion matrix defined by the pc loading vectors 
+\begin{align*}
+	Q_{P_k} & = PC_k(PC_k'PC_k)^{-1}PC_k' \\
+	Q_P & = I -  \sum_k Q_{P_k} \\
+\end{align*}
+
+But in addition, could include other covariates
+
+\section{Covariates}
+The mean can just be fit with OLS with an appeal to M-estimation theory since it's a finite covariance, it will be consistent.
+
+\subsection{SWD}
+
+\begin{align*}
+	Q_1 & = I - X_s(X_s'X_s)^{-1}X_s' \\
+	Q_2 & = I - X_c(X_c'X_c)^{-1}X_c'' \\
+	E\hat h^2 & = h^2 \frac{tr(A  -I)Q_2Q_1(A^* - I - \sigma_S^2 S- X_c\beta_c\beta_c'X_c')Q_1Q_2}{tr(A -  I)Q(A - I) Q} \\
+	& = h^2 \frac{tr(A  -I)Q_2Q_1(A^* - I- X_c\beta_c\beta_c'X_c')Q_1Q_2}{tr(A -  I)Q_2Q_1(A - I) Q_1Q_2} \\
+	& = h^2 \frac{tr(A  -I)Q_2Q_1(A^* - I)Q_1Q_2}{tr(A -  I)Q_2Q_1(A - I) Q_1Q_2} \tag{$X_c \perp X_s$}\\
+\end{align*}
+
+Therefore unbiased when $X_g\perp X_S$ 
+
+
+\subsection{Adjusted residual harmonization}
+\begin{align*}
+	Q & = I -  X_{sc}(X_{sc}'X_{sc})^{-1}X_{sc}' \\
+	E\hat h^2 & = h^2 \frac{tr(A  -I)Q(A^* - I - \sigma_S^2 S- X_c\beta_c\beta_c'X_c')Q}{tr(A -  I)Q(A - I) Q} \\
+	& = h^2 \frac{tr(A  -I)Q(A^* - I)Q}{tr(A -  I)Q(A - I) Q} \\
+	& = h^2 \frac{tr(A  -I)Q(A - I)Q}{tr(A -  I)Q(A - I) Q} \\
+\end{align*}
+Therefore unbiased
+
+
+
+\subsection{Normalize}
+Mean center
+\begin{align*}
+	\hat \beta_S & = (X_sX_S')^{-1}X_s'Y \\
+	R & = y - X_S\hat \beta_S \\
+\end{align*}
+
+Variances
+\begin{align*}
+	SS_{i} & = (y - X_S\hat \beta_S)'\begin{bmatrix}
+	I_{n_i} & 0 \\
+	0 & 0 \\
+	\end{bmatrix}(y - X_S\hat \beta_S) \\ 
+	(X_S'X_S)^{-1} \tag{Site counts} \\
+	\hat Var(R_i) & = SS_i/ n_i  \\
+\end{align*}
+
+Variance standardizer
+\begin{align*}
+	Q_V & = diag(\hat Var(R_i) \otimes J_{n_i})  \\
+\end{align*}
+
+\begin{align*}
+	E\hat h^2 & =  E\frac{tr Q_VQ_S(YY - I)Q_SQ_V'}{trQ_VQ_S(A - I)Q_SQ_V'} \\
+\end{align*}
+
+Not clear how to proceed
+
+\subsection{Combat}
+
+\begin{align*}
+	Z & = Q_cY / \hat \sigma^2 \tag{ Standardize} \\
+	& = \begin{bmatrix}
+	X_g & X_s & I
+	\end{bmatrix} \begin{bmatrix}
+	\beta_g  \\ \beta_s \\ \epsilon
+	\end{bmatrix} / \hat \sigma^2
+\end{align*}
+
+Site mean
+\begin{align*}
+	\hat \beta^*_{si} & = \frac{n_i\bar \tau_i^2 \hat \beta_{si} + \delta^2_{i}\bar \gamma_i}{n_i\bar \tau_i^2 + \delta^2_{i}}
+\end{align*}
+Site Variance
+\begin{align*}
+	\hat \delta^2_i & = \frac{\bar \theta_i + 1/2 \sum(Z - \hat \beta_i^*)^2}{\frac{n_i}{2} + \bar \lambda_i - 1}
+\end{align*} 
+\begin{align*}
+	T(Y) & = \frac{\hat \sigma_s^2}{\hat \delta^2_s}(Y-\hat \beta_s) + X_c \hat \beta_c, \hat \beta_c \text{ is OLS for each coefficient}\\
+	\sigma_g^2 =0 \text{ it is set to zero since we standardize it} \\
+	T(Y) & = \frac{1}{\hat \delta^2_s}(Y-\hat \beta_s) + X_c \hat \beta_c\\
+\end{align*}
+
+
+
+
+\subsection{Combat Verbatim}
+Gene specific (g) site mean(i) centered at overall site mean
+\begin{align*}
+	\gamma_{ig} \sim N(\gamma_i, \tau_i^2), ~~ \delta_{ig}^2 \sim IG (\lambda_i, \theta_i) \\
+	\hat \gamma_{ig} = \frac 1{n_i}\sum_j Z_{ijg} = J_{n_i}'Z_{ig} / n_i \\
+	\hat \gamma = diag(\frac 1{n_i})J_{n_i}'Z_{ig}
+\end{align*}
+
+
+
+\begin{align*}
+	\hat \gamma_{ig} = \frac{n_i \tau_i^{-2}\hat \gamma_{ig} + \delta_{ig}^2\bar \gamma_i}{n_i \tau_i^{-2} + \delta_{ig}^2}
+\end{align*}
+
+For one phenotype $\bar \gamma_i = \hat \gamma_{ig}, \tau_i^{-2} = 0$
+
+Meanin batch mean is just the sample mean. for the batch variance
+
+\begin{align*}
+	\hat \delta_i^2 = \frac{1}{n_i-1} \sum (Y_{ij} - \hat \gamma_i)^2
+\end{align*}
+
+
+
+
+\begin{align*}
+	\delta_i^* = \frac{\bar \theta_i + 1/2 \sum_j(Y_{ijg} - \gamma_i^*)^2}{\frac{n_i}n + \bar \lambda_i - 1}
+\end{align*}
+
+
+\begin{align*}
+	\bar \lambda_i = \frac{\bar V_i + 2\bar S_i^2 }{\bar S_i^2}
+\end{align*}
+
+for single phenotype 
+\begin{align*}
+	\bar V_i = \hat \delta_i^2, \bar S_i = 0
+\end{align*}
+
+Meaning 
+\begin{align*}
+	\bar \lambda_i = \frac{\bar V_i + 2\bar S_i^2 }{\bar S_i^2}
+\end{align*}
+
+
+??????? \\
+??????? \\
+? Combat not really comparable since it borrows data across multiple phenotypes??? \\
+???????\\
+
+
+
+\begin{align*}
+	\begin{bmatrix}
+		tr A^2 - \sum s_j^2 & trA - \sum s_j \\
+		trA - \sum s_j & N-k 
+	\end{bmatrix}
+	\begin{bmatrix}
+	\sigma_g^2 \\ 
+	\sigma_e^2 
+	\end{bmatrix} = 
+	\begin{bmatrix}
+		y' Ay - \sum t_j s_j \\
+		y'y - \sum t_j
+	\end{bmatrix}
+\end{align*}
+
+\end{document}

@@ -77,31 +77,39 @@ def GCTA(df, covars, nnpc, mp, GRM, gcta, silent=False):
     __output, __error = process.communicate()
 
     # parse output for estimate
-    df = pd.read_table(temp_name + ".hsq", sep="\t").query( "Source == 'V(G)/Vp'").reset_index()
+    try :
+        df = pd.read_table(temp_name + ".hsq", sep="\t").query( "Source == 'V(G)/Vp'").reset_index()
+        result = {"h2" : df.Variance[0],
+                  "SE" : df.SE[0],
+                  "Pheno" : mp,
+                  "PCs" : nnpc,
+                  "Covariates" : "+".join(covars),
+                  "Time for analysis(s)" : 0,
+                  "Memory Usage" : 0}
+
+    except FileNotFoundError:
+        print("Estimations were not made. Usually this is due to small sample sizes for GCTA")
+        result = {"h2": np.nan, "SE": np.nan, "Pheno": mp, "PCs": nnpc, "Covariates": "+".join(covars), "Time for analysis(s)": np.nan,
+             "Memory Usage": np.nan}
+
     
-    result = {"h2" : df.Variance[0],
-              "SE" : df.SE[0],
-              "Pheno" : mp,
-              "PCs" : nnpc,
-              "Covariates" : "+".join(covars),
-              "Time for analysis(s)" : 0,
-              "Memory Usage" : 0}
+    
     
     # tidy up by removing temporary files
-    # if os.path.exists(temp_name + "_Discrete.txt") : 
-    #     os.remove(temp_name + "_Discrete.txt")
-    # if os.path.exists(temp_name + "_Cont.txt") : 
-    #     os.remove(temp_name + "_Cont.txt")
-    # if os.path.exists(temp_name + ".hsq") : 
-    #     os.remove(temp_name + ".hsq")
-    # if os.path.exists(temp_name + ".log") : 
-    #     os.remove(temp_name + ".log")
-    # if os.path.exists(temp_name + "_pheno.txt") :
-    #     os.remove(temp_name + "_pheno.txt")
-    # if os.path.exists(temp_name + ".grm.bin") :
-    #     os.remove(temp_name + ".grm.bin")
-    # if os.path.exists(temp_name + ".grm.id") :
-    #     os.remove(temp_name + ".grm.id")
+    if os.path.exists(temp_name + "_Discrete.txt") : 
+        os.remove(temp_name + "_Discrete.txt")
+    if os.path.exists(temp_name + "_Cont.txt") : 
+        os.remove(temp_name + "_Cont.txt")
+    if os.path.exists(temp_name + ".hsq") : 
+        os.remove(temp_name + ".hsq")
+    if os.path.exists(temp_name + ".log") : 
+        os.remove(temp_name + ".log")
+    if os.path.exists(temp_name + "_pheno.txt") :
+        os.remove(temp_name + "_pheno.txt")
+    if os.path.exists(temp_name + ".grm.bin") :
+        os.remove(temp_name + ".grm.bin")
+    if os.path.exists(temp_name + ".grm.id") :
+        os.remove(temp_name + ".grm.id")
 
 
     

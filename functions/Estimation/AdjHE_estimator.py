@@ -237,7 +237,7 @@ def load_n_AdjHE(df, covars, nnpc, mp, GRM, std = False, RV = None, homo = True)
     # Get memory for each step (in Mb) (This is a little sketchy)
     mem = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss/1000
     # Save the formula for the control variables and results
-    result = {"h2" : result["sg"] / (result["sg"] + result["ss"] + result["se"]),
+    result = {"h2" : result["sg"] / (result["sg"] + result["se"]),
               "SE" : np.sqrt(result["var(sg)"]),
               "Pheno" : mp,
               "PCs" : nnpc,

@@ -111,15 +111,23 @@ def sim_experiment(nsubjectss = [1000], sigmas = [[0.5,0.25, 0.25]], site_comps 
     # Seed empty dataframe
     sim_results = pd.DataFrame()
     
-    for (nsubjects, sigma, site_comp, nsite, theta_alleles, nclusts, dominance, prop_causal, site_dep, nnpc, nSNPs, phens
-         ) in itertools.product(nsubjectss, sigmas, site_comps, nsites, theta_alleless, nclustss, dominances, prop_causals, site_deps, nnpcs, nSNPss, phenss) :
-        
+    for (nsubjects, sigma, site_comp, nsite,
+         theta_alleles, nclusts, dominance, prop_causal,
+         site_dep, nnpc, nSNPs, phens,
+         __
+         ) in itertools.product(nsubjectss, sigmas, site_comps, nsites,
+                                theta_alleless, nclustss, dominances, prop_causals,
+                                site_deps, nnpcs, nSNPss, phenss,
+                                range(reps)) :
+                                
+        nnpc = 2 * nclusts
+                                
         result = sim_n_est(nsubjects = nsubjects, sigma = sigma, site_comp = site_comp, nsites = nsite,
                            theta_alleles = theta_alleles, nclusts = nclusts, dominance= dominance, prop_causal= prop_causal, 
                            site_dep= site_dep, nnpc = nnpc,
-                           nSNPs=nSNPs, phens = phens, reps = reps, site_het = site_het)
+                           nSNPs=nSNPs, phens = phens, site_het = site_het)
         sim_results= sim_results.append(result, ignore_index = True)
-    
+        # Remove any temps
     return sim_results
                                                      
 

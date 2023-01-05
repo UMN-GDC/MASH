@@ -186,14 +186,8 @@ class Basu_estimation():
             # loop over all combinations of pcs and phenotypes
             for mp, nnpc in itertools.product(self.mpheno, npc):
                 if not Naive:
-                    try:
-                        r = load_n_estimate(
-                            df=self.df, covars=covs, nnpc=nnpc, mp=mp, GRM=self.GRM, std=False, Method=Method, RV=RV, homo=homo)
-                    except FileNotFoundError:
-                        print(
-                            "Estimations were not made. Usually this is due to small sample sizes for GCTA")
-                        r = {"h2": np.nan, "SE": np.nan, "Pheno": mp, "PCs": nnpc, "Covariates": "+".join(covars), "Time for analysis(s)": np.nan,
-                             "Memory Usage": np.nan}
+                    r = load_n_estimate(
+                        df=self.df, covars=covs, nnpc=nnpc, mp=mp, GRM=self.GRM, std=False, Method=Method, RV=RV, homo=homo)
 
                 else:
                     # Empty results list
@@ -203,11 +197,13 @@ class Basu_estimation():
                     # loop over  all sites
                     for site in np.unique(self.df[RV]):
                         # Grab the portion that lies within a given site
-                        sub = self.df.loc[self.df.abcd_site == site, :]
+                        sub_df = self.df.loc[self.df[RV] == site, :].reset_index(drop = True)
                         # Get size
-                        sub_n = sub.shape[0]
+                        sub_n = sub_df.shape[0]
+                        sub_GRM = self.GRM[self.df[RV] == site,:][:,self.df[RV] == site]
+
                         # Estimate just on the supsample
-                        sub_result = load_n_estimate(df=sub, covars=[],  nnpc=nnpc, mp=mp, GRM=self.GRM, std=False, Method=Method, RV=None,
+                        sub_result = load_n_estimate(df=sub_df, covars=[],  nnpc=nnpc, mp=mp, GRM=sub_GRM, std=False, Method=Method, RV=None,
                                                      silent=True, homo=homo)
                         sub_result = pd.DataFrame({"Estimate": [sub_result["h2"][0]],
                                                    "Size": [sub_n]})
@@ -226,7 +222,7 @@ class Basu_estimation():
                 results = pd.concat([results, r], ignore_index=True)
 
         self.results = results
-        return self.results
+        return self.results # , sub_results
 
     def pop_clusts(self, npc=2, groups=None):
         print("Generating PCA cluster visualization...")
