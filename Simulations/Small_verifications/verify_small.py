@@ -77,7 +77,7 @@ G = []
 for i in range(reps) :
 
     sim= pheno_simulator(nsubjects=N, nSNPs=10000)
-    sim.full_sim(sigma = [0.8,0.000001,0.2], nsites = ns, nclusts = nc, site_het = site_het, theta_alleles=0.1, prop_causal=0.02)
+    sim.full_sim(sigma = [0.8,0.000001,0.2], nsites = ns, nclusts = nc, site_het = site_het, theta_alleles=0.1, prop_causal=0.05)
 
 
     ests = Basu_estimation()
@@ -115,7 +115,7 @@ df.loc[df["value"] >1, "value"] = 1
 
 
 fig, ax = plt.subplots()
-sns.boxplot(data = df, x = "PCs", y = "value", hue = "variable", ax = ax) 
+sns.violinplot(data = df, x = "PCs", y = "value", hue = "variable", ax = ax) 
 #ax.set_xlim(3,4)
 plt.show()
 #%%
