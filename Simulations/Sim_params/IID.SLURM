@@ -11,6 +11,6 @@ cd /panfs/roc/groups/3/rando149/coffm049/tools/Basu_herit
 
 module load python3
 
-python Simulator.py --argfile Simulations/IID/IID.json --out IID/Results/2000/$SLURM_ARRAY_TASK_ID
+python Simulator.py --argfile Simulations/Sim_params/IID.json --out IID/Results/2000/$SLURM_ARRAY_TASK_ID
 
 
