@@ -250,7 +250,7 @@ def load_n_AdjHE(df, covars, nnpc, mp, GRM, std = False, RV = None, homo = True)
         result["h2"] = 1
     
     # Return the fit results
-    return(pd.DataFrame(result, index = [0]))
+    return pd.DataFrame(result, index = [0])
 
 
 #%%

@@ -24,6 +24,46 @@ from functions.Estimation.combat import neuroCombat
 
 # %%
 
+def AdjHE2(A,npc, y,trA=None,trA2=None):
+#    y = y - np.mean(y)
+    y = np.array(y)
+    y = y.reshape(len(y), 1)
+    if (trA is None) and (trA2 is None):
+        trA = np.sum(np.diag(A))
+        trA2 = np.sum(np.multiply(A,A))
+    n = A.shape[1]
+    yay = np.dot(y.T,np.dot(A,y))
+    yty = np.dot(y.T,y)
+    tn = np.sum(y)**2/n # all 1s PC
+    if (npc==0):
+        sigg = n*yay - trA*yty
+        sigg = sigg-yay+tn*trA # add 1's
+        sige = trA2*yty - trA*yay
+        sige = sige-tn*trA2 # add 1's
+        denominator = trA2 - 2*trA + n
+    else:
+        pc = PCA(n_components = npc).fit_transform(A)
+        pcA = np.dot(pc.T,A)
+        pcApc = np.dot(pcA,pc)
+        s = np.diag(pcApc) #pciApci
+        b = s-1
+        t = np.dot(y.T,pc)**2 #ypcipciy
+        a11 = trA2 - np.sum(s**2) 
+        a12 = trA - np.sum(s)
+        b1 = yay - np.sum(s*t)
+        b2 = yty - np.sum(t)
+        sigg = (n-npc)*b1 - a12*b2
+        sigg = sigg-yay+tn*a12 # add 1's
+        sige = a11*b2 - a12*b1
+        sige = sige-tn*a11 # add 1's
+#        c = (n-npc-1)*a11 - a12**2
+        denominator = trA2 - 2*trA + n - np.sum(b**2)
+    # h2 = sigg/(sigg+sige)
+    var_ge = 2/denominator
+    results = {"sg" : sigg[0,0], "ss": 0, "se" : sige[0,0], "var(sg)" : var_ge}
+    print(results)
+    return results
+
 
 def load_n_estimate(df, covars, nnpc, mp, GRM, std=False, Method="AdjHE", RV=None, silent=False, homo=True, gcta=gcta):
     """
@@ -122,6 +162,16 @@ def load_n_estimate(df, covars, nnpc, mp, GRM, std=False, Method="AdjHE", RV=Non
         temp[mp] = data_combat[0, :].T
         result = load_n_AdjHE(temp, [], nnpc, mp,
                               GRM_nonmissing, std=False, RV=None)
+    elif Method == "AdjHE2" :
+        r = AdjHE2(GRM_nonmissing, nnpc, temp["Y"], trA=None,trA2=None)
+        result = pd.DataFrame({"h2" : r["sg"] / (r["sg"] + r["se"]),
+                  "SE" : np.sqrt(r["var(sg)"]),
+                  "Pheno" : mp,
+                  "PCs" : nnpc,
+                  "Covariates" : "+".join(covars),
+                  "Time for analysis(s)" : np.nan,
+                  "Memory Usage" : np.nan}, index = [0])
+
     else:
         print("Not an accepted method")
 
@@ -227,10 +277,15 @@ class Basu_estimation():
     def pop_clusts(self, npc=2, groups=None):
         print("Generating PCA cluster visualization...")
         # Checked genotypes with coming from separate clusters
-        trans = PCA(n_components=npc).fit_transform(self.GRM)
+        pca = PCA(n_components=npc).fit(self.GRM)
+        trans = pca.transform(self.GRM)
 
         sns.scatterplot(x=trans[:, 0], y=trans[:, 1],
                         hue=self.df[groups].astype(str))
+        plt.show()
+
+        plt.plot(pca.explained_variance_ratio_)
+        plt.show()
 
     def GRM_vis(self, sort_by=None, location=None, npc=0, plot_decomp=False):
         print("Generating GRM visualization...")
