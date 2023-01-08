@@ -96,20 +96,21 @@ for i in range(reps) :
     for i in range(5) :
         GCTA_est = ests.estimate(Method = "GCTA", npc = [i], covars = cs, mpheno = ["Y"], RV = None, Naive = False)["h2"][0]
         AdjHE_est = ests.estimate(Method = "AdjHE", npc = [i], covars = cs, mpheno = ["Y"], RV = None, Naive = False)["h2"][0]
-        A2_est = ests.estimate(Method = "AdjHE2", npc = [i], covars = cs, mpheno = ["Y"], RV = None, Naive = False)["h2"][0]
+        # A2_est = ests.estimate(Method = "AdjHE2", npc = [i], covars = cs, mpheno = ["Y"], RV = None, Naive = False)["h2"][0]
 
 
         G.append(GCTA_est)
         A.append(AdjHE_est * 4/3)
-        A2.append(A2_est * 4/3)
+        # A2.append(A2_est * 4/3)
         PC.append(i)
 
 df = pd.DataFrame({"PCs" : PC,
                    "AdjHE" : A,
-                   "A2" : A2,
+                   # "A2" : A2,
                    "GCTA" : G})
 
-df = pd.melt(df, id_vars='PCs', value_vars=['AdjHE', "A2", 'GCTA'])
+df = pd.melt(df, id_vars='PCs', value_vars=['AdjHE', # "A2",
+                                            'GCTA'])
 df.loc[df["value"] <0, "value"] = 0
 df.loc[df["value"] >1, "value"] = 1
 
