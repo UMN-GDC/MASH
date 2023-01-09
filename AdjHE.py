@@ -45,8 +45,7 @@ ests = Basu_estimation(prefix = args["prefix"],
 # covs_vs_cov_of_interest(df, args["RV"], args["covars"], args["out"])
 
 #%%
-ests.looping(covars = args["covars"], npc = args["npc"], mpheno = args["mpheno"], loop_covars = args["loop_covars"])
-ests.estimate(Method = args["Method"], npc = args["npc"])
+ests.estimate(Method = args["Method"], npc = args["npc"], covars = args["covars"], mpheno = args["mpheno"], loop_covars = args["loop_covars"])
 # %%
 print("Writing results")
 ests.results.to_csv(args["out"], index=False, na_rep='NA')

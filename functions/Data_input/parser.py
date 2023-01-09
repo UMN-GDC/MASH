@@ -115,16 +115,14 @@ def get_args() :
                         type=str,
                         help='Specify the random variable of interest')
     
-    # Flag for using PredLMM
-    parser.add_argument('--PredLMM', 
-                        action='store_true',
-                        help='Specify whether to use PredLMM method of estimation. Default is not to use PredLMM.')
-    
     # Flag for using AdjHE simplification
     parser.add_argument('--fast', 
                         action='store_true',
                         help='Specify whether to use AdjHE estimation which is faster. Default is to use AdjHE method.')
 
+    parser.add_argument('--Method',
+                        type= str,
+                        help = 'Specify which method of estimation you wish to use. (AdjHE, GCTA, PredLMM, SWD, COMBAT')
     
     # Set defaults
     parser.set_defaults(PC="None", fast = False, npc=None,

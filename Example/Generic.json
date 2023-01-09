@@ -10,9 +10,11 @@
   "std" :  false,
   "covars" : ["Tidyness", "Happy_camper"],
   "argfile" : "/home/christian/Research/Stat_gen/tools/Basu_herit/Example/Arg_file.json",
-  "loop_covars" : false,
   "loop_covs" : false,
+  "covar_relates" : false,
   "RV" : null,
-  "Method" : "AdjHE",
-  "ids" : null
+  "fast" : true,
+  "Method" : "GCTA",
+  "ids" : null,
+  
 }
