@@ -1,10 +1,10 @@
 #!/bin/bash -l        
-#SBATCH --time=2:30:00
+#SBATCH --time=0:20:00
 #SBATCH --ntasks=1
 #SBATCH --mem=8g
 #SBATCH --mail-type=ALL  
 #SBATCH --mail-user=coffm049@umn.edu
-#SBATCH --array=1-240 
+#SBATCH --array=1-50 
 
 
 
@@ -21,5 +21,8 @@ SIM=$(echo $sim_list | cut -d" " -f$SLURM_ARRAY_TASK_ID)
 
 # Run estimation
 python Simulator.py --argfile Simulations/Sim_params/Temp/${SIM} --out Simulations/Results/${SIM}_${SLURM_ARRAY_TASK_ID}
+
+# remove that file
+rm Simulations/Sim_params/Temp/${SIM}
 
 
