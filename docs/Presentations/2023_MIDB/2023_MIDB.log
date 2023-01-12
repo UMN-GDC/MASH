@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.23 (TeX Live 2021) (preloaded format=pdflatex 2022.3.21)  8 JAN 2023 07:33
+This is pdfTeX, Version 3.141592653-2.6-1.40.23 (TeX Live 2021) (preloaded format=pdflatex 2022.3.21)  9 JAN 2023 15:40
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -1115,83 +1115,168 @@ s/Figures/Matrices/GRM_50_10_2_IID.png  used on input line 377.
 
  </home/christian/Research/Stat_gen/tools/Basu_herit/docs/Figures/Matrices/GRM_
 50_10_1_Homo.png> </home/christian/Research/Stat_gen/tools/Basu_herit/docs/Figu
-res/Matrices/GRM_50_10_2_IID.png>] [15
+res/Matrices/GRM_50_10_2_IID.png>]
+</home/christian/Research/Stat_gen/tools/Basu_herit/docs/Figures/Estimates/Simu
+lations/N2000_C1_EQUAL_Homo.png, id=178, 550.2156pt x 318.34935pt>
+File: /home/christian/Research/Stat_gen/tools/Basu_herit/docs/Figures/Estimates
+/Simulations/N2000_C1_EQUAL_Homo.png Graphic file (type png)
+<use /home/christian/Research/Stat_gen/tools/Basu_herit/docs/Figures/Estimates/
+Simulations/N2000_C1_EQUAL_Homo.png>
+Package pdftex.def Info: /home/christian/Research/Stat_gen/tools/Basu_herit/doc
+s/Figures/Estimates/Simulations/N2000_C1_EQUAL_Homo.png  used on input line 383
+.
+(pdftex.def)             Requested size: 368.76009pt x 213.36096pt.
 
-] [16
+Overfull \hbox (61.47021pt too wide) in paragraph at lines 383--383
+ [][] 
+ []
 
-] [17
 
-] [18
+Overfull \vbox (5.12973pt too high) detected at line 383
+ []
+
+[15
+
+ </home/christian/Research/Stat_gen/tools/Basu_herit/docs/Figures/Estimates/Sim
+ulations/N2000_C1_EQUAL_Homo.png (PNG copy)>]
+File: /home/christian/Research/Stat_gen/tools/Basu_herit/docs/Figures/Estimates
+/Simulations/N2000_C1_EQUAL_Homo.png Graphic file (type png)
+<use /home/christian/Research/Stat_gen/tools/Basu_herit/docs/Figures/Estimates/
+Simulations/N2000_C1_EQUAL_Homo.png>
+Package pdftex.def Info: /home/christian/Research/Stat_gen/tools/Basu_herit/doc
+s/Figures/Estimates/Simulations/N2000_C1_EQUAL_Homo.png  used on input line 388
+.
+(pdftex.def)             Requested size: 368.76009pt x 213.36096pt.
+
+Overfull \hbox (61.47021pt too wide) in paragraph at lines 388--388
+ [][] 
+ []
+
+
+Overfull \vbox (5.12973pt too high) detected at line 388
+ []
+
+[16
+
+]
+</home/christian/Research/Stat_gen/tools/Basu_herit/docs/Figures/Estimates/Simu
+lations/N2000_C1_EQUAL_Het.png, id=195, 550.2156pt x 318.34935pt>
+File: /home/christian/Research/Stat_gen/tools/Basu_herit/docs/Figures/Estimates
+/Simulations/N2000_C1_EQUAL_Het.png Graphic file (type png)
+<use /home/christian/Research/Stat_gen/tools/Basu_herit/docs/Figures/Estimates/
+Simulations/N2000_C1_EQUAL_Het.png>
+Package pdftex.def Info: /home/christian/Research/Stat_gen/tools/Basu_herit/doc
+s/Figures/Estimates/Simulations/N2000_C1_EQUAL_Het.png  used on input line 394.
+
+(pdftex.def)             Requested size: 368.76009pt x 213.36096pt.
+
+Overfull \hbox (61.47021pt too wide) in paragraph at lines 394--394
+ [][] 
+ []
+
+
+Overfull \vbox (5.12973pt too high) detected at line 394
+ []
+
+[17
+
+ </home/christian/Research/Stat_gen/tools/Basu_herit/docs/Figures/Estimates/Sim
+ulations/N2000_C1_EQUAL_Het.png (PNG copy)>]
+</home/christian/Research/Stat_gen/tools/Basu_herit/docs/Figures/Estimates/Simu
+lations/N2000_C5_EQUAL_Het.png, id=204, 550.2156pt x 318.34935pt>
+File: /home/christian/Research/Stat_gen/tools/Basu_herit/docs/Figures/Estimates
+/Simulations/N2000_C5_EQUAL_Het.png Graphic file (type png)
+<use /home/christian/Research/Stat_gen/tools/Basu_herit/docs/Figures/Estimates/
+Simulations/N2000_C5_EQUAL_Het.png>
+Package pdftex.def Info: /home/christian/Research/Stat_gen/tools/Basu_herit/doc
+s/Figures/Estimates/Simulations/N2000_C5_EQUAL_Het.png  used on input line 399.
+
+(pdftex.def)             Requested size: 368.76009pt x 213.36096pt.
+
+Overfull \hbox (61.47021pt too wide) in paragraph at lines 399--399
+ [][] 
+ []
+
+
+Overfull \vbox (5.12973pt too high) detected at line 399
+ []
+
+[18
+
+ </home/christian/Research/Stat_gen/tools/Basu_herit/docs/Figures/Estimates/Sim
+ulations/N2000_C5_EQUAL_Het.png (PNG copy)>] [19
+
+] [20
 
 ]
 </home/christian/Research/Stat_gen/tools/Basu_herit/docs/Figures/Phenotypes/Top
-ologies.png, id=209, 748.7975pt x 518.93875pt>
+ologies.png, id=229, 748.7975pt x 518.93875pt>
 File: /home/christian/Research/Stat_gen/tools/Basu_herit/docs/Figures/Phenotype
 s/Topologies.png Graphic file (type png)
 <use /home/christian/Research/Stat_gen/tools/Basu_herit/docs/Figures/Phenotypes
 /Topologies.png>
 Package pdftex.def Info: /home/christian/Research/Stat_gen/tools/Basu_herit/doc
-s/Figures/Phenotypes/Topologies.png  used on input line 417.
+s/Figures/Phenotypes/Topologies.png  used on input line 430.
 (pdftex.def)             Requested size: 184.37675pt x 127.77853pt.
 
-Overfull \vbox (22.87648pt too high) detected at line 417
+Overfull \vbox (22.87648pt too high) detected at line 430
  []
 
-[19
+[21
 
  </home/christian/Research/Stat_gen/tools/Basu_herit/docs/Figures/Phenotypes/To
-pologies.png>] [20
+pologies.png>] [22
 
-] [21
+] [23
 
 ]
 </home/christian/Research/Stat_gen/tools/Basu_herit/docs/Figures/Matrices/GRM_m
-at.png, id=237, 291.0875pt x 252.945pt>
+at.png, id=256, 291.0875pt x 252.945pt>
 File: /home/christian/Research/Stat_gen/tools/Basu_herit/docs/Figures/Matrices/
 GRM_mat.png Graphic file (type png)
 <use /home/christian/Research/Stat_gen/tools/Basu_herit/docs/Figures/Matrices/G
 RM_mat.png>
 Package pdftex.def Info: /home/christian/Research/Stat_gen/tools/Basu_herit/doc
-s/Figures/Matrices/GRM_mat.png  used on input line 439.
+s/Figures/Matrices/GRM_mat.png  used on input line 452.
 (pdftex.def)             Requested size: 98.3337pt x 103.69267pt.
 </home/christian/Research/Stat_gen/tools/Basu_herit/docs/Figures/Matrices/I_mat
-.png, id=239, 231.86626pt x 247.92625pt>
+.png, id=258, 231.86626pt x 247.92625pt>
 File: /home/christian/Research/Stat_gen/tools/Basu_herit/docs/Figures/Matrices/
 I_mat.png Graphic file (type png)
 <use /home/christian/Research/Stat_gen/tools/Basu_herit/docs/Figures/Matrices/I
 _mat.png>
 Package pdftex.def Info: /home/christian/Research/Stat_gen/tools/Basu_herit/doc
-s/Figures/Matrices/I_mat.png  used on input line 439.
+s/Figures/Matrices/I_mat.png  used on input line 452.
 (pdftex.def)             Requested size: 98.33487pt x 105.14595pt.
 </home/christian/Research/Stat_gen/tools/Basu_herit/docs/Figures/Matrices/S_mat
-.png, id=240, 231.86626pt x 247.92625pt>
+.png, id=259, 231.86626pt x 247.92625pt>
 File: /home/christian/Research/Stat_gen/tools/Basu_herit/docs/Figures/Matrices/
 S_mat.png Graphic file (type png)
 <use /home/christian/Research/Stat_gen/tools/Basu_herit/docs/Figures/Matrices/S
 _mat.png>
 Package pdftex.def Info: /home/christian/Research/Stat_gen/tools/Basu_herit/doc
-s/Figures/Matrices/S_mat.png  used on input line 439.
+s/Figures/Matrices/S_mat.png  used on input line 452.
 (pdftex.def)             Requested size: 98.33487pt x 105.14595pt.
- [22
+ [24
 
  </home/christian/Research/Stat_gen/tools/Basu_herit/docs/Figures/Matrices/GRM_
 mat.png> </home/christian/Research/Stat_gen/tools/Basu_herit/docs/Figures/Matri
 ces/I_mat.png> </home/christian/Research/Stat_gen/tools/Basu_herit/docs/Figures
 /Matrices/S_mat.png>]
 </home/christian/Research/Stat_gen/tools/Basu_herit/docs/Figures/Estimates/UKB_
-volume_herits.jpg, id=253, 558.58687pt x 574.39594pt>
+volume_herits.jpg, id=272, 558.58687pt x 574.39594pt>
 File: /home/christian/Research/Stat_gen/tools/Basu_herit/docs/Figures/Estimates
 /UKB_volume_herits.jpg Graphic file (type jpg)
 <use /home/christian/Research/Stat_gen/tools/Basu_herit/docs/Figures/Estimates/
 UKB_volume_herits.jpg>
 Package pdftex.def Info: /home/christian/Research/Stat_gen/tools/Basu_herit/doc
-s/Figures/Estimates/UKB_volume_herits.jpg  used on input line 444.
+s/Figures/Estimates/UKB_volume_herits.jpg  used on input line 457.
 (pdftex.def)             Requested size: 232.65305pt x 239.23755pt.
 
-Overfull \vbox (31.00632pt too high) detected at line 444
+Overfull \vbox (31.00632pt too high) detected at line 457
  []
 
-[23
+[25
 
  </home/christian/Research/Stat_gen/tools/Basu_herit/docs/Figures/Estimates/UKB
 _volume_herits.jpg>]
@@ -1209,10 +1294,10 @@ Package rerunfilecheck Info: File `2023_MIDB.out' has not changed.
 (rerunfilecheck)             Checksum: 2C05E575CDE5DBEC1D18AB73C995D58E;745.
  ) 
 Here is how much of TeX's memory you used:
- 22564 strings out of 480236
- 448065 string characters out of 5895369
- 689492 words of memory out of 5000000
- 39953 multiletter control sequences out of 15000+600000
+ 22594 strings out of 480236
+ 450331 string characters out of 5895369
+ 689493 words of memory out of 5000000
+ 39975 multiletter control sequences out of 15000+600000
  517585 words of font info for 59 fonts, out of 8000000 for 9000
  14 hyphenation exceptions out of 8191
  99i,14n,104p,434b,561s stack positions out of 5000i,500n,10000p,200000b,80000s
@@ -1231,10 +1316,10 @@ ist/fonts/type1/public/lm/lmsso8.pfb></home/christian/.TinyTeX/texmf-dist/fonts
 /type1/public/lm/lmsy10.pfb></home/christian/.TinyTeX/texmf-dist/fonts/type1/pu
 blic/lm/lmsy8.pfb></home/christian/.TinyTeX/texmf-dist/fonts/type1/public/amsfo
 nts/symbols/msam10.pfb>
-Output written on 2023_MIDB.pdf (23 pages, 1140964 bytes).
+Output written on 2023_MIDB.pdf (25 pages, 2359965 bytes).
 PDF statistics:
- 330 PDF objects out of 1000 (max. 8388607)
- 225 compressed objects within 3 object streams
- 51 named destinations out of 1000 (max. 500000)
- 153 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 351 PDF objects out of 1000 (max. 8388607)
+ 239 compressed objects within 3 object streams
+ 55 named destinations out of 1000 (max. 500000)
+ 168 words of extra memory for PDF output out of 10000 (max. 10000000)
 
