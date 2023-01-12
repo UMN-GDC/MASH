@@ -6,11 +6,13 @@ library(ggpattern)
 df <- read_csv("/home/christian/Research/Stat_gen/tools/Basu_herit/Simulations/Full_results.csv") %>%
   # Annotate Estimators with family
   mutate(Estimator = factor(Estimator, levels = c("GCTA", "nGCTA", "SWD", "Combat", "nAdjHE", "AdjHE", "AdjHE_RE")),
-         Type = case_when(grepl("AdjHE", Estimator) ~ 'AdjHE',
-                          grepl("GCTA", Estimator) ~ 'GCTA',
-                          grepl("SWD", Estimator) ~ "Combat",
-                          grepl("Combat", Estimator) ~ "Combat"
+         Type = case_when(grepl("AdjHE", Estimator) ~ 'Single',
+                          grepl("GCTA", Estimator) ~ 'Single',
+                          grepl("SWD", Estimator) ~ "Meta",
+                          grepl("Combat", Estimator) ~ "Meta"
          ),
+         Type = ifelse(grepl("nAdjHE", Estimator), "Meta", Type),
+         Type = ifelse(grepl("nGCTA", Estimator), "Meta", Type),
          Estimate =  ifelse(Type != "GCTA", Estimate *4/3, Estimate),
          Estimate = ifelse(Type == "GCTA" & ss == 1e-06, Estimate * 4/3, Estimate),
          Estimate = ifelse(nsites ==1, Estimate *3/4, Estimate),
@@ -75,17 +77,17 @@ Estimator_boxplot <- function(df, x="Estimator", y= "Estimate", type= "Type" , G
     geom_hline(data = hlines, aes(yintercept = h2)) +
     xlab("") +
     ylab(expression(paste("Heritability Estimate", (hat(h^{2}))))) +
-    guides(fill=guide_legend(title="Adjustment Type"), pattern = guide_legend(title = "# sites")) +
+    guides(fill=guide_legend(title="Study Type"), pattern = guide_legend(title = "# sites")) +
     ylim(0, 1)+
-    {if(is.null(pattern)) geom_violin()} +
-    {if(!is.null(pattern)) geom_violin_pattern(aes(pattern = !!as.name(pattern)))} +
+    {if(is.null(pattern)) geom_boxplot()} +
+    {if(!is.null(pattern)) geom_boxplot_pattern(aes(pattern = !!as.name(pattern)))} +
     facet_grid(rows = facet_row, cols = facet_col,
       labeller = labeller(.rows = label_both, .cols = label_both))
   #print(g)
   g
 }
 
-figure_maker <- function(gg, comp, Het, N) {
+figure_maker <- function(gg, Het, N) {
   if (het) {
     Het = "Heteroskedastic"
     Het2 = "Het"
@@ -97,10 +99,10 @@ figure_maker <- function(gg, comp, Het, N) {
   
   
   gg <- gg + 
-    ggtitle(paste(comp, "site composition,", Het, "error: \n", "#N=", N))
+    ggtitle(paste(comp, "site composition,", Het, "error: \n", "N=", N))
   
   prefix <- "/home/christian/Research/Stat_gen/tools/Basu_herit/docs/Figures/Estimates/Simulations/"
-  fileout <- paste0("N", N, "_", comp, "_", Het2) 
+  fileout <- paste0("N", N, "_", Het2) 
   # fileout <- "N2000_C1_S1_HOMO"
   
   ggsave(paste0(prefix, fileout, ".png"), 
@@ -111,67 +113,13 @@ figure_maker <- function(gg, comp, Het, N) {
 
 
 g <- df %>%
-  filter(nsubjects==2000, site_het == F, sg == 0.5, ss ==0.25) %>%
+  filter(nsubjects==2000, site_het == F, 
+         sg == 0.5, ss ==0.25, se == 0.25,
+         nSNPs == 20000, theta_alleles == 0.1, prop_causal == 0.02) %>%
   Estimator_boxplot(x="Estimator", y= "Estimate", type= "Type" , Group = "Group", pattern = "nsites", comp= "EQUAL",
-                het =F, facet_col = "site_comp", facet_row = "nclusts", hlines=oneline)
-
-figure_maker(g, comp = "EQUAL", Het = F, N = 2000)
-
-
-
-# Filter settings for figure
-
-N = 2000
-nc = 1
-het = FALSE
-comp= "EQUAL"
-Het = ifelse(het, "Heteroskedastic", "Homoskedastic")
-Het2 = ifelse(het, "Het", "Homo")
-
-df %>%
-  # het filter
-  # filter(site_het == TRUE, nsubjects == 5000, nclusts == 5, nsites == 25)
-  # other filter
-  filter(site_het == het, 
-         nsubjects == N,
-         nclusts == nc, 
-         site_comp== comp,
-         ) %>%
-  mutate(nsites = droplevels(nsites)) %>%
-  unite("Group", c(nsites, Estimator, sg, ss), sep = "_", remove = F) %>%
-  ggplot(aes(x = Estimator, y = Estimate, fill = Type, group = Group, 
-             pattern= nsites
-             )) +
-  geom_boxplot() +
-  theme(axis.text.x = element_text(angle = 90)) +
-  geom_hline(data = hlines, aes(yintercept = h2)) +
-  xlab("") +
-  ylab(expression(paste("Heritability Estimate", (hat(h^{2}))))) +
-  guides(fill=guide_legend(title="Adjustment Type"),
-         #pattern = guide_legend(title = "# sites")
-         ) +
-  ylim(0, 1) +
-  # ggtitle("Single site, Homogeneous population, N=2000") +
-  ggtitle(paste(comp, "site composition,", Het, "error: \n",
-               "#clusters=", nc, "#N=", N
-  )) +
-  # Uncomment for multi panel
-  facet_grid(#rows = vars(ss), 
-             cols = vars(sg),
-             labeller = labeller(.rows = label_both, .cols = label_both))
+                het =F, facet_col = "nsites", facet_row = "nclusts", hlines=oneline)
+g
+figure_maker(g, Het = F, N = 2000)
 
 
 
-
-
-
-
-
-
-df %>%
-  ggplot(aes(x = Estimator, y = Estimate, )) +
-  geom_boxplot() +
-  facet_grid(rows = vars(!!as.name("sg"))) +
-  facet_grid(cols = vars(!!as.name("ss"))) +
-  {if(T) geom_hline(aes(yintercept = 0.4))}
-  

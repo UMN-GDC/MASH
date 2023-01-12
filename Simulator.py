@@ -13,13 +13,15 @@ Last Updated 2022-06-06
 
 import os
 #os.chdir("/home/christian/Research/Stat_gen/tools/Basu_herit")
-from functions.Data_input.sim_parser import get_args
+from functions.Data_input.sim_parser import get_args #, read_flags
 from run_sims import sim_experiment
 import itertools
+import json
 
 
 #%% Get command line arguments
 # Get CL arguments and convert them to usable Python objects in a dictionary
+#args= read_flags({"argfile" : "Simulations/Sim_params/Adding_sites_clusts.json"})
 args = get_args()
 print("Simulating with the following parameters:")
 print(args)
@@ -56,7 +58,7 @@ df = sim_experiment(nsubjectss = args["nsubjectss"],
 os.makedirs(os.path.dirname("Simulations/" + args["out"]+ ".csv"), exist_ok = True)
 
 # write to out
-df.dropna().to_csv("Simulations/" + args["out"] + ".csv", 
+df.dropna().to_csv(args["out"] + ".csv", 
           header=  True, index= False)
 
 
