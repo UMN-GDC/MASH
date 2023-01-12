@@ -1,0 +1,47 @@
+{
+    "nsubjectss": [
+        2000
+    ],
+    "sgs": [
+        0.5
+    ],
+    "sss": [
+        0.25
+    ],
+    "ses": [
+        0.25
+    ],
+    "site_comps": [
+        "IID"
+    ],
+    "nsites": [
+        25
+    ],
+    "theta_alleless": [
+        0.1
+    ],
+    "nclustss": [
+        5
+    ],
+    "dominances": [
+        3
+    ],
+    "prop_causals": [
+        0.02
+    ],
+    "site_deps": [
+        false
+    ],
+    "nnpcs": [
+        0
+    ],
+    "nSNPss": [
+        20000
+    ],
+    "phenss": [
+        2
+    ],
+    "reps": 10,
+    "all_ests": true,
+    "site_het": false
+}
