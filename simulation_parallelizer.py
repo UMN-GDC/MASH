@@ -91,11 +91,11 @@ def write_sim_json(nsubjectss = args["nsubjectss"],
     """
     for (nsubjects, sigma, site_comp, nsite,
          theta_alleles, nclusts, dominance, prop_causal,
-         site_dep, nnpc, nSNPs, phens,
+         site_dep, nSNPs, phens,
          __
          ) in itertools.product(nsubjectss, sigmas, site_comps, nsites,
                                 theta_alleless, nclustss, dominances, prop_causals,
-                                site_deps, nnpcs, nSNPss, phenss,
+                                site_deps, nSNPss, phenss,
                                 range(reps)) :
         # Write a separate json for each set of simulations in order to allow separate sbatches to be called in parallel
         data = {"nsubjectss": [nsubjects],
@@ -109,14 +109,14 @@ def write_sim_json(nsubjectss = args["nsubjectss"],
                 "dominances" : [dominance],
                 "prop_causals" : [prop_causal],
                 "site_deps" : [site_dep],
-                "nnpcs" :[nnpc],
+                "nnpcs" :nnpcs,
                 "nSNPss" : [nSNPs],
                 "phenss" : [phens],
                 "reps" : args["reps"],
                 "all_ests" : True,
                 "site_het" : False
                 } 
-        with open(f'Temp/{nsubjects}{sigma[0]}{sigma[1]}{sigma[2]}{site_comp}{nsite}{theta_alleles}{nclusts}{dominance}{prop_causal}{site_dep}{nnpc}{nSNPs}{phens}{__}.json', 'w') as fp:
+        with open(f'Temp/{nsubjects}{sigma[0]}{sigma[1]}{sigma[2]}{site_comp}{nsite}{theta_alleles}{nclusts}{dominance}{prop_causal}{site_dep}{nSNPs}{phens}{__}.json', 'w') as fp:
             json.dump(data, fp, indent = 4)
 
         
