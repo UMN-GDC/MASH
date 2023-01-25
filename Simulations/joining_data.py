@@ -23,4 +23,4 @@ for file in files:
         df = pd.read_csv(file)
         dfs.append(df)
         
-pd.concat(dfs, ignore_index=True).to_csv("Full_results.csv",index= False, header= True, sep = ",")
+pd.concat(dfs, ignore_index=True).to_csv("two_clusts.csv",index= False, header= True, sep = ",")
