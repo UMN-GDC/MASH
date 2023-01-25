@@ -12,7 +12,7 @@ import numpy as np
 
 #%%
 
-path = '/home/christian/Research/Stat_gen/tools/Basu_herit/Simulations/Results'  # or unix / linux / mac path
+path = 'Results'  # or unix / linux / mac path
 
 # Get the files from the path provided in the OP
 files = Path(path).glob('**/*.csv')  # .rglob to get subdirectories
