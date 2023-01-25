@@ -10,7 +10,7 @@
   "dominances" : [3],
   "prop_causals" : [0.02],
   "site_deps" : [false],
-  "nnpcs" :[2],
+  "nnpcs" :[1,2,3],
   "nSNPss" : [20000],
   "phenss" : [2],
   "reps" : 10,
