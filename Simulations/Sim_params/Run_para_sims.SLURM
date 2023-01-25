@@ -4,7 +4,7 @@
 #SBATCH --mem=8g
 #SBATCH --mail-type=ALL  
 #SBATCH --mail-user=coffm049@umn.edu
-#SBATCH --array=1-50 
+#SBATCH --array=1-40 
 
 
 
@@ -20,7 +20,7 @@ SIM=$(echo $sim_list | cut -d" " -f$SLURM_ARRAY_TASK_ID)
 
 
 # Run estimation
-python Simulator.py --argfile Simulations/Sim_params/Temp/${SIM} --out Simulations/Results/${SIM}_${SLURM_ARRAY_TASK_ID}
+python Simulator.py --argfile Simulations/Sim_params/Temp/${SIM} --out Simulations/Results/two_clusts_IID_${SIM}_${SLURM_ARRAY_TASK_ID}
 
 # remove that file
 rm Simulations/Sim_params/Temp/${SIM}
