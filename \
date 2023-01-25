@@ -65,7 +65,7 @@ def sim_n_est(nsubjects = 1000, sigma = [0.5,0.25, 0.25], site_comp = "IID", nsi
 
         # hard coded no npcs for the time being should fix!!!
         SWD = ests.estimate(Method = "SWD", npc = [nnpc], covars = cs, mpheno = ["Y"], RV = "abcd_site", Naive = False)["h2"][0]
-        Combat = ests.estimate(Method = "Combat", npc = [nnpc], covars = cs, mpheno = ["Y"], RV = "abcd_site", Naive = False)["h2"][0]
+        Combat = ests.estimate(Method = "Combat", npc = [0], covars = cs, mpheno = ["Y"], RV = "abcd_site", Naive = False)["h2"][0]
 
     else :
         nAdjHE = np.nan

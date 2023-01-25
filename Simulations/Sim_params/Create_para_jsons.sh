@@ -4,6 +4,6 @@ module load python3
 
 # Make json files for parallel simulations
 
-python ../../simulation_parallelizer.py --argfile two_IID_clusts.json 
+python ../../simulation_parallelizer.py --argfile two_5000.json 
 
 
