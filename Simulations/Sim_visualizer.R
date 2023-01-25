@@ -3,7 +3,7 @@ library(ggpattern)
 
 
 ########################### Load data
-df <- read_csv("/home/christian/Research/Stat_gen/tools/Basu_herit/Simulations/Full_results.csv") %>%
+df <- read_csv("/home/christian/Research/Stat_gen/tools/Basu_herit/Simulations/Full_results2.csv") %>%
   # Annotate Estimators with family
   mutate(Estimator = factor(Estimator, levels = c("GCTA", "nGCTA", "SWD", "Combat", "nAdjHE", "AdjHE", "AdjHE_RE")),
          Type = case_when(grepl("AdjHE", Estimator) ~ 'Single',

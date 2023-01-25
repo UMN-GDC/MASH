@@ -51,6 +51,8 @@ class pheno_simulator():
         self.df["abcd_site"] = Groups
         # Simulate site effects (will rescale to desired contribution later)
         Bs = np.matrix(np.random.normal(0,  1, nsites)).T
+        # Bs = np.matrix(np.repeat(1, nsites)).T
+        # Bs[
         # Make a dummy matrix
         Groups_dum = np.matrix(pd.get_dummies(self.df["abcd_site"]))
         self.df["Site_contrib"] = np.array(Groups_dum * Bs).flatten()

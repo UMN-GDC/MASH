@@ -251,6 +251,16 @@ class Basu_estimation():
                         # Get size
                         sub_n = sub_df.shape[0]
                         sub_GRM = self.GRM[self.df[RV] == site,:][:,self.df[RV] == site]
+                        # Find PC's individually for each site
+                        if nnpc != 0:
+                            pcs = pd.DataFrame(PCA(n_components=10).fit_transform(sub_GRM))
+                            pcs.columns = ["pc_" + str(col + 1) for col in pcs.columns]
+                            # Drop previous pcs
+                            sub_df = sub_df.loc[:,~sub_df.columns.str.startswith('pc_')]
+                        #Add site specific PC's
+                            sub_df = pd.concat([sub_df, pcs], axis=1)
+
+
 
                         # Estimate just on the supsample
                         sub_result = load_n_estimate(df=sub_df, covars=[],  nnpc=nnpc, mp=mp, GRM=sub_GRM, std=False, Method=Method, RV=None,

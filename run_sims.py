@@ -75,16 +75,15 @@ def sim_n_est(nsubjects = 1000, sigma = [0.5,0.25, 0.25], site_comp = "IID", nsi
         SWD = np.nan
         Combat = np.nan
         
-    result = [["GCTA", GCTA_est],
-              ["nGCTA", nGCTA],
-              ["nAdjHE", nAdjHE],
-              ["AdjHE", AdjHE],
-              ["SWD", SWD],
-              ["Combat", Combat],
-              ["AdjHE_RE", AdjHE_RE],
+    result = {"GCTA" : GCTA_est,
+              "nGCTA": nGCTA,
+              "nAdjHE": nAdjHE,
+              "AdjHE": AdjHE,
+              "SWD": SWD,
+              "Combat": Combat,
+              "AdjHE_RE" : AdjHE_RE,
               #["MOM_est",MOM_est]
-              ]
-    result= pd.DataFrame(result, columns = ["Estimator", "Estimate"])        
+              }
         
     # store simulation details
     result["sg"] = sigma[0]
@@ -101,6 +100,9 @@ def sim_n_est(nsubjects = 1000, sigma = [0.5,0.25, 0.25], site_comp = "IID", nsi
     result["dominance"] = dominance
     result["site_dep"] = site_dep
     result["site_het"] = site_het
+    
+    result= pd.DataFrame(result, index = [0])        
+
     return result
 
 #%%
@@ -149,21 +151,30 @@ def sim_experiment(nsubjectss = [1000], sigmas = [[0.5,0.25, 0.25]], site_comps 
 #         elif (sg ==0) and (ss == 0) :
 #             sigmas += [[sg, ss, se]]
 #%%  
-# N  = 1000
-# ns = 25
-# nc = 5
-# # #%%
-# df = sim_experiment(nsubjectss= [N], reps= 25, nsites=[ns], site_comps = ["EQUAL"], sigmas = sigmas, nnpcs = [5], nclustss=[nc],
-#                     all_ests = False)
+N  = 500
+ns = 25
+nc = 1
+sigmas = [[0.5,0.25,0.25]]
+# #%%
+df = sim_experiment(nsubjectss= [N], reps= 15, nsites=[ns], site_comps = ["EQUAL"], sigmas = sigmas, nnpcs = [nc], nclustss=[nc])
 # df.to_csv("Simulations/Sim_working_Combat1.csv", header=  True, index= False)
 
 # g = sns.FacetGrid(df, col="sg",  row="ss", sharey = False)
 # g.map(sns.boxplot, "Estimator", "Estimate")
 # 
-#%%
-# g = sns.boxplot(data = df, x= "Estimator", y="Estimate")
+
+g = sns.boxplot(data = df, x= "Estimator", y="Estimate")
 # g.axhline(0.5)
 # plt.xticks(rotation=45)
 # plt.title("N = " + str(N) + ", #sites= " + str(ns) + ", #clusts=" + str(nc))
 
 # df[["Estimator", "Estimate"]].groupby("Estimator").agg(['mean', 'std'])
+
+#%%
+test = sim_n_est(nsubjects = 100, sigma = [0.5,0.25, 0.25], site_comp = "IID", nsites = 2,
+              theta_alleles =0.5, nclusts =1, dominance=3, prop_causal=0.25, site_dep=False, nnpc = 1,
+              nSNPs=20, phens = 2, site_het = False)
+#%%
+test = sim_experiment(nsubjectss = [100], sigmas = [[0.5,0.25, 0.25]], site_comps = ["IID"], nsites = [2],
+              theta_alleless = [0.9], nclustss = [1], dominances= [3], prop_causals= [0.05], site_deps= [False], nnpcs = [1],
+              nSNPss= [200], phenss= [2], reps = 3, site_het = False)
