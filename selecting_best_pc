@@ -1,0 +1,49 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Wed Jan 25 11:13:49 2023
+
+@author: christian
+"""
+import os
+import numpy as np
+import pandas as pd
+import itertools
+import seaborn as sns
+os.chdir("Research/Stat_gen/tools/Basu_herit/Simulations")
+
+#%%
+
+df = pd.read_csv("clusters_1_2_5000.csv")
+df1 = np.array(df.query("nnpc == 1")[['GCTA', 'nGCTA', 'nAdjHE', 'AdjHE', 'SWD', 'Combat', 'AdjHE_RE']])
+df2 = np.array(df.query("nnpc == 2")[['GCTA', 'nGCTA', 'nAdjHE', 'AdjHE', 'SWD', 'Combat', 'AdjHE_RE']])
+df3 = np.array(df.query("nnpc == 3")[['GCTA', 'nGCTA', 'nAdjHE', 'AdjHE', 'SWD', 'Combat', 'AdjHE_RE']])
+
+#%%
+dfstack = np.stack([df1,df2,df3])
+
+diffmat = np.abs(dfstack - 0.66)
+
+#%%
+
+mins = np.argmin(diffmat, 0)
+
+#%%
+arr =[]
+for (i,j) in itertools.product(range(mins.shape[0]), range(mins.shape[1])) :
+    arr.append(dfstack[mins[i,j], i, j])
+    
+    
+#%%
+df1 = df.query("nnpc == 1")
+best_df = pd.DataFrame(np.array(arr).reshape(400, 7), columns = ['GCTA', 'nGCTA', 'nAdjHE', 'AdjHE', 'SWD', 'Combat', 'AdjHE_RE'])
+best_df = best_df.join(df1[["nclusts", "nsites", "sg", "ss", "se"]])
+best_df = pd.melt(best_df, id_vars= ["nsites", "nclusts", "sg", "ss", "se"])
+#%%
+sns.catplot(
+    data=best_df, x='variable', y='value',
+    col='nsites', row = "nclusts", kind='box'
+)
+
+
+best_df.to_csv("two_Clusts_5000_pc_fixed.csv", index= False, header = True)
