@@ -5,7 +5,7 @@ library(tidyverse)
 # AdjHE 1 pcs
 
 ########################### Load data
-df <- read_csv("/home/christian/Research/Stat_gen/tools/Basu_herit/Simulations/two_Clusts_5000_pc_fixed.csv") %>%
+df <- read_csv("/home/christian/Research/Stat_gen/tools/Basu_herit/Simulations/Het_5000_pc_fixed.csv") %>%
   rename(Estimator = variable, Estimate = value) %>%
   mutate(Estimator = factor(Estimator, levels = c("GCTA", "nGCTA", "SWD", "Combat", "nAdjHE", "AdjHE", "AdjHE_RE")),
          `Study Type` = case_when(grepl("AdjHE", Estimator) ~ 'Single',
@@ -34,7 +34,7 @@ df %>%
   ylab("") +
   xlab(expression(paste("Heritability Estimate", (hat(h^{2}))))) +
   xlim(0,1) +
-  ggtitle("Equal representation: Homoskedastic")
+  ggtitle("IID subpopulations: Heteroskedastic")
 
-ggsave("Adding_sites_n_clusts_homo.png", 
+ggsave("Adding_sites_n_clusts_het.png", 
        dpi= 600)

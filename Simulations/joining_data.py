@@ -12,7 +12,7 @@ import numpy as np
 
 #%%
 
-path = 'Results'  # or unix / linux / mac path
+path = 'Results/Het'  # or unix / linux / mac path
 
 # Get the files from the path provided in the OP
 files = Path(path).glob('**/*.csv')  # .rglob to get subdirectories
@@ -23,4 +23,4 @@ for file in files:
         df = pd.read_csv(file)
         dfs.append(df)
         
-pd.concat(dfs, ignore_index=True).to_csv("clusters_1_2_5000.csv",index= False, header= True, sep = ",")
+pd.concat(dfs, ignore_index=True).to_csv(path + "/Het_IID_5000.csv",index= False, header= True, sep = ",")
