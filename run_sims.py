@@ -151,17 +151,17 @@ def sim_experiment(nsubjectss = [1000], sigmas = [[0.5,0.25, 0.25]], site_comps 
 #         elif (sg ==0) and (ss == 0) :
 #             sigmas += [[sg, ss, se]]
 #%%  
-#N  = 500
-#ns = 25
-#nc = 1
-#sigmas = [[0.5,0.25,0.25]]
+# N  = 500
+# ns = 2
+# nc = 1
+# sigmas = [[0.5,0.25,0.25]]
 # #%%
-#df = sim_experiment(nsubjectss= [N], reps= 15, nsites=[ns], site_comps = ["EQUAL"], sigmas = sigmas, nnpcs = [nc], nclustss=[nc])
-# df.to_csv("Simulations/Sim_working_Combat1.csv", header=  True, index= False)
+# df = sim_experiment(nsubjectss= [N], reps= 15, nsites=[ns], site_comps = ["EQUAL"], sigmas = sigmas, nnpcs = [nc], nclustss=[nc])
+# # df.to_csv("Simulations/Sim_working_Combat1.csv", header=  True, index= False)
 
 # g = sns.FacetGrid(df, col="sg",  row="ss", sharey = False)
 # g.map(sns.boxplot, "Estimator", "Estimate")
-# 
+# # 
 
 #g = sns.boxplot(data = df, x= "Estimator", y="Estimate")
 # g.axhline(0.5)
@@ -169,4 +169,3 @@ def sim_experiment(nsubjectss = [1000], sigmas = [[0.5,0.25, 0.25]], site_comps 
 # plt.title("N = " + str(N) + ", #sites= " + str(ns) + ", #clusts=" + str(nc))
 
 # df[["Estimator", "Estimate"]].groupby("Estimator").agg(['mean', 'std'])
-

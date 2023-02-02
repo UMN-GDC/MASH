@@ -5,7 +5,8 @@ Created on Tue Nov  8 03:22:59 2022
 
 @author: christian
 """
-
+import timeit
+import resource
 import numpy as np
 import pandas as pd
 import statsmodels.formula.api as smf
@@ -14,8 +15,7 @@ from sklearn.decomposition import PCA
 import matplotlib.pyplot as plt
 import seaborn as sns
 from functions.Data_input.load_data import load_everything
-from functions.Estimation.AdjHE_estimator import load_n_AdjHE
-from functions.Estimation.AdjHE_estimator import load_n_MOM
+from functions.Estimation.AdjHE_estimator import AdjHE_estimator #, load_n_MOM
 from functions.Estimation.PredLMM_estimator import load_n_PredLMM
 from functions.Estimation.Estimate_helpers import create_formula
 from functions.Estimation.GCTA_wrapper import gcta, GCTA
@@ -23,47 +23,6 @@ from functions.Estimation.combat import neuroCombat
 
 
 # %%
-
-def AdjHE2(A,npc, y,trA=None,trA2=None):
-#    y = y - np.mean(y)
-    y = np.array(y)
-    y = y.reshape(len(y), 1)
-    if (trA is None) and (trA2 is None):
-        trA = np.sum(np.diag(A))
-        trA2 = np.sum(np.multiply(A,A))
-    n = A.shape[1]
-    yay = np.dot(y.T,np.dot(A,y))
-    yty = np.dot(y.T,y)
-    tn = np.sum(y)**2/n # all 1s PC
-    if (npc==0):
-        sigg = n*yay - trA*yty
-        sigg = sigg-yay+tn*trA # add 1's
-        sige = trA2*yty - trA*yay
-        sige = sige-tn*trA2 # add 1's
-        denominator = trA2 - 2*trA + n
-    else:
-        pc = PCA(n_components = npc).fit_transform(A)
-        pcA = np.dot(pc.T,A)
-        pcApc = np.dot(pcA,pc)
-        s = np.diag(pcApc) #pciApci
-        b = s-1
-        t = np.dot(y.T,pc)**2 #ypcipciy
-        a11 = trA2 - np.sum(s**2) 
-        a12 = trA - np.sum(s)
-        b1 = yay - np.sum(s*t)
-        b2 = yty - np.sum(t)
-        sigg = (n-npc)*b1 - a12*b2
-        sigg = sigg-yay+tn*a12 # add 1's
-        sige = a11*b2 - a12*b1
-        sige = sige-tn*a11 # add 1's
-#        c = (n-npc-1)*a11 - a12**2
-        denominator = trA2 - 2*trA + n - np.sum(b**2)
-    # h2 = sigg/(sigg+sige)
-    var_ge = 2/denominator
-    results = {"sg" : sigg[0,0], "ss": 0, "se" : sige[0,0], "var(sg)" : var_ge}
-    print(results)
-    return results
-
 
 def load_n_estimate(df, covars, nnpc, mp, GRM, std=False, Method="AdjHE", RV=None, silent=False, homo=True, gcta=gcta):
     """
@@ -126,11 +85,11 @@ def load_n_estimate(df, covars, nnpc, mp, GRM, std=False, Method="AdjHE", RV=Non
         print(temp.columns.tolist())
     # Select method of estimation
     if Method == "AdjHE":
-        result = load_n_AdjHE(temp, covars, nnpc, mp,
-                              GRM_nonmissing, std=False, RV=RV, homo=homo)
-    elif Method == "MOM":
-        result = load_n_MOM(temp, covars, nnpc, mp,
-                            GRM_nonmissing, std=False, RV=RV)
+        result = AdjHE_estimator(A = GRM_nonmissing, df=temp, mp = mp, RV = RV, npc= nnpc, std=std)
+
+    # elif Method == "MOM":
+    #     result = load_n_MOM(temp, covars, nnpc, mp,
+    #                         GRM_nonmissing, std=False, RV=RV)
     elif Method == "PredlMM":
         result = load_n_PredLMM(temp, covars, nnpc, mp,
                                 GRM_nonmissing, std=False, RV=RV)
@@ -144,8 +103,8 @@ def load_n_estimate(df, covars, nnpc, mp, GRM, std=False, Method="AdjHE", RV=Non
         # Subtract sitewise means from Y
         temp[mp] = temp[mp] - means[mp]
         # temp = temp.reset_index(drop = True)
-        result = load_n_AdjHE(temp, [], nnpc, mp,
-                              GRM_nonmissing, std=False, RV=None)
+        
+        result = AdjHE_estimator(A = GRM_nonmissing, df = temp, mp = mp, RV = None, npc=nnpc, std=False)
     # Else use the Combat method
     elif Method == "Combat":
         # Format data for Harmonization tool
@@ -160,20 +119,13 @@ def load_n_estimate(df, covars, nnpc, mp, GRM, std=False, Method="AdjHE", RV=Non
 
         # Grab the first column of the harmonized data
         temp[mp] = data_combat[0, :].T
-        result = load_n_AdjHE(temp, [], nnpc, mp,
-                              GRM_nonmissing, std=False, RV=None)
-    elif Method == "AdjHE2" :
-        r = AdjHE2(GRM_nonmissing, nnpc, temp["Y"], trA=None,trA2=None)
-        result = pd.DataFrame({"h2" : r["sg"] / (r["sg"] + r["se"]),
-                  "SE" : np.sqrt(r["var(sg)"]),
-                  "Pheno" : mp,
-                  "PCs" : nnpc,
-                  "Covariates" : "+".join(covars),
-                  "Time for analysis(s)" : np.nan,
-                  "Memory Usage" : np.nan}, index = [0])
+        result = AdjHE_estimator(A = GRM_nonmissing, df = temp, mp = mp, RV = None, npc=nnpc, std=False)
+
 
     else:
         print("Not an accepted method")
+        
+    
 
     return pd.DataFrame(result, index=[0])
 
@@ -195,6 +147,9 @@ class Basu_estimation():
             self.simulation = False
 
     def estimate(self, npc, mpheno="all", Method=None, RV=None, Naive=False, covars=None, homo=True, loop_covars=False):
+        
+        start_est = timeit.default_timer()
+        
         # Create list of covariate sets to regress over
         if (covars == None) or (covars == []):
             cov_combos = [[]]
@@ -235,13 +190,19 @@ class Basu_estimation():
 
             # loop over all combinations of pcs and phenotypes
             for mp, nnpc in itertools.product(self.mpheno, npc):
+                
+                start_est = timeit.default_timer()
+                r = {"Pheno": mp, 
+                          "PCs" : nnpc,
+                          "Covariates" : "+".join(covars)}
+
                 if not Naive:
                     r = load_n_estimate(
                         df=self.df, covars=covs, nnpc=nnpc, mp=mp, GRM=self.GRM, std=False, Method=Method, RV=RV, homo=homo)
 
                 else:
                     # Empty results list
-                    sub_results = pd.DataFrame({"Estimate": [],
+                    sub_results = pd.DataFrame({"h2": [],
                                                 "Size": []})
 
                     # loop over  all sites
@@ -265,7 +226,7 @@ class Basu_estimation():
                         # Estimate just on the supsample
                         sub_result = load_n_estimate(df=sub_df, covars=[],  nnpc=nnpc, mp=mp, GRM=sub_GRM, std=False, Method=Method, RV=None,
                                                      silent=True, homo=homo)
-                        sub_result = pd.DataFrame({"Estimate": [sub_result["h2"][0]],
+                        sub_result = pd.DataFrame({"h2": [sub_result["h2"][0]],
                                                    "Size": [sub_n]})
                         # Add to the list of estimates
                         sub_results = sub_results.append(
@@ -273,12 +234,21 @@ class Basu_estimation():
 
                     # Pool the estimates
                     sub_results["nh2"] = (
-                        sub_results["Size"] * sub_results["Estimate"]) / self.GRM.shape[0]
-                    r = np.sum(sub_results["nh2"])
-                    r = {"h2": r, "ss": 0, "se": 0, "var(sg)": 0}
+                        sub_results["Size"] * sub_results["h2"]) / self.GRM.shape[0]
+                    h2 = np.sum(sub_results["nh2"])
+                    r["h2"] = h2
+                    r["ss"] = np.nan
+                    r["var(h2)"] =  np.var(sub_results["h2"])
                     r = pd.DataFrame(r, index=[0])
 
                 # Store each result
+                results["h2"] = r["h2"]
+                results["ss"] = r["ss"]
+                results["var(h2)"] = r["var(h2)"]
+                results["Analysis time"] = timeit.default_timer() - start_est
+                # Get memory for each step (in Mb) (This is a little sketchy)
+                results["mem"] = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss/1000
+
                 results = pd.concat([results, r], ignore_index=True)
 
         self.results = results

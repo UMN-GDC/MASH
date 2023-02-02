@@ -1,0 +1,107 @@
+\documentclass{article}
+\usepackage{tikz}
+\usepackage{amsmath,amssymb}
+
+\usetikzlibrary{shapes.geometric, arrows}
+\usetikzlibrary{shapes}
+\usetikzlibrary{positioning}
+
+\tikzstyle{dnode} = [rectangle split,
+rectangle split parts=3,
+rounded corners, 
+minimum width=3cm, 
+minimum height=1cm,
+text centered, 
+draw=black]
+
+\tikzstyle{arrow} = [thick,-,>=stealth]
+
+\begin{document}
+
+\begin{tikzpicture}[]
+
+\node (anc_freq) [dnode, fill = red!30] {
+  Ancestral frequencies
+  \nodepart{second}
+  $p \sim Uni(0.1, 0.9 $)
+  \nodepart{third}
+  nSNPs
+};
+  
+\node (sub_freq) [dnode, fill = red!30, below=  of anc_freq] {
+  Subpopulation frequencies
+  \nodepart{second}
+  for ancestry $a, p_a \sim f_g(\theta, p)$
+  \nodepart{third}
+  $\theta, f_g, n_a$, 
+};
+
+
+
+\node (site_comps) [dnode, fill = blue!30, right = of sub_freq] {
+	Site compositions
+	\nodepart{second}
+	for site s, $c_s \sim f_c$
+	\nodepart{third}
+	$f_c$, \# sites
+};         
+
+\node (site_eff) [dnode, fill = blue!30, right = of site_comps] {
+	Site effects
+	\nodepart{second}
+	$\beta_{s} \sim N(0,\sigma_S^2)$
+	\nodepart{third}
+	$\sigma_S^2$
+};           
+
+\node (site_anc_assign) [dnode, fill = yellow!30, below = of site_comps] {
+	Site/Ancestral assign
+	\nodepart{second}
+	$X_{si} \sim Uni(1/n_s)$
+	\nodepart{third}
+	$X_{ai} \sim f(c_s|s=X_{si})$
+};           
+
+\node (gene_assign) [dnode, fill = yellow!30, below left = of site_anc_assign] {
+	Gene assignment
+	\nodepart{second}
+	$X_{gi} \sim f_g(p_a | a = X_{ai})$
+	\nodepart{third}
+};        
+
+\node (gene_eff) [dnode, fill = green!30, below = of gene_assign] {
+	SNP effects
+	\nodepart{second}
+	$\beta_{G} \sim p_{causal}N(0, \sigma_G^2)$
+	\nodepart{third}
+	$p_{causal}, \sigma_G^2$
+};           
+
+\node (pheno) [dnode, fill = green!30, right = of gene_eff] {
+	Phenotype
+	\nodepart{second}
+	$Y_i = X_{gi}\beta_G + X_{si}\beta_S + \epsilon_i$
+	\nodepart{third}
+};           
+
+   
+\draw [arrow] (anc_freq) -- (sub_freq) -- (gene_assign);
+\draw [arrow] (gene_eff) -- (pheno);
+\draw [arrow] (site_comps) -- (site_anc_assign) ;
+\draw [arrow] (site_eff) -- (site_anc_assign) -- (gene_assign) ;
+\draw [arrow] (site_eff) -- (pheno) ;
+\draw [arrow] (site_anc_assign) -- (pheno) ;
+\draw [arrow] (gene_assign) -- (pheno) ;
+
+
+
+           
+\end{tikzpicture}
+
+
+
+\begin{tikzpicture}
+
+\end{tikzpicture}
+
+\end{document}

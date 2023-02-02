@@ -5,51 +5,6 @@ library(rsvg)
 
 
 
-# Code base (Black).
-# Interfaces (Orange outline)
-# Visualizers (Purple outline)
-# Markdown-formatters (Blue outline)
-
-# Basic diagram
-
-grViz("
- digraph dot {
- 
-Idea -> Execute -> Profit
- }
-", engine = "dot")
-
-# Saving simple graph
-graph_to_save <- grViz("
- digraph dot {
- 
-Idea -> Execute -> Profit
- }
-", engine = "dot")
-
-graph_to_save %>% export_svg %>% charToRaw %>% rsvg_png("Research/Stat_gen/tools/Basu_herit/docs/Simulation_diagram.png")
-
-
-
-
-# More complex graph
-grViz("
- digraph dot {
- 
-Idea[label = 'Have a \n good idea', shape = black]
-Exceute[label= 'Execute well', shape = circle, color = blue]
-profit[label=  'Make money', color = green]
-something[label= 'something else']
-
-something, Idea -> Exceute -> profit, something
-
-
-
- }
-", engine = "dot")
-
-
-
 
 
 grViz("
@@ -83,10 +38,10 @@ grViz("
 
 
 
-simulation <- grViz("
+grViz("
  digraph dot {
  node[shape = rectangle, color = blue]
-Ancest[label = 'Common ancestral \n prototype']
+Ancest[label = 'Common ancestral \n prototype \n X@_{i} U+007E Uni(0.1, 0.9)']
 Subpops[label = 'Subpopulation \n prototypes']
 Genes[label='Subjects \n genotypes']
 
