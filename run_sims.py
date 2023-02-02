@@ -33,10 +33,11 @@ rng = np.random.default_rng()
 
 def sim_n_est(nsubjects = 1000, sigma = [0.5,0.25, 0.25], site_comp = "IID", nsites = 30,
               theta_alleles =0.5, nclusts =1, dominance=3, prop_causal=0.25, site_dep=False, nnpc = 1,
-              nSNPs=20, phens = 2, site_het = False) :
+              nSNPs=20, phens = 2, site_het = False, races_differ = False) :
     sim = pheno_simulator(nsubjects= nsubjects, nSNPs = nSNPs)
     # Run through full simulation and estimation
-    sim.full_sim(nsites= nsites, sigma= sigma, phens = phens, nclusts = nclusts)
+    sim.full_sim(nsites= nsites, sigma= sigma, phens = phens, nclusts = nclusts, races_differ = races_differ,
+                 prop_causal = prop_causal)
 
     ests = Basu_estimation()
     ests.df= sim.df
@@ -151,12 +152,12 @@ def sim_experiment(nsubjectss = [1000], sigmas = [[0.5,0.25, 0.25]], site_comps 
 #         elif (sg ==0) and (ss == 0) :
 #             sigmas += [[sg, ss, se]]
 #%%  
-# N  = 500
-# ns = 2
-# nc = 1
-# sigmas = [[0.5,0.25,0.25]]
-# #%%
-# df = sim_experiment(nsubjectss= [N], reps= 15, nsites=[ns], site_comps = ["EQUAL"], sigmas = sigmas, nnpcs = [nc], nclustss=[nc])
+N  = 500
+ns = 2
+nc = 1
+sigmas = [[0.5,0.25,0.25]]
+#%%
+df = sim_experiment(nsubjectss= [N], reps= 15, nsites=[ns], site_comps = ["EQUAL"], sigmas = sigmas, nnpcs = [nc], nclustss=[nc])
 # # df.to_csv("Simulations/Sim_working_Combat1.csv", header=  True, index= False)
 
 # g = sns.FacetGrid(df, col="sg",  row="ss", sharey = False)

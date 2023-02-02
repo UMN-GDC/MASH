@@ -118,18 +118,44 @@ class pheno_simulator():
         # Checked samples came from ancester with the following
         # plt.scatter(sim1.ancest_freqs, sim1.pop_freqs.mean(axis = 0))
 
-    def sim_genos(self):
+    def sim_genos(self, races_differ = False, prop_causal=0.1):
+        self.races_differ = races_differ
+        self.prop_causal = prop_causal
         if self.nclusts == 1:
             # simulate genotypes
             genotypes = rng.binomial(n=np.repeat(2, self.nSNPs), p=self.pop_freqs[0],
                                      size=(self.nsubjects, self.nSNPs))
-        else:
+        elif races_differ:
             # simulate genotypes
             genotypes = rng.binomial(n=np.repeat(2, self.nSNPs), p=self.pop_freqs[self.df["subj_ancestries"]],
                                      size=(self.nsubjects, self.nSNPs))
+            
+        elif not races_differ: 
+            anc_region = range(int(self.nSNPs *(1-self.prop_causal)))
+            causal_region = range(max(anc_region)+1, self.nSNPs)
+            anc_geno = rng.binomial(n=np.repeat(2, len(anc_region)),
+                                     p=self.pop_freqs[self.df["subj_ancestries"]][:,anc_region],
+                                     size=(self.nsubjects, len(anc_region)))
+            causal_geno = rng.binomial(n=np.repeat(2, len(causal_region)),
+                                     p=self.ancest_freqs[causal_region],
+                                     size=(self.nsubjects, len(causal_region)))
+            genotypes= np.concatenate((anc_geno, causal_geno), axis = 1)
+        self.pre_genos = genotypes
         # keep SNPs with MAF greater than 0.05
         maf_filter = np.logical_and((np.sum(genotypes, axis=0) / (2 * self.nsubjects)) > 0.05,
                                     (np.sum(genotypes, axis=0) / (2 * self.nsubjects)) < 0.95)
+        
+        if not races_differ :
+            anc_region = range(int(self.nSNPs *(1-self.prop_causal)))
+            causal_region = range(max(anc_region)+1, self.nSNPs)
+
+            anc_regionsize = sum(maf_filter[anc_region])
+            causal_regionsize = sum(maf_filter[causal_region])
+            self.causal_snps = [False for i in range(anc_regionsize)]
+            self.causal_snps += [True for i in range(causal_regionsize)]
+
+
+        
         self.genotypes = genotypes[:,  maf_filter]
 
         # get new number of SNPs
@@ -146,15 +172,20 @@ class pheno_simulator():
         pcs.columns = ["pc_" + str(col + 1) for col in pcs.columns]
         # add the pcs to the dataframe
         self.df = pd.concat([self.df, pcs], axis=1)
+        self.maf_filter = maf_filter
 
 
-    def sim_gen_effects(self, prop_causal=0.1, site_dep=False):
-        nCausal = int(self.nSNPs * prop_causal)
+    def sim_gen_effects(self, site_dep=False):
+        nCausal = int(self.nSNPs * self.prop_causal)
         # select causal snos
         causals = rng.choice(self.nSNPs, nCausal, replace=False, shuffle=False)
 
         # Select just causal genes
-        Xcausal = np.matrix(self.genotypes[:, causals])
+        if not self.races_differ :
+            Xcausal = np.matrix(self.genotypes[:, self.causal_snps])
+            nCausal = len(self.causal_snps)
+        elif self.races_differ :
+            Xcausal = np.matrix(self.genotypes[:, causals])
 
         if site_dep:
             Gene_contrib = np.zeros((self.nsubjects, ))
@@ -171,7 +202,7 @@ class pheno_simulator():
 
         else:
             # sim effect from each SNP (Sample from N(0,1), later rescale to get desired variance contributions)
-            causal_eff = rng.normal(0, 1, (nCausal, 1))
+            causal_eff = rng.normal(0, 1, (Xcausal.shape[1], 1))
             Gene_contrib = np.array(Xcausal * causal_eff).flatten()
 
         # genetic contribution
@@ -243,14 +274,22 @@ class pheno_simulator():
     def full_sim(self, sigma, site_comp="IID",
                         nsites=30, theta_alleles=0.5, nclusts=5, dominance=5,
                         prop_causal=0.25, site_dep=False, nsubjects=1000,
-                        nnpc=0, phens = 2, site_het = False):
+                        nnpc=0, phens = 2, site_het = False, races_differ=False):
         # Run through full simulation and estimation
         self.sim_sites(nsites= nsites, eq_sites=False)
-        self.sim_pops(theta_alleles=0.5, nclusts=nclusts, site_comp= site_comp, dominance=2)
-        self.sim_genos()
-        self.sim_gen_effects(prop_causal=prop_causal, site_dep= site_dep)
+        self.sim_pops(theta_alleles=theta_alleles, nclusts=nclusts, site_comp= site_comp, dominance=dominance)
+        self.sim_genos(races_differ = races_differ, prop_causal=prop_causal)
+        self.sim_gen_effects(site_dep= site_dep)
         
         for i in range(phens) :
             self.sim_pheno(var_comps=sigma, phen = i, site_het = site_het)
 
-        
+#%%
+
+# sim = pheno_simulator(nsubjects= 50, nSNPs = 100)
+# sim.sim_sites()
+# sim.sim_pops(nclusts = 5)
+# sim.sim_genos(races_differ = False, prop_causal=0.1)
+# sim.sim_gen_effects(site_dep= False)
+
+
