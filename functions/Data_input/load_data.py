@@ -126,7 +126,7 @@ def load_everything(prefix, pheno_file, cov_file=None, PC_file=None, k=0, ids = 
     read_time = end_read - start_read
     
     print("It took " + str(read_time) + " (s) to read GRM, covariates, and phenotypes")
-    print("Phenos + Covars:", df.columns)
+    print("Phenos + Covars:", df.columns.tolist())
    
     # Get the phenotype names
     phenotypes = pd.read_table(pheno_file, sep = "\s+", header = 0, nrows= 0).columns.tolist()

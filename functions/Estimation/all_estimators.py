@@ -14,6 +14,7 @@ import itertools
 from sklearn.decomposition import PCA
 import matplotlib.pyplot as plt
 import seaborn as sns
+from tqdm.auto import tqdm
 from functions.Data_input.load_data import load_everything
 from functions.Estimation.AdjHE_estimator import AdjHE_estimator #, load_n_MOM
 from functions.Estimation.PredLMM_estimator import load_n_PredLMM
@@ -61,9 +62,6 @@ def load_n_estimate(df, covars, nnpc, mp, GRM, std=False, Method="AdjHE", RV=Non
         - time for analysis
         - maximum memory usage
     """
-    if not silent:
-        print(Method + " Estimation...")
-        print(df.columns.tolist())
 
     # Remove missingness for in-house estimators
     if Method != "GCTA":
@@ -82,7 +80,6 @@ def load_n_estimate(df, covars, nnpc, mp, GRM, std=False, Method="AdjHE", RV=Non
         # keep portion of GRM without missingess for the phenotypes or covariates
         nonmissing = ids[ids.IID.isin(temp.IID)].index
         GRM_nonmissing = GRM[nonmissing, :][:, nonmissing]
-        print(temp.columns.tolist())
     # Select method of estimation
     if Method == "AdjHE":
         result = AdjHE_estimator(A = GRM_nonmissing, df=temp, mp = mp, RV = RV, npc= nnpc, std=std)
@@ -185,16 +182,21 @@ class Basu_estimation():
             npc = [0]
 
         # Loop over each set of covariate combos
-        for covs in cov_combos:
+        for covs in tqdm(cov_combos, desc = "Covariate sets"):
             # For each set of covariates recalculate the projection matrix
 
             # loop over all combinations of pcs and phenotypes
-            for mp, nnpc in itertools.product(self.mpheno, npc):
+            for mp, nnpc in tqdm(itertools.product(self.mpheno, npc), desc = "Phenotype, PC combination counter"):
                 
                 start_est = timeit.default_timer()
+                try: 
+                    C = "+".join(covars)
+                except TypeError :
+                    C = "None"
+                    
                 r = {"Pheno": mp, 
                           "PCs" : nnpc,
-                          "Covariates" : "+".join(covars)}
+                          "Covariates" : C}
 
                 if not Naive:
                     r = load_n_estimate(
@@ -214,7 +216,7 @@ class Basu_estimation():
                         sub_GRM = self.GRM[self.df[RV] == site,:][:,self.df[RV] == site]
                         # Find PC's individually for each site
                         if nnpc != 0:
-                            pcs = pd.DataFrame(PCA(n_components=10).fit_transform(sub_GRM))
+                            pcs = pd.DataFrame(PCA(n_components=10).fit_transform(np.asarray(sub_GRM)))
                             pcs.columns = ["pc_" + str(col + 1) for col in pcs.columns]
                             # Drop previous pcs
                             sub_df = sub_df.loc[:,~sub_df.columns.str.startswith('pc_')]

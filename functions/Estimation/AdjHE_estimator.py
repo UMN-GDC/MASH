@@ -97,6 +97,8 @@ def AdjHE_estimator(A, df, mp, RV = None, npc=0, std=False):
         
         h2 = sigmas[0] / (sigmas[0] + sigmas[1])
         ss = 0
+        # var_h2 = 2 * (sigmas[1]**2 * trA2 - 2*sigmas[0]*sigmas[1] * trA  + sigmas[0] **2 * n) / (sigmas[0] + sigmas[1])
+
         
     elif isinstance(RV, str) :
         df = df.reset_index().drop("index", axis = 1)
@@ -163,7 +165,8 @@ def AdjHE_estimator(A, df, mp, RV = None, npc=0, std=False):
         ss = sigmas[1,0]
         
         h2 = sigmas[0,0] / (sigmas[0,0] + sigmas[2,0])
-        
+        # var_h2 = 2 * (sigmas[2,0]**2 * trA2 - 2*sigmas[0,0]*sigmas[2,0] * trA  + sigmas[0,0] **2 * n) / (sigmas[0,0] + sigmas[2,0])
+
         
     # Calculate variance of estimate
     var_h2 = 2/ ( trA2 - 2*trA + n - np.sum(Sjs**2))

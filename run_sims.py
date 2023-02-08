@@ -33,11 +33,11 @@ rng = np.random.default_rng()
 
 def sim_n_est(nsubjects = 1000, sigma = [0.5,0.25, 0.25], site_comp = "IID", nsites = 30,
               theta_alleles =0.5, nclusts =1, dominance=3, prop_causal=0.25, site_dep=False, nnpc = 1,
-              nSNPs=20, phens = 2, site_het = False, races_differ = False) :
+              nSNPs=20, phens = 2, site_het = False, races_differ = False, cov_effect = True) :
     sim = pheno_simulator(nsubjects= nsubjects, nSNPs = nSNPs)
     # Run through full simulation and estimation
     sim.full_sim(nsites= nsites, sigma= sigma, phens = phens, nclusts = nclusts, races_differ = races_differ,
-                 prop_causal = prop_causal)
+                 prop_causal = prop_causal, cov_effect = cov_effect)
 
     ests = Basu_estimation()
     ests.df= sim.df
@@ -45,44 +45,68 @@ def sim_n_est(nsubjects = 1000, sigma = [0.5,0.25, 0.25], site_comp = "IID", nsi
     ests.mpheno = ["Y"] 
     
     # Cretae covariates for sites if necessary    
+    if cov_effect :
+        cs = ["Xc"]
     if nsites > 1:
-        cs = ["abcd_site"]
-    else :
-        cs = None
+        cs += ["abcd_site"]
+
+    try :
+        cs 
+    except NameError : 
+        cs = []
         
     # Estimate always
-    AdjHE = ests.estimate(Method = "AdjHE", npc = [nnpc], covars = cs, mpheno = ["Y"], Naive = False)["h2"][0]
-    GCTA_est = ests.estimate(Method = "GCTA", npc = [nnpc], covars = cs, mpheno = ["Y"], Naive = False)["h2"][0]
+    AdjHE = ests.estimate(Method = "AdjHE", npc = [nnpc], covars = cs, mpheno = ["Y"], Naive = False)
+    GCTA_est = ests.estimate(Method = "GCTA", npc = [nnpc], covars = cs, mpheno = ["Y"], Naive = False)
     
     # Estimate when greater than one site
     if nsites > 1 :
-        nAdjHE = ests.estimate(Method = "AdjHE", npc = [nnpc], covars = cs, mpheno = ["Y"], RV = "abcd_site", Naive = True)["h2"][0]
-        AdjHE_RE = ests.estimate(Method = "AdjHE", npc = [nnpc], covars = cs, mpheno = ["Y"], RV = "abcd_site", Naive = False)["h2"][0]
+        nAdjHE = ests.estimate(Method = "AdjHE", npc = [nnpc], covars = cs, mpheno = ["Y"], RV = "abcd_site", Naive = True)
+        AdjHE_RE = ests.estimate(Method = "AdjHE", npc = [nnpc], covars = cs, mpheno = ["Y"], RV = "abcd_site", Naive = False)
         try :
-            nGCTA = ests.estimate(Method = "GCTA", npc = [nnpc], covars = cs, mpheno = ["Y"], RV = "abcd_site", Naive = True)["h2"][0]
+            nGCTA = ests.estimate(Method = "GCTA", npc = [nnpc], covars = cs, mpheno = ["Y"], RV = "abcd_site", Naive = True)
         except FileNotFoundError :
             print("No estimate since sample size too small for GCTA")
             nGCTA = np.nan
 
         # hard coded no npcs for the time being should fix!!!
-        SWD = ests.estimate(Method = "SWD", npc = [nnpc], covars = cs, mpheno = ["Y"], RV = "abcd_site", Naive = False)["h2"][0]
-        Combat = ests.estimate(Method = "Combat", npc = [nnpc], covars = cs, mpheno = ["Y"], RV = "abcd_site", Naive = False)["h2"][0]
+        SWD = ests.estimate(Method = "SWD", npc = [nnpc], covars = cs, mpheno = ["Y"], RV = "abcd_site", Naive = False)
+        Combat = ests.estimate(Method = "Combat", npc = [nnpc], covars = cs, mpheno = ["Y"], RV = "abcd_site", Naive = False)
 
     else :
-        nAdjHE = np.nan
-        AdjHE_RE = np.nan
-        nGCTA = np.nan
-        GCTA = np.nan
-        SWD = np.nan
-        Combat = np.nan
+        nAdjHE = pd.DataFrame({"h2" : np.nan, "var(h2)" : np.nan, "Analysis time" : np.nan}, index = [0])
+        AdjHE_RE = pd.DataFrame({"h2" : np.nan, "var(h2)" : np.nan, "Analysis time" : np.nan}, index = [0])
+        nGCTA = pd.DataFrame({"h2" : np.nan, "var(h2)" : np.nan, "Analysis time" : np.nan}, index = [0])
+        SWD = pd.DataFrame({"h2" : np.nan, "var(h2)" : np.nan, "Analysis time" : np.nan}, index = [0])
+        Combat = pd.DataFrame({"h2" : np.nan, "var(h2)" : np.nan, "Analysis time" : np.nan}, index = [0])
         
-    result = {"GCTA" : GCTA_est,
-              "nGCTA": nGCTA,
-              "nAdjHE": nAdjHE,
-              "AdjHE": AdjHE,
-              "SWD": SWD,
-              "Combat": Combat,
-              "AdjHE_RE" : AdjHE_RE,
+    result = {"GCTA" : GCTA_est["h2"][0],
+              "var_GCTA" : GCTA_est["var(h2)"][0],
+              "time_GCTA" : GCTA_est["Analysis time"][0],
+              
+              "nGCTA": nGCTA["h2"][0],
+              "var_nGCTA" : nGCTA["var(h2)"][0],
+              "time_nGCTA" : nGCTA["Analysis time"][0],
+
+              "nAdjHE": nAdjHE["h2"][0],
+              "var_nAdjHE" : nAdjHE["var(h2)"][0],
+              "time_nAdjHE" : nAdjHE["Analysis time"][0],
+
+              "AdjHE": AdjHE["h2"][0],
+              "var_AdjHE" : AdjHE["var(h2)"][0],
+              "time_AdjHE" : AdjHE["Analysis time"][0],
+
+              "SWD": SWD["h2"][0],
+              "var_SWD" : SWD["var(h2)"][0],
+              "time_SWD" : SWD["Analysis time"][0],
+
+              "Combat": Combat["h2"][0],
+              "var_Combat" : Combat["var(h2)"][0],
+              "time_Combat" : Combat["Analysis time"][0],
+
+              "AdjHE_RE" : AdjHE_RE["h2"][0],
+              "var_AdjHE_RE" : AdjHE_RE["var(h2)"][0],
+              "time_AdjHE_RE" : AdjHE_RE["Analysis time"][0],
               #["MOM_est",MOM_est]
               }
         
