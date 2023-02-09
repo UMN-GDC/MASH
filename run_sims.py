@@ -14,6 +14,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 import itertools
+from tqdm.auto import tqdm
 from functions.simulation_helpers.Sim_generator import pheno_simulator
 from functions.Estimation.all_estimators import Basu_estimation
 
@@ -33,11 +34,12 @@ rng = np.random.default_rng()
 
 def sim_n_est(nsubjects = 1000, sigma = [0.5,0.25, 0.25], site_comp = "IID", nsites = 30,
               theta_alleles =0.5, nclusts =1, dominance=3, prop_causal=0.25, site_dep=False, nnpc = 1,
-              nSNPs=20, phens = 2, site_het = False, races_differ = False, cov_effect = True) :
+              nSNPs=20, phens = 2, site_het = False, races_differ = False, cov_effect = True,
+              ortho_cov = True) :
     sim = pheno_simulator(nsubjects= nsubjects, nSNPs = nSNPs)
     # Run through full simulation and estimation
     sim.full_sim(nsites= nsites, sigma= sigma, phens = phens, nclusts = nclusts, races_differ = races_differ,
-                 prop_causal = prop_causal, cov_effect = cov_effect)
+                 prop_causal = prop_causal, cov_effect = cov_effect, ortho_cov = ortho_cov)
 
     ests = Basu_estimation()
     ests.df= sim.df
@@ -69,7 +71,6 @@ def sim_n_est(nsubjects = 1000, sigma = [0.5,0.25, 0.25], site_comp = "IID", nsi
             print("No estimate since sample size too small for GCTA")
             nGCTA = np.nan
 
-        # hard coded no npcs for the time being should fix!!!
         SWD = ests.estimate(Method = "SWD", npc = [nnpc], covars = cs, mpheno = ["Y"], RV = "abcd_site", Naive = False)
         Combat = ests.estimate(Method = "Combat", npc = [nnpc], covars = cs, mpheno = ["Y"], RV = "abcd_site", Naive = False)
 
@@ -99,7 +100,7 @@ def sim_n_est(nsubjects = 1000, sigma = [0.5,0.25, 0.25], site_comp = "IID", nsi
               "SWD": SWD["h2"][0],
               "var_SWD" : SWD["var(h2)"][0],
               "time_SWD" : SWD["Analysis time"][0],
-
+              
               "Combat": Combat["h2"][0],
               "var_Combat" : Combat["var(h2)"][0],
               "time_Combat" : Combat["Analysis time"][0],
@@ -134,7 +135,8 @@ def sim_n_est(nsubjects = 1000, sigma = [0.5,0.25, 0.25], site_comp = "IID", nsi
 
 def sim_experiment(nsubjectss = [1000], sigmas = [[0.5,0.25, 0.25]], site_comps = ["IID"], nsites = [25],
               theta_alleless = [0.9], nclustss = [5], dominances= [3], prop_causals= [0.05], site_deps= [False], nnpcs = [1],
-              nSNPss= [200], phenss= [2], reps = 10, site_het = False) :
+              nSNPss= [200], phenss= [2], reps = 10, site_het = False,races_differ = False, cov_effect = True,
+              ortho_cov = True) :
     # Seed empty dataframe
     sim_results = pd.DataFrame()
     
@@ -142,17 +144,18 @@ def sim_experiment(nsubjectss = [1000], sigmas = [[0.5,0.25, 0.25]], site_comps 
          theta_alleles, nclusts, dominance, prop_causal,
          site_dep, nnpc, nSNPs, phens,
          __
-         ) in itertools.product(nsubjectss, sigmas, site_comps, nsites,
+         ) in tqdm(itertools.product(nsubjectss, sigmas, site_comps, nsites,
                                 theta_alleless, nclustss, dominances, prop_causals,
                                 site_deps, nnpcs, nSNPss, phenss,
-                                range(reps)) :
+                                range(reps)), desc = "Simulation progress") :
                                 
         # nnpc = 2 * nclusts
                                 
         result = sim_n_est(nsubjects = nsubjects, sigma = sigma, site_comp = site_comp, nsites = nsite,
                            theta_alleles = theta_alleles, nclusts = nclusts, dominance= dominance, prop_causal= prop_causal, 
                            site_dep= site_dep, nnpc = nnpc,
-                           nSNPs=nSNPs, phens = phens, site_het = site_het)
+                           nSNPs=nSNPs, phens = phens, site_het = site_het, races_differ = races_differ, cov_effect = cov_effect,
+                           ortho_cov = ortho_cov)
         sim_results= sim_results.append(result, ignore_index = True)
         # Remove any temps
     return sim_results
@@ -176,12 +179,12 @@ def sim_experiment(nsubjectss = [1000], sigmas = [[0.5,0.25, 0.25]], site_comps 
 #         elif (sg ==0) and (ss == 0) :
 #             sigmas += [[sg, ss, se]]
 #%%  
-N  = 500
-ns = 2
+N  = 1000
+ns = 25
 nc = 1
 sigmas = [[0.5,0.25,0.25]]
 #%%
-df = sim_experiment(nsubjectss= [N], reps= 15, nsites=[ns], site_comps = ["EQUAL"], sigmas = sigmas, nnpcs = [nc], nclustss=[nc])
+df = sim_experiment(nsubjectss= [N], reps= 5, nsites=[ns], site_comps = ["EQUAL"], sigmas = sigmas, nnpcs = [nc], nclustss=[nc], ortho_cov = False)
 # # df.to_csv("Simulations/Sim_working_Combat1.csv", header=  True, index= False)
 
 # g = sns.FacetGrid(df, col="sg",  row="ss", sharey = False)

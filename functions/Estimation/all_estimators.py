@@ -73,15 +73,13 @@ def load_n_estimate(df, covars, nnpc, mp, GRM, std=False, Method="AdjHE", RV=Non
         form, cols = create_formula(nnpc, covars, mp, RV)
         # save a temporary dataframe
         temp = df[cols].dropna()
-        # Save residuals of selected phenotype after regressing out PCs and covars
-        temp[mp] = smf.ols(formula=form, data=temp, missing='drop').fit().resid
-        # Potentially could use this to control for random effects
-        # smf.mixedlm(formula= form, data = temp, groups=temp["scan_site"])
-        # keep portion of GRM without missingess for the phenotypes or covariates
         nonmissing = ids[ids.IID.isin(temp.IID)].index
         GRM_nonmissing = GRM[nonmissing, :][:, nonmissing]
+        
     # Select method of estimation
     if Method == "AdjHE":
+        # AdjHE projects away covariates to start
+        temp[mp] = smf.ols(formula=form, data=temp, missing='drop').fit().resid
         result = AdjHE_estimator(A = GRM_nonmissing, df=temp, mp = mp, RV = RV, npc= nnpc, std=std)
 
     # elif Method == "MOM":
@@ -93,15 +91,12 @@ def load_n_estimate(df, covars, nnpc, mp, GRM, std=False, Method="AdjHE", RV=Non
     elif Method == "GCTA":
         result = GCTA(df, covars, nnpc, mp, GRM, gcta=gcta, silent=False)
     elif Method == "SWD":
-        # Find site wise means
-        temp = temp.T.drop_duplicates().T
-        means = temp[[RV, mp]].groupby(RV).transform("mean")
-
-        # Subtract sitewise means from Y
-        temp[mp] = temp[mp] - means[mp]
-        # temp = temp.reset_index(drop = True)
-        
+        # SWD projects away sites then projects away covaraites
+        temp[mp] = smf.ols(formula= mp + " ~ " + RV, data=temp, missing='drop').fit().resid
+        temp[mp] = smf.ols(formula=form, data=temp, missing='drop').fit().resid        
         result = AdjHE_estimator(A = GRM_nonmissing, df = temp, mp = mp, RV = None, npc=nnpc, std=False)
+
+        
     # Else use the Combat method
     elif Method == "Combat":
         # Format data for Harmonization tool
@@ -117,7 +112,7 @@ def load_n_estimate(df, covars, nnpc, mp, GRM, std=False, Method="AdjHE", RV=Non
         # Grab the first column of the harmonized data
         temp[mp] = data_combat[0, :].T
         result = AdjHE_estimator(A = GRM_nonmissing, df = temp, mp = mp, RV = None, npc=nnpc, std=False)
-
+    
 
     else:
         print("Not an accepted method")
@@ -146,6 +141,9 @@ class Basu_estimation():
     def estimate(self, npc, mpheno="all", Method=None, RV=None, Naive=False, covars=None, homo=True, loop_covars=False):
         
         start_est = timeit.default_timer()
+        
+        if RV in covars :
+            covars.remove(RV)
         
         # Create list of covariate sets to regress over
         if (covars == None) or (covars == []):

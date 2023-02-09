@@ -16,6 +16,7 @@ import pandas as pd
 from sklearn.decomposition import PCA
 import statsmodels.api as sm
 import statsmodels.formula.api as smf
+import scipy
 
 
 
@@ -208,8 +209,28 @@ class pheno_simulator():
         # genetic contribution
         self.df["Gene_contrib"] = Gene_contrib
     
+    def sim_covars(self, cov_effect= True, ortho_cov = False) :
+        self.cov_effect= cov_effect
+        # To generate orthogonal, find the Null space of the transpose of the principal components and site dummy matrix
+        # Then, construct a random vector from the null space.
+        if ortho_cov :
+            pcs = ["pc_" + str(i + 1) for i in range(self.nclusts)]
+            cov_arr= pd.get_dummies(self.df["abcd_site"].astype(str)).to_numpy()
+            cov_arr = np.concatenate((cov_arr, self.df[pcs].to_numpy()), axis =1 )
+            ns = scipy.linalg.null_space(cov_arr.T)
+            self.df["Xc"] = np.dot(ns, np.random.rand(ns.shape[1],1))
+
+        else: 
+            self.df["Xc"] = rng.uniform(0,1, self.nsubjects)
         
-    def sim_pheno(self, var_comps=[0.5, 0.25, 0.25], phen = 1, site_het = False, cov_effect = True):
+        
+        if cov_effect :
+            self.df["Covar_contrib"] = self.df["Xc"] * np.mean(self.df["Gene_contrib"])
+        else :
+            self.df["Covar_contrib"] = 0 
+
+        
+    def sim_pheno(self, var_comps=[0.5, 0.25, 0.25], phen = 1, site_het = False):
         # make sure no zero variance components
         for i, v in enumerate(var_comps):
             if v == 0:
@@ -268,35 +289,32 @@ class pheno_simulator():
             phenoname = "Y"
         else :
             phenoname = "Y" + str(phen)
-        self.df[phenoname] = self.df.Gene_contrib + self.df.Site_contrib + self.df.errors
+        self.df[phenoname] = self.df.Gene_contrib + self.df.Site_contrib + self.df.errors + self.df.Covar_contrib
         self.df[phenoname] = self.df[phenoname] - np.mean(self.df[phenoname])
         
-        if cov_effect :
-            self.df["Xc"] = rng.uniform(0,1, self.nsubjects)
-            self.df["Covar_contrib"] = self.df["Xc"] * np.mean(self.df["Gene_contrib"])
-
-            self.df[phenoname] += self.df["Covar_contrib"]
-
             
     def full_sim(self, sigma, site_comp="IID",
                         nsites=30, theta_alleles=0.5, nclusts=5, dominance=5,
                         prop_causal=0.25, site_dep=False, nsubjects=1000,
-                        nnpc=0, phens = 2, site_het = False, races_differ=False, cov_effect = True):
+                        nnpc=0, phens = 2, site_het = False, races_differ=False, cov_effect = True,
+                        ortho_cov = True):
         # Run through full simulation and estimation
         self.sim_sites(nsites= nsites, eq_sites=False)
         self.sim_pops(theta_alleles=theta_alleles, nclusts=nclusts, site_comp= site_comp, dominance=dominance)
         self.sim_genos(races_differ = races_differ, prop_causal=prop_causal)
         self.sim_gen_effects(site_dep= site_dep)
+        self.sim_covars(cov_effect= cov_effect, ortho_cov = ortho_cov)
         
         for i in range(phens) :
-            self.sim_pheno(var_comps=sigma, phen = i, site_het = site_het, cov_effect = cov_effect)
+            self.sim_pheno(var_comps=sigma, phen = i, site_het = site_het)
 
 #%%
 
-# sim = pheno_simulator(nsubjects= 50, nSNPs = 100)
-# sim.sim_sites()
-# sim.sim_pops(nclusts = 5)
-# sim.sim_genos(races_differ = False, prop_causal=0.1)
-# sim.sim_gen_effects(site_dep= False)
-
+sim = pheno_simulator(nsubjects= 50, nSNPs = 100)
+sim.sim_sites()
+sim.sim_pops(nclusts = 5)
+sim.sim_genos(races_differ = False, prop_causal=0.1)
+sim.sim_gen_effects(site_dep= False)
+sim.sim_covars(cov_effect= True, ortho_cov = True)
+sim.sim_pheno(var_comps=[0.5, 0.25, 0.25], phen = 1, site_het = False)
 
