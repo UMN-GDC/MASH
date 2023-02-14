@@ -49,6 +49,8 @@ def sim_n_est(nsubjects = 1000, sigma = [0.5,0.25, 0.25], site_comp = "IID", nsi
     # Cretae covariates for sites if necessary    
     if cov_effect :
         cs = ["Xc"]
+    else :
+        cs = []
     if nsites > 1:
         cs += ["abcd_site"]
 
@@ -184,7 +186,10 @@ ns = 25
 nc = 1
 sigmas = [[0.5,0.25,0.25]]
 #%%
-df = sim_experiment(nsubjectss= [N], reps= 5, nsites=[ns], site_comps = ["EQUAL"], sigmas = sigmas, nnpcs = [nc], nclustss=[nc], ortho_cov = False)
+df = sim_experiment(nsubjectss= [N], reps= 5, nsites=[ns], site_comps = ["EQUAL"], sigmas = sigmas, nnpcs = [nc], nclustss=[nc], 
+                    ortho_cov = False, cov_effect= False)
+#%%
+df[["GCTA", "AdjHE", "AdjHE_RE", "Combat", "SWD"]]
 # # df.to_csv("Simulations/Sim_working_Combat1.csv", header=  True, index= False)
 
 # g = sns.FacetGrid(df, col="sg",  row="ss", sharey = False)

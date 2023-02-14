@@ -18,7 +18,6 @@ from tqdm.auto import tqdm
 from functions.Data_input.load_data import load_everything
 from functions.Estimation.AdjHE_estimator import AdjHE_estimator #, load_n_MOM
 from functions.Estimation.PredLMM_estimator import load_n_PredLMM
-from functions.Estimation.Estimate_helpers import create_formula
 from functions.Estimation.GCTA_wrapper import gcta, GCTA
 from functions.Estimation.combat import neuroCombat
 
@@ -65,12 +64,34 @@ def load_n_estimate(df, covars, nnpc, mp, GRM, std=False, Method="AdjHE", RV=Non
 
     # Remove missingness for in-house estimators
     if Method != "GCTA":
+        id_cols = ["FID", "IID"]
+        ids = df[id_cols]
 
-        ids = df[["FID", "IID"]]
-        # seed empty result vector
-        # result.columns = ["h2", "SE", "Pheno", "PCs", "Time for analysis(s)", "Memory Usage", "formula"]
-        # create the regression formula and columns for seelcting temporary
-        form, cols = create_formula(nnpc, covars, mp, RV)
+        # Change nnpc to a number
+        if nnpc == None :
+            nnpc =0
+            
+        pc_cols = ["pc_" + str(p) for p in range(1, nnpc +1)]
+
+        if covars == None :
+            covars = []
+        
+
+        
+        # Create formula string
+        if len(covars) != 0:
+            RHS = " + ".join(covars)
+        else :
+            RHS = "1"
+
+
+        # columns
+        cols = id_cols + [mp] + covars + pc_cols
+        
+        # Make formula
+        form = mp + "~ " +  RHS
+
+        
         # save a temporary dataframe
         temp = df[cols].dropna()
         nonmissing = ids[ids.IID.isin(temp.IID)].index
