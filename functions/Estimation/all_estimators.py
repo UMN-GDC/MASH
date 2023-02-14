@@ -24,7 +24,7 @@ from functions.Estimation.combat import neuroCombat
 
 # %%
 
-def load_n_estimate(df, covars, nnpc, mp, GRM, std=False, Method="AdjHE", RV=None, silent=False, homo=True, gcta=gcta):
+def load_n_estimate(df, fixed_effects, nnpc, mp, GRM, std=False, Method="AdjHE", random_groups=None, silent=False, homo=True, gcta=gcta):
     """
     Estimates heritability, but solves a full OLS problem making it slower than the closed form solution. Takes 
     a dataframe, selects only the necessary columns (so that when we do complete cases it doesnt exclude too many samples)
@@ -34,8 +34,8 @@ def load_n_estimate(df, covars, nnpc, mp, GRM, std=False, Method="AdjHE", RV=Non
     ----------
     df : pandas dataframe
         dataframe contianing phenotype, covariates, an prinicpal components.
-    covars : list of int
-        list of integers specifying which covariates to include in the resiudalization.
+    fixed_effects : list of int
+        list of integers specifying which covariates to include in the resiudalization. This should not include the random_groups
     nnpc : int
         number of pcs to include.
     mp : int
@@ -47,7 +47,7 @@ def load_n_estimate(df, covars, nnpc, mp, GRM, std=False, Method="AdjHE", RV=Non
     Method: str
         specify which method of estimation to use AdjHE, PredLMM, or MOM
         Default is AdjHE
-    RV : string, optional
+    random_groups : string, optional
         Varible to control for as a random effect, if applicable
 
     Returns
@@ -73,24 +73,28 @@ def load_n_estimate(df, covars, nnpc, mp, GRM, std=False, Method="AdjHE", RV=Non
             
         pc_cols = ["pc_" + str(p) for p in range(1, nnpc +1)]
 
-        if covars == None :
-            covars = []
+        if fixed_effects == None :
+            fixed_effects = []
         
 
         
         # Create formula string
-        if len(covars) != 0:
-            RHS = " + ".join(covars)
+        if len(fixed_effects) != 0:
+            RHS = " + ".join(fixed_effects)
         else :
             RHS = "1"
-
+        
+        # Take care of making random groups a list
+        if random_groups == None :
+            group_cols = []
+        elif isinstance(random_groups, str) :
+            group_cols = [random_groups]
 
         # columns
-        cols = id_cols + [mp] + covars + pc_cols
+        cols = id_cols + [mp] + fixed_effects + pc_cols + group_cols
         
         # Make formula
         form = mp + "~ " +  RHS
-
         
         # save a temporary dataframe
         temp = df[cols].dropna()
@@ -101,24 +105,26 @@ def load_n_estimate(df, covars, nnpc, mp, GRM, std=False, Method="AdjHE", RV=Non
     if Method == "AdjHE":
         # AdjHE projects away covariates to start
         temp[mp] = smf.ols(formula=form, data=temp, missing='drop').fit().resid
-        result = AdjHE_estimator(A = GRM_nonmissing, df=temp, mp = mp, RV = RV, npc= nnpc, std=std)
+        result = AdjHE_estimator(A = GRM_nonmissing, df=temp, mp = mp, random_groups = random_groups, npc= nnpc, std=std)
 
+    # MOM estimator is under construction
     # elif Method == "MOM":
     #     result = load_n_MOM(temp, covars, nnpc, mp,
     #                         GRM_nonmissing, std=False, RV=RV)
     elif Method == "PredlMM":
-        result = load_n_PredLMM(temp, covars, nnpc, mp,
-                                GRM_nonmissing, std=False, RV=RV)
+        result = load_n_PredLMM(temp, fixed_effects, nnpc, mp,
+                                GRM_nonmissing, std=False, random_groups=random_groups)
+        
     elif Method == "GCTA":
-        result = GCTA(df, covars, nnpc, mp, GRM, gcta=gcta, silent=False)
+        result = GCTA(df, fixed_effects + [], nnpc, mp, GRM, gcta=gcta, silent=False)
+        
     elif Method == "SWD":
         # SWD projects away sites then projects away covaraites
-        temp[mp] = smf.ols(formula= mp + " ~ " + RV, data=temp, missing='drop').fit().resid
+        temp[mp] = smf.ols(formula= mp + " ~ " + random_groups, data=temp, missing='drop').fit().resid
         temp[mp] = smf.ols(formula=form, data=temp, missing='drop').fit().resid        
-        result = AdjHE_estimator(A = GRM_nonmissing, df = temp, mp = mp, RV = None, npc=nnpc, std=False)
+        result = AdjHE_estimator(A = GRM_nonmissing, df = temp, mp = mp, random_groups = None, npc=nnpc, std=False)
 
         
-    # Else use the Combat method
     elif Method == "Combat":
         # Format data for Harmonization tool
         temp["Y1"] = df["Y1"]
@@ -126,13 +132,12 @@ def load_n_estimate(df, covars, nnpc, mp, GRM, std=False, Method="AdjHE", RV=Non
 
         # Harmonization step:
         data_combat = neuroCombat(dat=tempy,
-                                  covars=df[[
-                                      "pc_" + str(i + 1) for i in range(nnpc)] + ["abcd_site"]],
-                                  batch_col="abcd_site")["data"]
+                                  covars=df[["pc_" + str(i + 1) for i in range(nnpc)] + fixed_effects],
+                                  batch_col=random_groups)["data"]
 
         # Grab the first column of the harmonized data
         temp[mp] = data_combat[0, :].T
-        result = AdjHE_estimator(A = GRM_nonmissing, df = temp, mp = mp, RV = None, npc=nnpc, std=False)
+        result = AdjHE_estimator(A = GRM_nonmissing, df = temp, mp = mp, random_groups = None, npc=nnpc, std=False)
     
 
     else:
@@ -159,23 +164,20 @@ class Basu_estimation():
                 prefix, pheno_file, cov_file, PC_file, k, ids)
             self.simulation = False
 
-    def estimate(self, npc, mpheno="all", Method=None, RV=None, Naive=False, covars=None, homo=True, loop_covars=False):
+    def estimate(self, npc, mpheno="all", Method=None, random_groups =None, Naive=False, fixed_effects=None, homo=True, loop_covars=False):
         
         start_est = timeit.default_timer()
-        
-        if RV in covars :
-            covars.remove(RV)
-        
+                
         # Create list of covariate sets to regress over
-        if (covars == None) or (covars == []):
-            cov_combos = [[]]
+        if (fixed_effects == None) or (fixed_effects == []):
+            fixed_combos = [[]]
         else:
             # Create the sets of covarates over which we can loop
             # This will return a list of lists of covariate names to regress on
-            cov_combos = [covars[0:idx+1] for idx, c in enumerate(covars)]
+            fixed_combos = [fixed_effects[0:idx+1] for idx, c in enumerate(fixed_effects)]
             # If we don't want to loop, just grab the last item of the generated list assuming the user wants all of those variables included
             if not loop_covars:
-                cov_combos = [cov_combos[-1]]
+                fixed_combos = [fixed_combos[-1]]
 
         if mpheno == "all":
             self.mpheno = self.phenotypes
@@ -185,8 +187,8 @@ class Basu_estimation():
 
         print("Estimating")
         print(Method)
-        if RV != None:
-            print("RV: " + RV)
+        if random_groups != None:
+            print("RV: " + random_groups)
         # create empty list to store heritability estimates
         results = pd.DataFrame()
 
@@ -201,7 +203,7 @@ class Basu_estimation():
             npc = [0]
 
         # Loop over each set of covariate combos
-        for covs in tqdm(cov_combos, desc = "Covariate sets"):
+        for covs in tqdm(fixed_combos, desc = "Covariate sets"):
             # For each set of covariates recalculate the projection matrix
 
             # loop over all combinations of pcs and phenotypes
@@ -209,7 +211,7 @@ class Basu_estimation():
                 
                 start_est = timeit.default_timer()
                 try: 
-                    C = "+".join(covars)
+                    C = "+".join(fixed_combos)
                 except TypeError :
                     C = "None"
                     
@@ -219,7 +221,7 @@ class Basu_estimation():
 
                 if not Naive:
                     r = load_n_estimate(
-                        df=self.df, covars=covs, nnpc=nnpc, mp=mp, GRM=self.GRM, std=False, Method=Method, RV=RV, homo=homo)
+                        df=self.df, fixed_effects=covs, nnpc=nnpc, mp=mp, GRM=self.GRM, std=False, Method=Method, random_groups=random_groups, homo=homo)
 
                 else:
                     # Empty results list
@@ -227,12 +229,12 @@ class Basu_estimation():
                                                 "Size": []})
 
                     # loop over  all sites
-                    for site in np.unique(self.df[RV]):
+                    for group in np.unique(self.df[random_groups]):
                         # Grab the portion that lies within a given site
-                        sub_df = self.df.loc[self.df[RV] == site, :].reset_index(drop = True)
+                        sub_df = self.df.loc[self.df[random_groups] == group, :].reset_index(drop = True)
                         # Get size
                         sub_n = sub_df.shape[0]
-                        sub_GRM = self.GRM[self.df[RV] == site,:][:,self.df[RV] == site]
+                        sub_GRM = self.GRM[self.df[random_groups] == group,:][:,self.df[random_groups] == group]
                         # Find PC's individually for each site
                         if nnpc != 0:
                             pcs = pd.DataFrame(PCA(n_components=10).fit_transform(np.asarray(sub_GRM)))
@@ -245,7 +247,7 @@ class Basu_estimation():
 
 
                         # Estimate just on the supsample
-                        sub_result = load_n_estimate(df=sub_df, covars=[],  nnpc=nnpc, mp=mp, GRM=sub_GRM, std=False, Method=Method, RV=None,
+                        sub_result = load_n_estimate(df=sub_df, fixed_effects=[],  nnpc=nnpc, mp=mp, GRM=sub_GRM, std=False, Method=Method, random_groups=None,
                                                      silent=True, homo=homo)
                         sub_result = pd.DataFrame({"h2": [sub_result["h2"][0]],
                                                    "Size": [sub_n]})
@@ -273,7 +275,7 @@ class Basu_estimation():
                 results = pd.concat([results, r], ignore_index=True)
 
         self.results = results
-        return self.results # , sub_results
+        return results # , sub_results
 
     def pop_clusts(self, npc=2, groups=None):
         print("Generating PCA cluster visualization...")

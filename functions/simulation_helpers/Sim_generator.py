@@ -17,6 +17,7 @@ from sklearn.decomposition import PCA
 import statsmodels.api as sm
 import statsmodels.formula.api as smf
 import scipy
+from functions.Estimation.all_estimators import Basu_estimation
 
 
 
@@ -310,11 +311,26 @@ class pheno_simulator():
 
 #%%
 
-sim = pheno_simulator(nsubjects= 50, nSNPs = 100)
-sim.sim_sites()
-sim.sim_pops(nclusts = 5)
+sim = pheno_simulator(nsubjects= 1000, nSNPs = 100)
+sim.sim_sites(nsites =1)
+sim.sim_pops(nclusts = 2)
 sim.sim_genos(races_differ = False, prop_causal=0.1)
 sim.sim_gen_effects(site_dep= False)
 sim.sim_covars(cov_effect= True, ortho_cov = True)
 sim.sim_pheno(var_comps=[0.5, 0.25, 0.25], phen = 1, site_het = False)
 
+ests = Basu_estimation()
+ests.df= sim.df
+ests.GRM = sim.GRM
+ests.mpheno = ["Y"] 
+
+# Cretae covariates for sites if necessary    
+if True :
+    cs = ["Xc"]
+else :
+    cs = ["Xc"]
+
+#%%
+# Estimate always
+AdjHE = ests.estimate(Method = "AdjHE", npc = [1], fixed_effects = ["Xc"], mpheno = ["Y1"], random_groups = None, Naive = False)
+print(AdjHE)

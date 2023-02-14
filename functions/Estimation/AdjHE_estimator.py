@@ -14,18 +14,12 @@ Last Updated 2022-05-26
 ##############################################################
 
 import numpy as np
-from numpy import matrix
 from scipy.linalg import block_diag
-import timeit
-import resource
 import pandas as pd
-import statsmodels.api as sm
-import statsmodels.formula.api as smf
-from functions.Estimation.Estimate_helpers import create_formula, columnwise_outter
 
 
 
-def AdjHE_estimator(A, df, mp, RV = None, npc=0, std=False):
+def AdjHE_estimator(A, df, mp, random_groups = None, npc=0, std=False):
     """
     Fucntion for generating heritability estimates from an Adjusted HE standpoint in closed form.
     Parameters
@@ -36,7 +30,7 @@ def AdjHE_estimator(A, df, mp, RV = None, npc=0, std=False):
         A dataframe containing all covariates, principal components, and phenotype that has been residualized if necessary.
     mp : int
         1 based index specifying the phenotype to be estimated on.
-    rv : string
+    random_groups : string
         A string specifying what variable to use as a random variable. Default = None leads to no random variable
     npc : int, optional
         number of prinicpal components to adjust for. The default is 0.
@@ -85,7 +79,7 @@ def AdjHE_estimator(A, df, mp, RV = None, npc=0, std=False):
     offdiag= trA - np.sum(Sjs)
     bottomright = n- npc
     
-    if RV == None :
+    if random_groups == None :
         # Solve the regression problem
         XXinv = np.linalg.inv(np.matrix([[topleft, offdiag],
                                          [offdiag, bottomright]]))
@@ -100,9 +94,10 @@ def AdjHE_estimator(A, df, mp, RV = None, npc=0, std=False):
         # var_h2 = 2 * (sigmas[1]**2 * trA2 - 2*sigmas[0]*sigmas[1] * trA  + sigmas[0] **2 * n) / (sigmas[0] + sigmas[1])
 
         
-    elif isinstance(RV, str) :
+    elif isinstance(random_groups, str) :
         df = df.reset_index().drop("index", axis = 1)
-        df = df.sort_values(RV).dropna(subset= [RV])
+        # Shuffle the A matrix so it matches the new order
+        df = df.sort_values(random_groups).dropna(subset= [random_groups])
         A = np.matrix(A[df.index,:][:,df.index])
         n = A.shape[0]
         
@@ -114,7 +109,7 @@ def AdjHE_estimator(A, df, mp, RV = None, npc=0, std=False):
         for col in df :
             if col.startswith("pc") :
                 proj_cols.append(col)
-        proj_cols += [RV]
+        proj_cols += [random_groups]
 
         
         # Get dummies for categoricals if they exist
@@ -124,7 +119,7 @@ def AdjHE_estimator(A, df, mp, RV = None, npc=0, std=False):
         y = np.matrix(df[mp])
 
         # Create S similarity matrix 
-        site, sizes= np.unique(df[RV], return_counts = True)
+        site, sizes= np.unique(df[random_groups], return_counts = True)
         # Construct the block diagonal
         diags = [np.ones((size,size)) for size in sizes]
         S = np.matrix(block_diag(*diags))
@@ -260,7 +255,7 @@ def AdjHE_estimator(A, df, mp, RV = None, npc=0, std=False):
 #     return results
 
 
-def AdjHE_rv_estimator_new(A,df, mp, rv, npc=0) :
+def AdjHE_rv_estimator_new(A,df, mp, random_groups, npc=0) :
     """
     Estimate the heritability of the presence of an additional random effect.
 
@@ -272,7 +267,7 @@ def AdjHE_rv_estimator_new(A,df, mp, rv, npc=0) :
         A dataframe containing all covariates, principal components, and phenotype that has been residualized if necessary.
     mp : int
         1 based index specifying the phenotype to be estimated on.
-    rv : string
+    random_groups : string
         specifying the name of the column to be used as a random variable.
     npc : int, optional
         number of prinicpal components to adjust for. The default is 0.
@@ -289,7 +284,7 @@ def AdjHE_rv_estimator_new(A,df, mp, rv, npc=0) :
     A = np.array(A)
     
     # Create S similarity matrix 
-    site, sizes= np.unique(df[rv], return_counts = True)
+    site, sizes= np.unique(df[random_groups], return_counts = True)
     # Construct the block diagonal
     diags = [np.ones((size,size)) for size in sizes]
     S = np.array(block_diag(*diags))
