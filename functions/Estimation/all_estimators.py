@@ -126,14 +126,12 @@ def load_n_estimate(df, fixed_effects, nnpc, mp, GRM, std=False, Method="AdjHE",
 
         
     elif Method == "Combat":
-        # Format data for Harmonization tool
-        temp["Y1"] = df["Y1"]
-        tempy = temp[["Y", "Y1"]].T
-
         # Harmonization step:
-        data_combat = neuroCombat(dat=tempy,
-                                  covars=df[["pc_" + str(i + 1) for i in range(nnpc)] + fixed_effects],
-                                  batch_col=random_groups)["data"]
+        temp["Y1"] = df["Y1"]
+            
+        data_combat = neuroCombat(dat=temp[["Y", "Y1"]].T,
+                                  covars=temp[["pc_" + str(i + 1) for i in range(nnpc)] + fixed_effects + [random_groups]],
+                                  batch_col="abcd_site")["data"]
 
         # Grab the first column of the harmonized data
         temp[mp] = data_combat[0, :].T

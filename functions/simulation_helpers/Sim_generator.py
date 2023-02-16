@@ -9,7 +9,8 @@ Created on Thu Oct 13 09:25:44 2022
 #from plotly.offline import plot
 #import plotly.express as px
 import os
-# os.chdir("/home/christian/Research/Stat_gen/tools/Basu_herit")
+os.chdir("/home/christian/Research/Stat_gen/tools/Basu_herit")
+
 
 import numpy as np
 import pandas as pd
@@ -18,6 +19,7 @@ import statsmodels.api as sm
 import statsmodels.formula.api as smf
 import scipy
 from functions.Estimation.all_estimators import Basu_estimation
+from functions.Estimation.AdjHE_estimator import AdjHE_estimator
 
 
 
@@ -39,7 +41,7 @@ class pheno_simulator():
                                 "IID": np.arange(start=1, stop=nsubjects + 1),
                                 })
 
-    def sim_sites(self, nsites=1, eq_sites=False):
+    def sim_sites(self, nsites=1, eq_sites=False, random_BS = True):
         self.eq_sites = eq_sites
         # Site assignment
         if eq_sites:
@@ -52,9 +54,16 @@ class pheno_simulator():
 
         self.df["abcd_site"] = Groups
         # Simulate site effects (will rescale to desired contribution later)
-        Bs = np.matrix(np.random.normal(0,  1, nsites)).T
-        # Bs = np.matrix(np.repeat(1, nsites)).T
-        # Bs[
+        if random_BS :
+            Bs = np.matrix(np.random.normal(0,  1, nsites)).T
+        else :
+            # Make site effects fixed
+            Bs = np.arange(nsites, dtype = "float64")
+            Bs -= Bs.mean()
+            Bs=  np.reshape(Bs, (nsites, 1))
+        if nsites == 1:
+            Bs = np.array([0])
+
         # Make a dummy matrix
         Groups_dum = np.matrix(pd.get_dummies(self.df["abcd_site"]))
         self.df["Site_contrib"] = np.array(Groups_dum * Bs).flatten()
@@ -298,9 +307,14 @@ class pheno_simulator():
                         nsites=30, theta_alleles=0.5, nclusts=5, dominance=5,
                         prop_causal=0.25, site_dep=False, nsubjects=1000,
                         nnpc=0, phens = 2, site_het = False, races_differ=False, cov_effect = True,
-                        ortho_cov = True):
+                        ortho_cov = True, random_BS = True):
+        if site_comp == "EQUAL" :
+            eq_sites = True
+        else :
+            eq_sites= False
+        
         # Run through full simulation and estimation
-        self.sim_sites(nsites= nsites, eq_sites=False)
+        self.sim_sites(nsites= nsites, eq_sites=eq_sites, random_BS = random_BS)
         self.sim_pops(theta_alleles=theta_alleles, nclusts=nclusts, site_comp= site_comp, dominance=dominance)
         self.sim_genos(races_differ = races_differ, prop_causal=prop_causal)
         self.sim_gen_effects(site_dep= site_dep)
@@ -309,28 +323,18 @@ class pheno_simulator():
         for i in range(phens) :
             self.sim_pheno(var_comps=sigma, phen = i, site_het = site_het)
 
-#%%
-
-sim = pheno_simulator(nsubjects= 1000, nSNPs = 100)
-sim.sim_sites(nsites =1)
-sim.sim_pops(nclusts = 2)
-sim.sim_genos(races_differ = False, prop_causal=0.1)
-sim.sim_gen_effects(site_dep= False)
-sim.sim_covars(cov_effect= True, ortho_cov = True)
-sim.sim_pheno(var_comps=[0.5, 0.25, 0.25], phen = 1, site_het = False)
-
-ests = Basu_estimation()
-ests.df= sim.df
-ests.GRM = sim.GRM
-ests.mpheno = ["Y"] 
-
-# Cretae covariates for sites if necessary    
-if True :
-    cs = ["Xc"]
-else :
-    cs = ["Xc"]
 
 #%%
-# Estimate always
-AdjHE = ests.estimate(Method = "AdjHE", npc = [1], fixed_effects = ["Xc"], mpheno = ["Y1"], random_groups = None, Naive = False)
-print(AdjHE)
+
+# sim = pheno_simulator(nsubjects= 1000, nSNPs = 10000)
+# # Run through full simulation and estimation
+# sim.full_sim(nsites= 25, sigma= [0.5,0.25,0.25], phens = 2, nclusts = 2, races_differ = True,
+#               prop_causal = 0.01, cov_effect = True, ortho_cov = True, random_BS = False)
+
+
+# ests = Basu_estimation()
+# ests.df= sim.df
+# ests.GRM = sim.GRM
+# ests.mpheno = ["Y"] 
+# ests.estimate(npc=[1], mpheno= ["Y"], Method="AdjHE", random_groups = None, fixed_effects= ["Xc", "abcd_site"])
+# print(ests.results)
