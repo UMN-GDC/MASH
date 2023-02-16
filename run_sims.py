@@ -192,15 +192,15 @@ def sim_experiment(nsubjectss = [1000], sigmas = [[0.5,0.25, 0.25]], site_comps 
 #         elif (sg ==0) and (ss == 0) :
 #             sigmas += [[sg, ss, se]]
 #%%  
-N  = 500
-ns = 5
-nc = 2
-sigmas = [[0.5,0.25,0.25]]
+#N  = 500
+#ns = 5
+#nc = 2
+#sigmas = [[0.5,0.25,0.25]]
 #%%
 
-df = sim_experiment(nsubjectss= [N], reps= 5, nsites=[ns], site_comps = ["EQUAL"], sigmas = sigmas, nnpcs = [1], nclustss=[nc], 
-                    ortho_cov = True, cov_effect= True, phenss= [2], random_BS = False)
-print(df[["GCTA", "AdjHE", "AdjHE_RE", "Combat", "SWD"]].mean())
+#df = sim_experiment(nsubjectss= [N], reps= 5, nsites=[ns], site_comps = ["EQUAL"], sigmas = sigmas, nnpcs = [1], nclustss=[nc], 
+#                    ortho_cov = True, cov_effect= True, phenss= [2], random_BS = False)
+#print(df[["GCTA", "AdjHE", "AdjHE_RE", "Combat", "SWD"]].mean())
 
 #%%
 # # df.to_csv("Simulations/Sim_working_Combat1.csv", header=  True, index= False)

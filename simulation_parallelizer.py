@@ -14,7 +14,6 @@ Last Updated 2022-06-06
 import os
 #os.chdir("/home/christian/Research/Stat_gen/tools/Basu_herit")
 from functions.Data_input.sim_parser import get_args #, read_flags
-from run_sims import sim_experiment
 import itertools
 import json
 
@@ -48,7 +47,11 @@ def write_sim_json(nsubjectss = args["nsubjectss"],
               nSNPss= args["nSNPss"],
               phenss= args["phenss"],
               reps = args["reps"], 
-              site_het = args["site_het"]) :
+              site_het = args["site_het"],
+              races_differ = False,
+              cov_effect=True,
+              ortho_cov = True,
+              random_BS = args["random_BS"]) :
     """
     Takes an overarching simulation setup from json and splits it into individual simulations and furthermore splits them into 10 simulations 
     to make it run more in parallel
@@ -92,8 +95,7 @@ def write_sim_json(nsubjectss = args["nsubjectss"],
     for (nsubjects, sigma, site_comp, nsite,
          theta_alleles, nclusts, dominance, prop_causal,
          site_dep, nSNPs, phens,
-         __
-         ) in itertools.product(nsubjectss, sigmas, site_comps, nsites,
+         __) in itertools.product(nsubjectss, sigmas, site_comps, nsites,
                                 theta_alleless, nclustss, dominances, prop_causals,
                                 site_deps, nSNPss, phenss,
                                 range(reps)) :
@@ -114,9 +116,13 @@ def write_sim_json(nsubjectss = args["nsubjectss"],
                 "phenss" : [phens],
                 "reps" : args["reps"],
                 "all_ests" : True,
-                "site_het" : False
+                "site_het" : False,
+                "races_differ" : True,
+                "cov_effect" : True,
+                "ortho_cov" : True,
+                "random_BS" : args["random_BS"]
                 } 
-        with open(f'Temp/{nsubjects}{sigma[0]}{sigma[1]}{sigma[2]}{site_comp}{nsite}{theta_alleles}{nclusts}{dominance}{prop_causal}{site_dep}{nSNPs}{phens}{__}.json', 'w') as fp:
+        with open(f'Temp/{nsubjects}{sigma[0]}{sigma[1]}{sigma[2]}{site_comp}{nsite}{theta_alleles}{nclusts}{dominance}{prop_causal}{site_dep}{nSNPs}{phens}{races_differ}{cov_effect}{ortho_cov}{random_BS}{__}.json', 'w') as fp:
             json.dump(data, fp, indent = 4)
 
         
@@ -136,4 +142,8 @@ write_sim_json(nsubjectss = args["nsubjectss"],
               nSNPss= args["nSNPss"],
               phenss= args["phenss"],
               reps = args["reps"], 
-              site_het = args["site_het"])
+              site_het = args["site_het"],
+              races_differ = True,
+              cov_effect=True,
+              ortho_cov = True,
+              random_BS = args["random_BS"])

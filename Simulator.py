@@ -50,7 +50,11 @@ df = sim_experiment(nsubjectss = args["nsubjectss"],
               nSNPss= args["nSNPss"],
               phenss= args["phenss"],
               reps = args["reps"],
-	      site_het = args["site_het"])
+              site_het = args["site_het"],
+              races_differ=True,
+              cov_effect=True,
+              ortho_cov=True,
+              random_BS=args["random_BS"])
 
 
 # python program to check if a path exists
