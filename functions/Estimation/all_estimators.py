@@ -164,7 +164,6 @@ class Basu_estimation():
 
     def estimate(self, npc, mpheno="all", Method=None, random_groups =None, Naive=False, fixed_effects=None, homo=True, loop_covars=False):
         
-        start_est = timeit.default_timer()
                 
         # Create list of covariate sets to regress over
         if (fixed_effects == None) or (fixed_effects == []):
@@ -262,14 +261,16 @@ class Basu_estimation():
                     r["var(h2)"] =  np.var(sub_results["h2"])
                     r = pd.DataFrame(r, index=[0])
 
-                # Store each result
-                results["h2"] = r["h2"]
-                results["ss"] = r["ss"]
-                results["var(h2)"] = r["var(h2)"]
-                results["Analysis time"] = timeit.default_timer() - start_est
                 # Get memory for each step (in Mb) (This is a little sketchy)
-                results["mem"] = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss/1000
-
+                print("Started" + str(start_est)) 
+                end_est = timeit.default_timer()
+                print("Ended" + str(end_est))
+                print(end_est - start_est)
+                
+                time = [end_est - start_est]
+                mem = [resource.getrusage(resource.RUSAGE_SELF).ru_maxrss/1000]
+                r["time"] = time
+                r["mem"] = mem
                 results = pd.concat([results, r], ignore_index=True)
 
         self.results = results

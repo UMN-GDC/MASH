@@ -9,7 +9,7 @@ Created on Thu Oct 13 09:25:44 2022
 #from plotly.offline import plot
 #import plotly.express as px
 import os
-os.chdir("/home/christian/Research/Stat_gen/tools/Basu_herit")
+# os.chdir("/home/christian/Research/Stat_gen/tools/Basu_herit")
 
 
 import numpy as np
@@ -326,15 +326,15 @@ class pheno_simulator():
 
 #%%
 
-# sim = pheno_simulator(nsubjects= 1000, nSNPs = 10000)
-# # Run through full simulation and estimation
-# sim.full_sim(nsites= 25, sigma= [0.5,0.25,0.25], phens = 2, nclusts = 2, races_differ = True,
-#               prop_causal = 0.01, cov_effect = True, ortho_cov = True, random_BS = False)
+sim = pheno_simulator(nsubjects= 1000, nSNPs = 10000)
+# Run through full simulation and estimation
+sim.full_sim(nsites= 25, sigma= [0.5,0.25,0.25], phens = 2, nclusts = 2, races_differ = True,
+              prop_causal = 0.01, cov_effect = True, ortho_cov = True, random_BS = False)
 
 
-# ests = Basu_estimation()
-# ests.df= sim.df
-# ests.GRM = sim.GRM
-# ests.mpheno = ["Y"] 
-# ests.estimate(npc=[1], mpheno= ["Y"], Method="AdjHE", random_groups = None, fixed_effects= ["Xc", "abcd_site"])
-# print(ests.results)
+ests = Basu_estimation()
+ests.df= sim.df
+ests.GRM = sim.GRM
+ests.mpheno = ["Y"] 
+ests.estimate(npc=[1], mpheno= ["Y"], Method="AdjHE", random_groups = "abcd_site", fixed_effects= ["Xc"])
+print(ests.results)
