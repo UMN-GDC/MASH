@@ -8,11 +8,13 @@
   "mpheno" : ["Head_size"],
   "k" : 0,
   "std" :  false,
-  "covars" : ["Tidyness", "Happy_camper"],
+  "fixed_effects" : ["Tidyness", "Happy_camper"],
   "argfile" : "/home/christian/Research/Stat_gen/tools/Basu_herit/Example/Arg_file.json",
   "loop_covars" : false,
   "covar_relates" : false,
-  "RV" : null,
-  "Method" : "AdjHE",
+  "random_groups" : "abcd_site",
+  "Naive" : true,
+  "Method" : "GCTA",
   "ids" : null
 }
+
