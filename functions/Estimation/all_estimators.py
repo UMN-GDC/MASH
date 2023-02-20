@@ -116,7 +116,7 @@ def load_n_estimate(df, fixed_effects, nnpc, mp, GRM, std=False, Method="AdjHE",
                                 GRM_nonmissing, std=False, random_groups=random_groups)
         
     elif Method == "GCTA":
-        result = GCTA(df, fixed_effects + [], nnpc, mp, GRM, gcta=gcta, silent=False)
+        result = GCTA(df, fixed_effects, nnpc, mp, GRM, gcta=gcta, silent=False)
         
     elif Method == "SWD":
         # SWD projects away sites then projects away covaraites
@@ -127,9 +127,9 @@ def load_n_estimate(df, fixed_effects, nnpc, mp, GRM, std=False, Method="AdjHE",
         
     elif Method == "Combat":
         # Harmonization step:
-        temp["Y1"] = df["Y1"]
+        temp[mp + "2"] = df[mp]
             
-        data_combat = neuroCombat(dat=temp[["Y", "Y1"]].T,
+        data_combat = neuroCombat(dat=temp[[mp, mp + "2"]].T,
                                   covars=temp[["pc_" + str(i + 1) for i in range(nnpc)] + fixed_effects + [random_groups]],
                                   batch_col="abcd_site")["data"]
 
@@ -202,7 +202,7 @@ class Basu_estimation():
         # Loop over each set of covariate combos
         for covs in tqdm(fixed_combos, desc = "Covariate sets"):
             # For each set of covariates recalculate the projection matrix
-
+            print(covs)
             # loop over all combinations of pcs and phenotypes
             for mp, nnpc in tqdm(itertools.product(self.mpheno, npc), desc = "Phenotype, PC combination counter"):
                 
@@ -226,7 +226,9 @@ class Basu_estimation():
                                                 "Size": []})
 
                     # loop over  all sites
-                    for group in np.unique(self.df[random_groups]):
+                    groups= np.unique(self.df[random_groups])
+                    groups = groups[~np.isnan(groups)]
+                    for group in tqdm(groups, desc="# of subsets analyzed"):
                         # Grab the portion that lies within a given site
                         sub_df = self.df.loc[self.df[random_groups] == group, :].reset_index(drop = True)
                         # Get size
@@ -234,7 +236,7 @@ class Basu_estimation():
                         sub_GRM = self.GRM[self.df[random_groups] == group,:][:,self.df[random_groups] == group]
                         # Find PC's individually for each site
                         if nnpc != 0:
-                            pcs = pd.DataFrame(PCA(n_components=10).fit_transform(np.asarray(sub_GRM)))
+                            pcs = pd.DataFrame(PCA(n_components=15).fit_transform(np.asarray(sub_GRM)))
                             pcs.columns = ["pc_" + str(col + 1) for col in pcs.columns]
                             # Drop previous pcs
                             sub_df = sub_df.loc[:,~sub_df.columns.str.startswith('pc_')]
