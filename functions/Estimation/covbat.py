@@ -12,6 +12,7 @@ import numpy as np
 
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
+from sklearn.impute import SimpleImputer
 
 def adjust_nums(numerical_covariates, drop_idxs):
     # if we dropped some values, have to adjust those with a larger index.
@@ -162,6 +163,8 @@ def covbat(data, batch, model=None, numerical_covariates=None, pct_var=0.95, n_p
     comdata = scaler.fit_transform(comdata)
     
     pca = PCA()
+    # PCA can't handle missing values
+    comdata = comdata[~np.isnan(comdata).any(axis= 1), :]
     pca.fit(comdata)
     pc_comp = pca.components_
     full_scores = pd.DataFrame(pca.fit_transform(comdata)).T
