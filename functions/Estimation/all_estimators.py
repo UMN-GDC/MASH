@@ -63,43 +63,42 @@ def load_n_estimate(df, fixed_effects, nnpc, mp, GRM, std=False, Method="AdjHE",
     """
 
     # Remove missingness for in-house estimators
-    if Method != "GCTA":
-        id_cols = ["FID", "IID"]
-        ids = df[id_cols]
+    id_cols = ["FID", "IID"]
+    ids = df[id_cols]
 
-        # Change nnpc to a number
-        if nnpc == None :
-            nnpc =0
-            
-        pc_cols = ["pc_" + str(p) for p in range(1, nnpc +1)]
+    # Change nnpc to a number
+    if nnpc == None :
+        nnpc =0
+        
+    pc_cols = ["pc_" + str(p) for p in range(1, nnpc +1)]
 
-        if fixed_effects == None :
-            fixed_effects = []
-        
+    if fixed_effects == None :
+        fixed_effects = []
+    
 
-        
-        # Create formula string
-        if len(fixed_effects) != 0:
-            RHS = " + ".join(fixed_effects)
-        else :
-            RHS = "1"
-        
-        # Take care of making random groups a list
-        if random_groups == None :
-            group_cols = []
-        elif isinstance(random_groups, str) :
-            group_cols = [random_groups]
+    
+    # Create formula string
+    if len(fixed_effects) != 0:
+        RHS = " + ".join(fixed_effects)
+    else :
+        RHS = "1"
+    
+    # Take care of making random groups a list
+    if random_groups == None :
+        group_cols = []
+    elif isinstance(random_groups, str) :
+        group_cols = [random_groups]
 
-        # columns
-        cols = id_cols + [mp] + fixed_effects + pc_cols + group_cols
-        
-        # Make formula
-        form = mp + "~ " +  RHS
-        
-        # save a temporary dataframe
-        temp = df[cols].dropna()
-        nonmissing = ids[ids.IID.isin(temp.IID)].index
-        GRM_nonmissing = GRM[nonmissing, :][:, nonmissing]
+    # columns
+    cols = id_cols + [mp] + fixed_effects + pc_cols + group_cols
+    
+    # Make formula
+    form = mp + "~ " +  RHS
+    
+    # save a temporary dataframe
+    temp = df[cols].dropna()
+    nonmissing = ids[ids.IID.isin(temp.IID)].index
+    GRM_nonmissing = GRM[nonmissing, :][:, nonmissing]
         
     # Select method of estimation
     if Method == "AdjHE":
@@ -116,7 +115,7 @@ def load_n_estimate(df, fixed_effects, nnpc, mp, GRM, std=False, Method="AdjHE",
                                 GRM_nonmissing, std=False, random_groups=random_groups)
         
     elif Method == "GCTA":
-        result = GCTA(df, fixed_effects, nnpc, mp, GRM, gcta=gcta, silent=False)
+        result = GCTA(temp, fixed_effects, nnpc, mp, GRM, gcta=gcta, silent=False)
         
     elif Method == "SWD":
         # SWD projects away sites then projects away covaraites
@@ -125,16 +124,34 @@ def load_n_estimate(df, fixed_effects, nnpc, mp, GRM, std=False, Method="AdjHE",
         result = AdjHE_estimator(A = GRM_nonmissing, df = temp, mp = mp, random_groups = None, npc=nnpc, std=False)
 
         
-    elif Method == "Combat":
-        # Harmonization step:
-        temp[mp + "2"] = df[mp]
-            
-        data_combat = neuroCombat(dat=temp[[mp, mp + "2"]].T,
-                                  covars=temp[["pc_" + str(i + 1) for i in range(nnpc)] + fixed_effects + [random_groups]],
-                                  batch_col="abcd_site")["data"]
+    elif Method == "Combat": 
+        # Hardcoded until we figure out how to program it
+        phenos = ['third_Ventricle', 'fourth_Ventricle', 'fifth_Ventricle', 'Brain_Stem', 'CC_Anterior', 'CC_Central', 'CC_Mid_Anterior',
+                  'CC_Mid_Posterior', 'CC_Posterior', 'CSF', 'Glob', 'Left_Accumbens_area', 'Left_Amygdala', 'Left_Caudate',
+                  'Left_Cerebellum_Cortex', 'Left_Cerebellum_White_Matter', 'Left_Hippocampus', 'Left_Inf_Lat_Vent', 'Left_Pallidum', 
+                  'Left_Putamen', 'Left_Thalamus_Proper', 'Left_VentralDC', 'Left_WM_hypointensities', 'Left_choroid_plexus', 
+                  'Left_non_WM_hypointensities', 'Left_vessel', 'Optic_Chiasm', 'Right_Accumbens_area', 'Right_Amygdala', 'Right_Caudate',
+                  'Right_Cerebellum_Cortex', 'Right_Cerebellum_White_Matter', 'Right_Hippocampus', 'Right_Inf_Lat_Vent', 'Right_Lateral_Ventricle',
+                  'Right_Pallidum', 'Right_Putamen', 'Right_Thalamus_Proper', 'Right_VentralDC', 'Right_WM_hypointensities', 'Right_choroid_plexus',
+                  'Right_non_WM_hypointensities', 'Right_vessel', 'WM_hypointensities', 'non_WM_hypointensities']
+        # For simulations
+	#temp[mp + "2"] = df[mp]
 
-        # Grab the first column of the harmonized data
-        temp[mp] = data_combat[0, :].T
+        # Harmonization step:
+        temp[phenos] = df[phenos]
+        # Figure out the column number of the phenotype we are estimating on for real data
+        mpcol = np.where([col == mp for col in phenos])[0][0]
+            
+
+
+        data_combat = neuroCombat(dat=temp[phenos].T,
+                                  covars=temp[["pc_" + str(i + 1) for i in range(nnpc)] + fixed_effects + [random_groups]],
+                                  batch_col=random_groups)["data"]
+
+        # Grab the corresponding column of the harmonized data for the simulation
+        temp[mp] = data_combat[mpcol, :].T
+        
+
         result = AdjHE_estimator(A = GRM_nonmissing, df = temp, mp = mp, random_groups = None, npc=nnpc, std=False)
     
 
@@ -142,7 +159,7 @@ def load_n_estimate(df, fixed_effects, nnpc, mp, GRM, std=False, Method="AdjHE",
         print("Not an accepted method")
         
     
-
+    result["pheno"] = mp
     return pd.DataFrame(result, index=[0])
 
 
@@ -229,30 +246,33 @@ class Basu_estimation():
                     groups= np.unique(self.df[random_groups])
                     groups = groups[~np.isnan(groups)]
                     for group in tqdm(groups, desc="# of subsets analyzed"):
-                        # Grab the portion that lies within a given site
-                        sub_df = self.df.loc[self.df[random_groups] == group, :].reset_index(drop = True)
-                        # Get size
-                        sub_n = sub_df.shape[0]
-                        sub_GRM = self.GRM[self.df[random_groups] == group,:][:,self.df[random_groups] == group]
-                        # Find PC's individually for each site
-                        if nnpc != 0:
-                            pcs = pd.DataFrame(PCA(n_components=15).fit_transform(np.asarray(sub_GRM)))
-                            pcs.columns = ["pc_" + str(col + 1) for col in pcs.columns]
-                            # Drop previous pcs
-                            sub_df = sub_df.loc[:,~sub_df.columns.str.startswith('pc_')]
-                        #Add site specific PC's
-                            sub_df = pd.concat([sub_df, pcs], axis=1)
+                        try : 
+                            # Grab the portion that lies within a given site
+                            sub_df = self.df.loc[self.df[random_groups] == group, :].reset_index(drop = True)
+                            # Get size
+                            sub_n = sub_df.shape[0]
+                            sub_GRM = self.GRM[self.df[random_groups] == group,:][:,self.df[random_groups] == group]
+                            # Find PC's individually for each site
+                            if nnpc != 0:
+                                pcs = pd.DataFrame(PCA(n_components=30).fit_transform(np.asarray(sub_GRM)))
+                                pcs.columns = ["pc_" + str(col + 1) for col in pcs.columns]
+                                # Drop previous pcs
+                                sub_df = sub_df.loc[:,~sub_df.columns.str.startswith('pc_')]
+                                #Add site specific PC's
+                                sub_df = pd.concat([sub_df, pcs], axis=1)
 
 
 
-                        # Estimate just on the supsample
-                        sub_result = load_n_estimate(df=sub_df, fixed_effects=[],  nnpc=nnpc, mp=mp, GRM=sub_GRM, std=False, Method=Method, random_groups=None,
+                            # Estimate just on the supsample
+                            sub_result = load_n_estimate(df=sub_df, fixed_effects=[],  nnpc=nnpc, mp=mp, GRM=sub_GRM, std=False, Method=Method, random_groups=None,
                                                      silent=True, homo=homo)
-                        sub_result = pd.DataFrame({"h2": [sub_result["h2"][0]],
+                            sub_result = pd.DataFrame({"h2": [sub_result["h2"][0]],
                                                    "Size": [sub_n]})
-                        # Add to the list of estimates
-                        sub_results = sub_results.append(
-                            sub_result, ignore_index=True)
+                            # Add to the list of estimates
+                            sub_results = sub_results.append(
+                                sub_result, ignore_index=True)
+                        except ValueError :
+                            print("Not estimated on this subgroups since there wasn't enough samples")
 
                     # Pool the estimates
                     sub_results["nh2"] = (
