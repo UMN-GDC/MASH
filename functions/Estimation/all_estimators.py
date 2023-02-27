@@ -20,6 +20,7 @@ from functions.Estimation.AdjHE_estimator import AdjHE_estimator #, load_n_MOM
 from functions.Estimation.PredLMM_estimator import load_n_PredLMM
 from functions.Estimation.GCTA_wrapper import gcta, GCTA
 from functions.Estimation.combat import neuroCombat
+from functions.Estimation.covbat import covbat
 
 
 # %%
@@ -154,6 +155,31 @@ def load_n_estimate(df, fixed_effects, nnpc, mp, GRM, std=False, Method="AdjHE",
 
         result = AdjHE_estimator(A = GRM_nonmissing, df = temp, mp = mp, random_groups = None, npc=nnpc, std=False)
     
+    elif Method =="Covbat" :
+        phenos = ['third_Ventricle', 'fourth_Ventricle', 'fifth_Ventricle', 'Brain_Stem', 'CC_Anterior', 'CC_Central', 'CC_Mid_Anterior',
+                  'CC_Mid_Posterior', 'CC_Posterior', 'CSF', 'Glob', 'Left_Accumbens_area', 'Left_Amygdala', 'Left_Caudate',
+                  'Left_Cerebellum_Cortex', 'Left_Cerebellum_White_Matter', 'Left_Hippocampus', 'Left_Inf_Lat_Vent', 'Left_Pallidum', 
+                  'Left_Putamen', 'Left_Thalamus_Proper', 'Left_VentralDC', 'Left_WM_hypointensities', 'Left_choroid_plexus', 
+                  'Left_non_WM_hypointensities', 'Left_vessel', 'Optic_Chiasm', 'Right_Accumbens_area', 'Right_Amygdala', 'Right_Caudate',
+                  'Right_Cerebellum_Cortex', 'Right_Cerebellum_White_Matter', 'Right_Hippocampus', 'Right_Inf_Lat_Vent', 'Right_Lateral_Ventricle',
+                  'Right_Pallidum', 'Right_Putamen', 'Right_Thalamus_Proper', 'Right_VentralDC', 'Right_WM_hypointensities', 'Right_choroid_plexus',
+                  'Right_non_WM_hypointensities', 'Right_vessel', 'WM_hypointensities', 'non_WM_hypointensities']
+        # For simulations
+        # mp[mp + "2"] = df[mp]
+
+        # Harmonization step:
+        temp[phenos] = df[phenos]
+        # Figure out the column number of the phenotype we are estimating on for real data
+        mpcol = np.where([col == mp for col in phenos])[0][0]
+
+        
+        data_covbat = covbat(temp[phenos].T, batch = temp[random_groups], n_pc = nnpc)
+    
+        temp[mp] = data_covbat[mpcol, :].T
+        
+
+        result = AdjHE_estimator(A = GRM_nonmissing, df = temp, mp = mp, random_groups = None, npc=nnpc, std=False)
+
 
     else:
         print("Not an accepted method")

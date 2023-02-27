@@ -86,6 +86,8 @@ def sim_n_est(nsubjects = 1000, sigma = [0.5,0.25, 0.25], site_comp = "IID", nsi
 
         SWD = ests.estimate(Method = "SWD", npc = [nnpc], fixed_effects = RE, mpheno = ["Y"], random_groups = "abcd_site", Naive = False)
         Combat = ests.estimate(Method = "Combat", npc = [nnpc], fixed_effects = RE, mpheno = ["Y"], random_groups = "abcd_site", Naive = False)
+        Covbat = ests.estimate(Method = "Covbat", npc = [nnpc], fixed_effects = RE, mpheno = ["Y"], random_groups = "abcd_site", Naive = False)
+
 
     else :
         nAdjHE = pd.DataFrame({"h2" : np.nan, "var(h2)" : np.nan, "Analysis time" : np.nan}, index = [0])
@@ -93,6 +95,8 @@ def sim_n_est(nsubjects = 1000, sigma = [0.5,0.25, 0.25], site_comp = "IID", nsi
         nGCTA = pd.DataFrame({"h2" : np.nan, "var(h2)" : np.nan, "Analysis time" : np.nan}, index = [0])
         SWD = pd.DataFrame({"h2" : np.nan, "var(h2)" : np.nan, "Analysis time" : np.nan}, index = [0])
         Combat = pd.DataFrame({"h2" : np.nan, "var(h2)" : np.nan, "Analysis time" : np.nan}, index = [0])
+        Covbat = pd.DataFrame({"h2" : np.nan, "var(h2)" : np.nan, "Analysis time" : np.nan}, index = [0])
+
         
     result = {"GCTA" : GCTA_est["h2"][0],
               "var_GCTA" : GCTA_est["var(h2)"][0],
@@ -117,6 +121,10 @@ def sim_n_est(nsubjects = 1000, sigma = [0.5,0.25, 0.25], site_comp = "IID", nsi
               "Combat": Combat["h2"][0],
               "var_Combat" : Combat["var(h2)"][0],
               "time_Combat" : Combat["Analysis time"][0],
+              
+              "Covbat": Combat["h2"][0],
+              "var_Covbat" : Combat["var(h2)"][0],
+              "time_Covbat" : Combat["Analysis time"][0],
 
               "AdjHE_RE" : AdjHE_RE["h2"][0],
               "var_AdjHE_RE" : AdjHE_RE["var(h2)"][0],
