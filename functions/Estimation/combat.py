@@ -436,7 +436,8 @@ def adjust_data_final(s_data, design, gamma_star, delta_star, stand_mean, mod_me
         bayesdata[:,batch_idxs] = numer / denom
 
     vpsq = np.sqrt(var_pooled).reshape((len(var_pooled), 1))
-    bayesdata = bayesdata * np.dot(vpsq, np.ones((1, n_sample))) + stand_mean + mod_mean
+    # Removed adding the mean back in for use in heritability estimation
+    bayesdata = bayesdata * np.dot(vpsq, np.ones((1, n_sample))) # + stand_mean + mod_mean
 
     if ref_level is not None:
         bayesdata[:, batch_info[ref_level]] = dat[:,batch_info[ref_level]]
