@@ -79,7 +79,7 @@ def covbat(data, batch, model=None, numerical_covariates=None, pct_var=0.95, n_p
         model["batch"] = list(batch)
     else:
         model = pd.DataFrame({'batch': batch})
-
+    print(data)
     batch_items = model.groupby("batch").groups.items()
     batch_levels = [k for k, v in batch_items]
     batch_info = [v for k, v in batch_items]
@@ -140,7 +140,6 @@ def covbat(data, batch, model=None, numerical_covariates=None, pct_var=0.95, n_p
     bayesdata = s_data
     gamma_star = np.array(gamma_star)
     delta_star = np.array(delta_star)
-
     for j, batch_idxs in enumerate(batch_info):
 
         dsq = np.sqrt(delta_star[j,:])
@@ -153,7 +152,6 @@ def covbat(data, batch, model=None, numerical_covariates=None, pct_var=0.95, n_p
     vpsq = np.sqrt(var_pooled).reshape((len(var_pooled), 1))
     # not adding back stand_mean yet
     bayesdata = bayesdata * np.dot(vpsq, np.ones((1, int(n_array))))
-
     # CovBat step: PCA then ComBat without EB on the scores
     # comdata = data.T
     comdata = bayesdata.T
@@ -162,16 +160,18 @@ def covbat(data, batch, model=None, numerical_covariates=None, pct_var=0.95, n_p
     scaler = StandardScaler()
     comdata = scaler.fit_transform(comdata)
     
+    comdata = np.nan_to_num(comdata)
     pca = PCA()
     # PCA can't handle missing values
-    comdata = comdata[~np.isnan(comdata).any(axis= 1), :]
+    #comdata = comdata[~np.isnan(comdata).any(axis= 1), :]
+    # comdata[np.isnan(comdata)] = 0
     pca.fit(comdata)
     pc_comp = pca.components_
     full_scores = pd.DataFrame(pca.fit_transform(comdata)).T
     full_scores.columns = data.columns
 
-    var_exp=np.cumsum(np.round(pca.explained_variance_ratio_, decimals=4))
-    npc = np.min(np.where(var_exp>pct_var))+1
+    #var_exp=np.cumsum(np.round(pca.explained_variance_ratio_, decimals=4))
+    #npc = np.min(np.where(var_exp>pct_var))+1
     if n_pc > 0:
         npc = n_pc
     scores = full_scores.loc[range(0,npc),:]
@@ -184,7 +184,7 @@ def covbat(data, batch, model=None, numerical_covariates=None, pct_var=0.95, n_p
     x_covbat += scaler.inverse_transform(proj.T).T
     # x_covbat = x_covbat * np.dot(vpsq, np.ones((1, int(n_array)))) + stand_mean
     x_covbat += stand_mean
- 
+    print(x_covbat)
     return x_covbat
 
 def combat(data, batch, model=None, numerical_covariates=None, eb=True):

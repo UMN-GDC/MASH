@@ -11,7 +11,7 @@ Last Updated 2022-06-06
 # The main file of the AdjHE estimator: loads, cleans, selects
 # , loops, and store heritability estimates 
 ##############################################################
-
+# args = read_flags({"argfile": "/panfs/jay/groups/31/rando149/coffm049/ABCD/Workflow/03_Herit_ests/Asegs/full/New/Covbat.json"})
 import os
 #os.chdir("/home/christian/Research/Stat_gen/tools/Basu_herit")
 # os.chdir("/panfs/roc/groups/3/rando149/coffm049/tools/Basu_herit")

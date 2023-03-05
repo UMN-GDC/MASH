@@ -61,7 +61,8 @@ def AdjHE_estimator(A, df, mp, random_groups = None, npc=0, std=False):
     
         # Calculate outer products of eigenvectors
         PPt = np.matmul(PCs, PCsT)
-    
+        print(y.shape)
+        print(PPt.shape)    
         # Calculate tj's
         Tjs = np.matmul(np.matmul(y, PPt), y.T)
     

@@ -171,18 +171,18 @@ def load_n_estimate(df, fixed_effects, nnpc, mp, GRM, std=False, Method="AdjHE",
         temp[phenos] = df[phenos]
         # Figure out the column number of the phenotype we are estimating on for real data
         mpcol = np.where([col == mp for col in phenos])[0][0]
-        
-        pca = PCA(n_components=0.9)
+        pca = PCA(n_components=len(phenos))
 
         # wrap combat in a pca step to make it covbat
-        data_covbat = pca.fit_transform(neuroCombat(dat=temp[phenos].T,
-                                                    covars=temp[["pc_" + str(i + 1) for i in range(nnpc)] + fixed_effects + [random_groups]],
-                                                    batch_col=random_groups)["data"].T)
-        # Covbat is only for for real data so we'll hard code the phenotypes
-        temp[phenos] = data_covbat
+        data_combat = neuroCombat(dat=temp[phenos].T,
+                                            covars=temp[["pc_" + str(i + 1) for i in range(nnpc)] + fixed_effects + [random_groups]],
+                                            batch_col=random_groups)["data"].T
+        data_covbat = pca.fit_transform(data_combat)[:,mpcol]
+        # Good up to here
         
-
-        result = AdjHE_estimator(A = GRM_nonmissing, df = temp, mp = phenos, random_groups = None, npc=nnpc, std=False)
+        # Covbat is only for for real data so we'll hard code the phenotypes
+        temp[mp] = data_covbat
+        result = AdjHE_estimator(A = GRM_nonmissing, df = temp, mp = mp, random_groups = None, npc=nnpc, std=False)
 
 
     else:
