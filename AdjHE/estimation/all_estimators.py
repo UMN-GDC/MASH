@@ -15,12 +15,12 @@ from sklearn.decomposition import PCA
 import matplotlib.pyplot as plt
 import seaborn as sns
 from tqdm.auto import tqdm
-from functions.Data_input.load_data import load_everything
-from functions.Estimation.AdjHE_estimator import AdjHE_estimator #, load_n_MOM
-from functions.Estimation.PredLMM_estimator import load_n_PredLMM
-from functions.Estimation.GCTA_wrapper import gcta, GCTA
-from functions.Estimation.combat import neuroCombat
-from functions.Estimation.covbat import covbat
+from AdjHE.data_input.load_data import load_everything
+from AdjHE.estimation.AdjHE_estimator import AdjHE_estimator #, load_n_MOM
+from AdjHE.estimation.PredLMM_estimator import load_n_PredLMM
+from AdjHE.estimation.GCTA_wrapper import gcta, GCTA
+from AdjHE.estimation.combat import neuroCombat
+from AdjHE.estimation.covbat import covbat
 
 
 # %%
