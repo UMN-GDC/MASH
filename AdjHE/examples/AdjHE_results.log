@@ -1,5 +1,30 @@
+root - INFO - Started
 root - INFO - These are the list of arguments that were input:
 root - INFO - {'PC': 'AdjHE/examples/Input_files/pcas.eigenvec', 'covar': 'AdjHE/examples/Input_files/covar.txt', 'prefix': 'AdjHE/examples/Input_files/grm', 'pheno': 'AdjHE/examples/Input_files/pheno.phen', 'out': 'AdjHE/examples/AdjHE_results', 'npc': [5, 10], 'mpheno': ['Head_size'], 'k': 0, 'std': False, 'fixed_effects': ['Tidyness', 'Happy_camper'], 'argfile': '/home/christian/Research/Stat_gen/tools/Basu_herit/Example/Arg_file.json', 'loop_covars': False, 'covar_relates': False, 'random_groups': 'abcd_site', 'Naive': True, 'Method': 'GCTA', 'ids': None}
 root - INFO - Loading data
+root - INFO - Loading data...
 root - INFO - Estimating
+root - INFO - Estimating with GCTA
+root - INFO - RV: abcd_site
+root - INFO - Beginning estimation
+root - DEBUG - ['Tidyness', 'Happy_camper']
+root - DEBUG - Selecting columns and removing missingness
+root - DEBUG - Formula is Head_size~ 1
+root - DEBUG - GRM dimensions2500
+root - DEBUG - Selecting columns and removing missingness
+root - DEBUG - Formula is Head_size~ 1
+root - DEBUG - GRM dimensions2500
+root - DEBUG - Started7158.972262191
+root - DEBUG - Ended7181.633910101
+root - DEBUG - 22.661647910000283
+root - DEBUG - Selecting columns and removing missingness
+root - DEBUG - Formula is Head_size~ 1
+root - DEBUG - GRM dimensions2500
+root - DEBUG - Selecting columns and removing missingness
+root - DEBUG - Formula is Head_size~ 1
+root - DEBUG - GRM dimensions2500
+root - DEBUG - Started7181.6348168
+root - DEBUG - Ended7210.651907693
+root - DEBUG - 29.017090892999477
 root - INFO - Writing results to AdjHE/examples/AdjHE_results
+root - INFO - Finished

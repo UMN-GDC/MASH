@@ -7,6 +7,7 @@ covbat function written by Andrew Chen (andrewac@pennmedicine.upenn.edu)
 import pandas as pd
 import patsy
 import sys
+import logging
 import numpy.linalg as la
 import numpy as np
 
@@ -27,20 +28,20 @@ def design_mat(mod, numerical_covariates, batch_levels):
 
     mod = mod.drop(["batch"], axis=1)
     numerical_covariates = list(numerical_covariates)
-    sys.stderr.write("found %i batches\n" % design.shape[1])
+    logging.info("found %i batches\n" % design.shape[1])
     other_cols = [c for i, c in enumerate(mod.columns)
                   if not i in numerical_covariates]
     factor_matrix = mod[other_cols]
     design = pd.concat((design, factor_matrix), axis=1)
     if numerical_covariates is not None:
-        sys.stderr.write("found %i numerical covariates...\n"
+        logging.info("found %i numerical covariates...\n"
                             % len(numerical_covariates))
         for i, nC in enumerate(numerical_covariates):
             cname = mod.columns[nC]
-            sys.stderr.write("\t{0}\n".format(cname))
+            logging.info("\t{0}\n".format(cname))
             design[cname] = mod[mod.columns[nC]]
-    sys.stderr.write("found %i categorical variables:" % len(other_cols))
-    sys.stderr.write("\t" + ", ".join(other_cols) + '\n')
+    logging.info("found %i categorical variables:" % len(other_cols))
+    logging.info("\t" + ", ".join(other_cols) + '\n')
     return design
 
 """Correction of *Cov*ariance *Bat* effects
@@ -79,7 +80,6 @@ def covbat(data, batch, model=None, numerical_covariates=None, pct_var=0.95, n_p
         model["batch"] = list(batch)
     else:
         model = pd.DataFrame({'batch': batch})
-    print(data)
     batch_items = model.groupby("batch").groups.items()
     batch_levels = [k for k, v in batch_items]
     batch_info = [v for k, v in batch_items]
@@ -95,8 +95,8 @@ def covbat(data, batch, model=None, numerical_covariates=None, pct_var=0.95, n_p
         for c in numerical_covariates if not c in drop_cols]
 
     design = design_mat(model, numerical_covariates, batch_levels)
-
-    sys.stderr.write("Standardizing Data across genes.\n")
+    
+    logging.info("Standardizing Data across genes.\n")
     B_hat = np.dot(np.dot(la.inv(np.dot(design.T, design)), design.T), data.T)
     grand_mean = np.dot((n_batches / n_array).T, B_hat[:n_batch,:])
     var_pooled = np.dot(((data - np.dot(design, B_hat).T)**2), np.ones((int(n_array), 1)) / int(n_array))
@@ -108,7 +108,7 @@ def covbat(data, batch, model=None, numerical_covariates=None, pct_var=0.95, n_p
 
     s_data = ((data - stand_mean) / np.dot(np.sqrt(var_pooled), np.ones((1, int(n_array)))))
 
-    sys.stderr.write("Fitting L/S model and finding priors\n")
+    logging.info("Fitting L/S model and finding priors\n")
     batch_design = design[design.columns[:n_batch]]
     gamma_hat = np.dot(np.dot(la.inv(np.dot(batch_design.T, batch_design)), batch_design.T), s_data.T)
 
@@ -124,11 +124,9 @@ def covbat(data, batch, model=None, numerical_covariates=None, pct_var=0.95, n_p
     a_prior = list(map(aprior, delta_hat))
     b_prior = list(map(bprior, delta_hat))
 
-    sys.stderr.write("Finding parametric adjustments\n")
+    logging.info("Finding parametric adjustments\n")
     gamma_star, delta_star = [], []
     for i, batch_idxs in enumerate(batch_info):
-        #print '18 20 22 28 29 31 32 33 35 40 46'
-        #print batch_info[batch_id]
 
         temp = it_sol(s_data[batch_idxs], gamma_hat[i],
                      delta_hat[i], gamma_bar[i], t2[i], a_prior[i], b_prior[i])
@@ -136,7 +134,7 @@ def covbat(data, batch, model=None, numerical_covariates=None, pct_var=0.95, n_p
         gamma_star.append(temp[0])
         delta_star.append(temp[1])
 
-    sys.stdout.write("Adjusting data\n")
+    logging.info("Adjusting data\n")
     bayesdata = s_data
     gamma_star = np.array(gamma_star)
     delta_star = np.array(delta_star)
@@ -184,7 +182,7 @@ def covbat(data, batch, model=None, numerical_covariates=None, pct_var=0.95, n_p
     x_covbat += scaler.inverse_transform(proj.T).T
     # x_covbat = x_covbat * np.dot(vpsq, np.ones((1, int(n_array)))) + stand_mean
     x_covbat += stand_mean
-    print(x_covbat)
+    logging.debug(str(x_covbat))
     return x_covbat
 
 def combat(data, batch, model=None, numerical_covariates=None, eb=True):
@@ -238,7 +236,7 @@ def combat(data, batch, model=None, numerical_covariates=None, eb=True):
 
     design = design_mat(model, numerical_covariates, batch_levels)
 
-    sys.stderr.write("Standardizing Data across genes.\n")
+    logging.info("Standardizing Data across genes.\n")
     B_hat = np.dot(np.dot(la.inv(np.dot(design.T, design)), design.T), data.T)
     grand_mean = np.dot((n_batches / n_array).T, B_hat[:n_batch,:])
     var_pooled = np.dot(((data - np.dot(design, B_hat).T)**2), np.ones((int(n_array), 1)) / int(n_array))
@@ -250,7 +248,7 @@ def combat(data, batch, model=None, numerical_covariates=None, eb=True):
 
     s_data = ((data - stand_mean) / np.dot(np.sqrt(var_pooled), np.ones((1, int(n_array)))))
 
-    sys.stderr.write("Fitting L/S model and finding priors\n")
+    logging.info("Fitting L/S model and finding priors\n")
     batch_design = design[design.columns[:n_batch]]
     gamma_hat = np.dot(np.dot(la.inv(np.dot(batch_design.T, batch_design)), batch_design.T), s_data.T)
 
@@ -267,11 +265,9 @@ def combat(data, batch, model=None, numerical_covariates=None, eb=True):
     a_prior = list(map(aprior, delta_hat))
     b_prior = list(map(bprior, delta_hat))
 
-    sys.stderr.write("Finding parametric adjustments\n")
+    logging.info("Finding parametric adjustments\n")
     gamma_star, delta_star = [], []
     for i, batch_idxs in enumerate(batch_info):
-        #print '18 20 22 28 29 31 32 33 35 40 46'
-        #print batch_info[batch_id]
 
         temp = it_sol(s_data[batch_idxs], gamma_hat[i],
                      delta_hat[i], gamma_bar[i], t2[i], a_prior[i], b_prior[i])
@@ -279,7 +275,7 @@ def combat(data, batch, model=None, numerical_covariates=None, eb=True):
         gamma_star.append(temp[0])
         delta_star.append(temp[1])
 
-    sys.stdout.write("Adjusting data\n")
+    logging.info("Adjusting data\n")
     bayesdata = s_data
     gamma_star = np.array(gamma_star)
     delta_star = np.array(delta_star)
@@ -317,7 +313,7 @@ def it_sol(sdat, g_hat, d_hat, g_bar, t2, a, b, conv=0.0001):
     change = 1
     count = 0
     while change > conv:
-        #print g_hat.shape, g_bar.shape, t2.shape
+        logging.debug(str(g_hat.shape), str(g_bar.shape), str(t2.shape))
         g_new = postmean(g_hat, g_bar, n, d_old, t2)
         sum2 = ((sdat - np.dot(g_new.values.reshape((g_new.shape[0], 1)), np.ones((1, sdat.shape[1])))) ** 2).sum(axis=1)
         d_new = postvar(sum2, n, a, b)

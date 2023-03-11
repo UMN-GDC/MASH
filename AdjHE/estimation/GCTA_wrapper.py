@@ -7,6 +7,7 @@ Created on Mon Nov 21 07:35:15 2022
 """
 import sys
 import os
+import logging
 import subprocess
 import numpy as np
 import pandas as pd 
@@ -84,7 +85,7 @@ def GCTA(df, covars, nnpc, mp, GRM, gcta, silent=False):
 
 
     except FileNotFoundError:
-        print("Estimations were not made. Usually this is due to small sample sizes for GCTA")
+        logging.error("Estimations were not made. Usually this is due to small sample sizes for GCTA")
         result = {"h2": np.nan, "var(h2)": np.nan, "ss" : np.nan, "Pheno": mp, "PCs": nnpc, "Covariates": "+".join(covars), "Time for analysis(s)": np.nan,
              "Memory Usage": np.nan}
 

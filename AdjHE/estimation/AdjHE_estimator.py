@@ -13,6 +13,7 @@ Last Updated 2022-05-26
 # guts of the AdjHE estimator
 ##############################################################
 
+import logging
 import numpy as np
 from scipy.linalg import block_diag
 import pandas as pd
@@ -61,8 +62,8 @@ def AdjHE_estimator(A, df, mp, random_groups = None, npc=0, std=False):
     
         # Calculate outer products of eigenvectors
         PPt = np.matmul(PCs, PCsT)
-        print(y.shape)
-        print(PPt.shape)    
+        logging.debug(str(y.shape))
+        logging.debug(str(PPt.shape))
         # Calculate tj's
         Tjs = np.matmul(np.matmul(y, PPt), y.T)
     
@@ -166,6 +167,8 @@ def AdjHE_estimator(A, df, mp, random_groups = None, npc=0, std=False):
         
     # Calculate variance of estimate
     var_h2 = 2/ ( trA2 - 2*trA + n - np.sum(Sjs**2))
+    if var_h2 < 0:
+        logging.warning("Variance estimate is negative")
 
     results = {"h2" : h2, "ss": ss, "var(h2)" : var_h2}
     

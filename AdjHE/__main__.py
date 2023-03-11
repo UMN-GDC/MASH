@@ -31,13 +31,13 @@ from AdjHE.estimation.all_estimators import Basu_estimation
 
 
 if __name__ == "__main__" :
-
     #%% Get command line arguments
     # Get CL arguments and convert them to usable Python objects in a dictionary
     args = read_flags(get_args())
     
     logging.basicConfig(filename=f'{args["out"]}.log', filemode='w', format='%(name)s - %(levelname)s - %(message)s',
                         level=logging.DEBUG)
+    logging.info("Started")
     logging.info("These are the list of arguments that were input:")
     logging.info(args)
     logging.info("Loading data")
@@ -57,5 +57,5 @@ if __name__ == "__main__" :
     # %%
     logging.info(f"Writing results to {args['out']}")
     ests.results.to_csv(args["out"], index=False, na_rep='NA')
-    
+    logging.info("Finished")
     
