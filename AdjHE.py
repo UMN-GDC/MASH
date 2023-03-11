@@ -13,6 +13,7 @@ Last Updated 2022-06-06
 ##############################################################
 # args = read_flags({"argfile": "/panfs/jay/groups/31/rando149/coffm049/ABCD/Workflow/03_Herit_ests/Asegs/full/New/Covbat.json"})
 import os
+import logging
 #os.chdir("/home/christian/Research/Stat_gen/tools/Basu_herit")
 # os.chdir("/panfs/roc/groups/3/rando149/coffm049/tools/Basu_herit")
 from functions.Data_input.parser import get_args, read_flags
@@ -32,10 +33,14 @@ from functions.Estimation.all_estimators import Basu_estimation
 #%% Get command line arguments
 # Get CL arguments and convert them to usable Python objects in a dictionary
 args = read_flags(get_args())
-print("These are the list of arguments that were input:")
-print(args)
 
+logging.basicConfig(filename=f'{args["out"]}.log', filemode='w', format='%(name)s - %(levelname)s - %(message)s',
+                    level=logging.DEBUG)
+logging.info("These are the list of arguments that were input:")
+logging.info(args)
+logging.info("Loading data")
 #%% Read in all data
+
 ests = Basu_estimation(prefix = args["prefix"],
                           pheno_file = args["pheno"], 
                           cov_file= args["covar"], 
@@ -45,9 +50,10 @@ ests = Basu_estimation(prefix = args["prefix"],
 # covs_vs_cov_of_interest(df, args["RV"], args["covars"], args["out"])
 
 #%%
+logging.info("Estimating")
 ests.estimate(Method = args["Method"], npc = args["npc"], fixed_effects = args["fixed_effects"], mpheno = args["mpheno"], loop_covars = args["loop_covars"], random_groups = args["random_groups"], Naive= args["Naive"])
 # %%
-print("Writing results")
+logging.info(f"Writing results to {args['out']}")
 ests.results.to_csv(args["out"], index=False, na_rep='NA')
 
 
