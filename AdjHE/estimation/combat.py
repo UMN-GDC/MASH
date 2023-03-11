@@ -1,6 +1,7 @@
 # Originally written by Nick Cullen
 # Extended and currently maintained by JP Fortin
 from __future__ import absolute_import, print_function
+import logging
 import pandas as pd
 import numpy as np
 import numpy.linalg as la
@@ -95,7 +96,7 @@ def neuroCombat(dat,
         if ref_indices.shape[0]==0:
             ref_level=None
             ref_batch=None
-            print('[neuroCombat] batch.ref not found. Setting to None.')
+            logging.info('[neuroCombat] batch.ref not found. Setting to None.')
             covars[:,batch_col] = np.unique(covars[:,batch_col],return_inverse=True)[-1]
         else:
             covars[:,batch_col] = np.unique(covars[:,batch_col],return_inverse=True)[-1]
@@ -105,7 +106,7 @@ def neuroCombat(dat,
     
 
      # create design matrix
-    print('[neuroCombat] Creating design matrix')
+    logging.info('[neuroCombat] Creating design matrix')
     design = make_design_matrix(covars, batch_col, cat_cols, num_cols, ref_level)
     
 
@@ -123,27 +124,27 @@ def neuroCombat(dat,
 
    
     # standardize data across features
-    print('[neuroCombat] Standardizing data across features')
+    logging.info('[neuroCombat] Standardizing data across features')
     s_data, s_mean, v_pool, mod_mean = standardize_across_features(dat, design, info_dict)
     
     # fit L/S models and find priors
-    print('[neuroCombat] Fitting L/S model and finding priors')
+    logging.info('[neuroCombat] Fitting L/S model and finding priors')
     LS_dict = fit_LS_model_and_find_priors(s_data, design, info_dict, mean_only)
 
     # find parametric adjustments
     if eb:
         if parametric:
-            print('[neuroCombat] Finding parametric adjustments')
+            logging.info('[neuroCombat] Finding parametric adjustments')
             gamma_star, delta_star = find_parametric_adjustments(s_data, LS_dict, info_dict, mean_only)
         else:
-            print('[neuroCombat] Finding non-parametric adjustments')
+            logging.info('[neuroCombat] Finding non-parametric adjustments')
             gamma_star, delta_star = find_non_parametric_adjustments(s_data, LS_dict, info_dict, mean_only)
     else:
-        print('[neuroCombat] Finding L/S adjustments without Empirical Bayes')
+        logging.info('[neuroCombat] Finding L/S adjustments without Empirical Bayes')
         gamma_star, delta_star = find_non_eb_adjustments(s_data, LS_dict, info_dict)
 
     # adjust data
-    print('[neuroCombat] Final adjustment of data')
+    logging.info('[neuroCombat] Final adjustment of data')
     bayes_data = adjust_data_final(s_data, design, gamma_star, delta_star, 
                                     s_mean, mod_mean, v_pool, info_dict,dat)
 
@@ -470,7 +471,7 @@ def neuroCombatFromTraining(dat,
     - data: A numpy array with the same shape as `dat` which has now been ComBat-harmonized
     - estimates: A dictionary of the ComBat estimates used for harmonization
     """
-    print("[neuroCombatFromTraining] In development ...\n")
+    logging.info("[neuroCombatFromTraining] In development ...\n")
     batch = np.array(batch, dtype="str")
     new_levels = np.unique(batch)
     old_levels = np.array(estimates['batches'], dtype="str")

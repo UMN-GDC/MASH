@@ -7,6 +7,7 @@ Created on Tue Nov  8 03:22:59 2022
 """
 import timeit
 import resource
+import logging
 import numpy as np
 import pandas as pd
 import statsmodels.formula.api as smf
@@ -62,7 +63,7 @@ def load_n_estimate(df, fixed_effects, nnpc, mp, GRM, std=False, Method="AdjHE",
         - time for analysis
         - maximum memory usage
     """
-
+    logging.debug("Selecting columns and removing missingness")
     # Remove missingness for in-house estimators
     id_cols = ["FID", "IID"]
     ids = df[id_cols]
@@ -95,12 +96,15 @@ def load_n_estimate(df, fixed_effects, nnpc, mp, GRM, std=False, Method="AdjHE",
     
     # Make formula
     form = mp + "~ " +  RHS
+    logging.debug("Formula is " + form)
     
     # save a temporary dataframe
     temp = df[cols].dropna()
     nonmissing = ids[ids.IID.isin(temp.IID)].index
     GRM_nonmissing = GRM[nonmissing, :][:, nonmissing]
-        
+    
+    logging.debug("GRM dimensions" + str(GRM_nonmissing.shape[0]))
+    
     # Select method of estimation
     if Method == "AdjHE":
         # AdjHE projects away covariates to start
@@ -186,7 +190,7 @@ def load_n_estimate(df, fixed_effects, nnpc, mp, GRM, std=False, Method="AdjHE",
 
 
     else:
-        print("Not an accepted method")
+        logging.error("Not an accepted method of estimation: " + Method)
         
     
     result["pheno"] = mp
@@ -197,14 +201,14 @@ def load_n_estimate(df, fixed_effects, nnpc, mp, GRM, std=False, Method="AdjHE",
 class Basu_estimation():
     def __init__(self, prefix=None, pheno_file=None, cov_file=None, PC_file=None, k=0, ids=None, Simulation=False):
         if prefix == None:
-            print("Enter preloaded values...")
+            logging.info("Enter preloaded values...")
             self.df = None
             self.GRM = None
             self.phenotypes = "Y"
             self.simulation = True
 
         else:
-            print("Loading data...")
+            logging.info("Loading data...")
             self.df, self.GRM, self.phenotypes = load_everything(
                 prefix, pheno_file, cov_file, PC_file, k, ids)
             self.simulation = False
@@ -228,11 +232,11 @@ class Basu_estimation():
         else:
             # make them lowercase
             self.mpheno = mpheno
-
-        print("Estimating")
-        print(Method)
+            
+        logging.info("Estimating with " + Method)
+        
         if random_groups != None:
-            print("RV: " + random_groups)
+            logging.info("RV: " + random_groups)
         # create empty list to store heritability estimates
         results = pd.DataFrame()
 
@@ -245,11 +249,12 @@ class Basu_estimation():
         # Forcing type to be integer for a little easier use
         if npc == None:
             npc = [0]
-
+        
+        logging.info("Beginning estimation")
         # Loop over each set of covariate combos
         for covs in tqdm(fixed_combos, desc = "Covariate sets"):
             # For each set of covariates recalculate the projection matrix
-            print(covs)
+            logging.debug(covs)
             # loop over all combinations of pcs and phenotypes
             for mp, nnpc in tqdm(itertools.product(self.mpheno, npc), desc = "Phenotype, PC combination counter"):
                 
@@ -302,7 +307,7 @@ class Basu_estimation():
                             sub_results = sub_results.append(
                                 sub_result, ignore_index=True)
                         except ValueError :
-                            print("Not estimated on this subgroups since there wasn't enough samples")
+                            logging.error("Not estimated on this subgroups since there wasn't enough samples")
 
                     # Pool the estimates
                     sub_results["nh2"] = (
@@ -314,10 +319,10 @@ class Basu_estimation():
                     r = pd.DataFrame(r, index=[0])
 
                 # Get memory for each step (in Mb) (This is a little sketchy)
-                print("Started" + str(start_est)) 
+                logging.debug("Started" + str(start_est)) 
                 end_est = timeit.default_timer()
-                print("Ended" + str(end_est))
-                print(end_est - start_est)
+                logging.debug("Ended" + str(end_est))
+                logging.debug(end_est - start_est)
                 
                 time = [end_est - start_est]
                 mem = [resource.getrusage(resource.RUSAGE_SELF).ru_maxrss/1000]
@@ -329,7 +334,7 @@ class Basu_estimation():
         return results # , sub_results
 
     def pop_clusts(self, npc=2, groups=None):
-        print("Generating PCA cluster visualization...")
+        logging.info("Generating PCA cluster visualization...")
         # Checked genotypes with coming from separate clusters
         pca = PCA(n_components=npc).fit(self.GRM)
         trans = pca.transform(self.GRM)
@@ -342,7 +347,7 @@ class Basu_estimation():
         plt.show()
 
     def GRM_vis(self, sort_by=None, location=None, npc=0, plot_decomp=False):
-        print("Generating GRM visualization...")
+        logging.info("Generating GRM visualization...")
         if sort_by == None:
             df = self.df
         else:
