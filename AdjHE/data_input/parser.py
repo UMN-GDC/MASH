@@ -15,7 +15,7 @@ Last Updated 2022-06-06
 
 import argparse
 import json 
-from functions.Data_input.types_n_valids import readable_file_or_none, readable_json
+from AdjHE.data_input.types_n_valids import readable_file_or_none, readable_json
 
 #%%
 
