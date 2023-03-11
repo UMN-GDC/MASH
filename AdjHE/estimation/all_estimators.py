@@ -24,7 +24,8 @@ from AdjHE.estimation.combat import neuroCombat
 from AdjHE.estimation.covbat import covbat
 
 
-# %%
+#%%
+
 
 def load_n_estimate(df, fixed_effects, nnpc, mp, GRM, std=False, Method="AdjHE", random_groups=None, silent=False, homo=True, gcta=gcta):
     """
@@ -63,10 +64,6 @@ def load_n_estimate(df, fixed_effects, nnpc, mp, GRM, std=False, Method="AdjHE",
         - time for analysis
         - maximum memory usage
     """
-    logging.debug("Selecting columns and removing missingness")
-    # Remove missingness for in-house estimators
-    id_cols = ["FID", "IID"]
-    ids = df[id_cols]
 
     # Change nnpc to a number
     if nnpc == None :
@@ -85,30 +82,22 @@ def load_n_estimate(df, fixed_effects, nnpc, mp, GRM, std=False, Method="AdjHE",
     else :
         RHS = "1"
     
-    # Take care of making random groups a list
-    if random_groups == None :
-        group_cols = []
-    elif isinstance(random_groups, str) :
-        group_cols = [random_groups]
-
-    # columns
-    cols = id_cols + [mp] + fixed_effects + pc_cols + group_cols
-    
     # Make formula
     form = mp + "~ " +  RHS
     logging.debug("Formula is " + form)
     
     # save a temporary dataframe
-    temp = df[cols].dropna()
-    nonmissing = ids[ids.IID.isin(temp.IID)].index
-    GRM_nonmissing = GRM[nonmissing, :][:, nonmissing]
-    
-    logging.debug("GRM dimensions" + str(GRM_nonmissing.shape[0]))
-    
+        
     # Select method of estimation
     if Method == "AdjHE":
         # AdjHE projects away covariates to start
-        temp[mp] = smf.ols(formula=form, data=temp, missing='drop').fit().resid
+        resid = smf.ols(formula=form, data=df, missing='drop').fit().resid
+        print(resid.shape)
+        resid.name = "resid"
+        temp = df.merge(resid, left_index = True, right_index =True, how = "inner")
+        temp[mp] = temp["resid"]
+        nonmissing = df[df.IID.isin(temp.IID)].index
+        GRM_nonmissing = GRM[nonmissing, :][:, nonmissing]
         result = AdjHE_estimator(A = GRM_nonmissing, df=temp, mp = mp, random_groups = random_groups, npc= nnpc, std=std)
 
     # MOM estimator is under construction
@@ -120,73 +109,27 @@ def load_n_estimate(df, fixed_effects, nnpc, mp, GRM, std=False, Method="AdjHE",
                                 GRM_nonmissing, std=False, random_groups=random_groups)
         
     elif Method == "GCTA":
-        result = GCTA(temp, fixed_effects, nnpc, mp, GRM, gcta=gcta, silent=False)
+        result = GCTA(df, fixed_effects, nnpc, mp, GRM, gcta=gcta, silent=False)
         
     elif Method == "SWD":
         # SWD projects away sites then projects away covaraites
-        temp[mp] = smf.ols(formula= mp + " ~ " + random_groups, data=temp, missing='drop').fit().resid
-        temp[mp] = smf.ols(formula=form, data=temp, missing='drop').fit().resid        
+        resid = smf.ols(formula= mp + " ~ " + random_groups, data=df, missing='drop').fit().resid
+        resid.name = "resid"
+        temp = df.merge(resid, left_index = True, right_index =True, how = "inner")
+        temp[mp] = temp["resid"]
+        
+        resid = smf.ols(formula=form, data=temp, missing='drop').fit().resid 
+        resid.name= "resid2"
+        temp = temp.merge(resid, left_index= True, right_index = True,how = "inner")
+        temp[mp] = temp["resid2"]
+        nonmissing = df[df.IID.isin(temp.IID)].index
+        GRM_nonmissing = GRM[nonmissing, :][:, nonmissing]
+
         result = AdjHE_estimator(A = GRM_nonmissing, df = temp, mp = mp, random_groups = None, npc=nnpc, std=False)
 
-        
-    elif Method == "Combat": 
-        # Hardcoded until we figure out how to program it
-        phenos = ['third_Ventricle', 'fourth_Ventricle', 'fifth_Ventricle', 'Brain_Stem', 'CC_Anterior', 'CC_Central', 'CC_Mid_Anterior',
-                  'CC_Mid_Posterior', 'CC_Posterior', 'CSF', 'Glob', 'Left_Accumbens_area', 'Left_Amygdala', 'Left_Caudate',
-                  'Left_Cerebellum_Cortex', 'Left_Cerebellum_White_Matter', 'Left_Hippocampus', 'Left_Inf_Lat_Vent', 'Left_Pallidum', 
-                  'Left_Putamen', 'Left_Thalamus_Proper', 'Left_VentralDC', 'Left_WM_hypointensities', 'Left_choroid_plexus', 
-                  'Left_non_WM_hypointensities', 'Left_vessel', 'Optic_Chiasm', 'Right_Accumbens_area', 'Right_Amygdala', 'Right_Caudate',
-                  'Right_Cerebellum_Cortex', 'Right_Cerebellum_White_Matter', 'Right_Hippocampus', 'Right_Inf_Lat_Vent', 'Right_Lateral_Ventricle',
-                  'Right_Pallidum', 'Right_Putamen', 'Right_Thalamus_Proper', 'Right_VentralDC', 'Right_WM_hypointensities', 'Right_choroid_plexus',
-                  'Right_non_WM_hypointensities', 'Right_vessel', 'WM_hypointensities', 'non_WM_hypointensities']
-        # For simulations
-	#temp[mp + "2"] = df[mp]
-
-        # Harmonization step:
-        temp[phenos] = df[phenos]
-        # Figure out the column number of the phenotype we are estimating on for real data
-        mpcol = np.where([col == mp for col in phenos])[0][0]
-            
-
-
-        data_combat = neuroCombat(dat=temp[phenos].T,
-                                  covars=temp[["pc_" + str(i + 1) for i in range(nnpc)] + fixed_effects + [random_groups]],
-                                  batch_col=random_groups)["data"]
-
-        # Grab the corresponding column of the harmonized data for the simulation
-        temp[mp] = data_combat[mpcol, :].T
-        
-
-        result = AdjHE_estimator(A = GRM_nonmissing, df = temp, mp = mp, random_groups = None, npc=nnpc, std=False)
-    
-    elif Method =="Covbat" :
-        phenos = ['third_Ventricle', 'fourth_Ventricle', 'fifth_Ventricle', 'Brain_Stem', 'CC_Anterior', 'CC_Central', 'CC_Mid_Anterior',
-                  'CC_Mid_Posterior', 'CC_Posterior', 'CSF', 'Glob', 'Left_Accumbens_area', 'Left_Amygdala', 'Left_Caudate',
-                  'Left_Cerebellum_Cortex', 'Left_Cerebellum_White_Matter', 'Left_Hippocampus', 'Left_Inf_Lat_Vent', 'Left_Pallidum', 
-                  'Left_Putamen', 'Left_Thalamus_Proper', 'Left_VentralDC', 'Left_WM_hypointensities', 'Left_choroid_plexus', 
-                  'Left_non_WM_hypointensities', 'Left_vessel', 'Optic_Chiasm', 'Right_Accumbens_area', 'Right_Amygdala', 'Right_Caudate',
-                  'Right_Cerebellum_Cortex', 'Right_Cerebellum_White_Matter', 'Right_Hippocampus', 'Right_Inf_Lat_Vent', 'Right_Lateral_Ventricle',
-                  'Right_Pallidum', 'Right_Putamen', 'Right_Thalamus_Proper', 'Right_VentralDC', 'Right_WM_hypointensities', 'Right_choroid_plexus',
-                  'Right_non_WM_hypointensities', 'Right_vessel', 'WM_hypointensities', 'non_WM_hypointensities']
-        # For simulations
-        # mp[mp + "2"] = df[mp]
-
-        # Harmonization step:
-        temp[phenos] = df[phenos]
-        # Figure out the column number of the phenotype we are estimating on for real data
-        mpcol = np.where([col == mp for col in phenos])[0][0]
-        pca = PCA(n_components=len(phenos))
-
-        # wrap combat in a pca step to make it covbat
-        data_combat = neuroCombat(dat=temp[phenos].T,
-                                            covars=temp[["pc_" + str(i + 1) for i in range(nnpc)] + fixed_effects + [random_groups]],
-                                            batch_col=random_groups)["data"].T
-        data_covbat = pca.fit_transform(data_combat)[:,mpcol]
-        # Good up to here
-        
-        # Covbat is only for for real data so we'll hard code the phenotypes
-        temp[mp] = data_covbat
-        result = AdjHE_estimator(A = GRM_nonmissing, df = temp, mp = mp, random_groups = None, npc=nnpc, std=False)
+    elif Method in ["Combat", "Covbat"]:
+        # AdjHE projects away covariates to start
+        result = AdjHE_estimator(A = GRM, df=df, mp = mp, random_groups = None, npc= nnpc, std=std)
 
 
     else:
@@ -250,6 +193,8 @@ class Basu_estimation():
         if npc == None:
             npc = [0]
         
+
+        
         logging.info("Beginning estimation")
         # Loop over each set of covariate combos
         for covs in tqdm(fixed_combos, desc = "Covariate sets"):
@@ -259,6 +204,33 @@ class Basu_estimation():
             for mp, nnpc in tqdm(itertools.product(self.mpheno, npc), desc = "Phenotype, PC combination counter"):
                 
                 start_est = timeit.default_timer()
+
+                # Adjust data if any Combat based method is wanted
+                if Method in ["Combat", "Covbat"] :
+
+                    logging.info("Method: " + Method)
+                    
+                    FEs = ["pc_" + str(i + 1) for i in range(nnpc)] + fixed_effects
+                    no_missing = self.df[mpheno + FEs + [random_groups]].dropna()
+                    
+                    transformed_data = neuroCombat(dat=no_missing[mpheno].T,
+                                              covars=no_missing[FEs],
+                                              batch_col=random_groups)["data"].T
+                    
+                    
+
+                    if Method == "Covbat" :
+                        pca = PCA(n_components=0.9)
+                        transformed_data = pca.fit_transform(transformed_data)
+                        
+                    nonmissing = self.df[self.df.IID.isin(no_missing.IID)].index
+                    self.GRM = self.GRM[nonmissing, :][:, nonmissing]
+
+                        
+                    self.df[mpheno] = transformed_data
+
+
+                
                 try: 
                     C = "+".join(fixed_combos)
                 except TypeError :
