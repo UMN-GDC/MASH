@@ -18,8 +18,8 @@ from sklearn.decomposition import PCA
 import statsmodels.api as sm
 import statsmodels.formula.api as smf
 import scipy
-from functions.Estimation.all_estimators import Basu_estimation
-from functions.Estimation.AdjHE_estimator import AdjHE_estimator
+from AdjHE.estimation.all_estimators import Basu_estimation
+from AdjHE.estimation.AdjHE_estimator import AdjHE_estimator
 
 
 
@@ -328,13 +328,13 @@ class pheno_simulator():
 
 sim = pheno_simulator(nsubjects= 1000, nSNPs = 10000)
 # Run through full simulation and estimation
-sim.full_sim(nsites= 25, sigma= [0.5,0.25,0.25], phens = 2, nclusts = 2, races_differ = True,
+sim.full_sim(nsites= 2, sigma= [0.5,0.25,0.25], phens = 5, nclusts = 2, races_differ = True,
               prop_causal = 0.01, cov_effect = True, ortho_cov = True, random_BS = False)
 
-
+#%%
 ests = Basu_estimation()
 ests.df= sim.df
 ests.GRM = sim.GRM
 ests.mpheno = ["Y"] 
-ests.estimate(npc=[1], mpheno= ["Y"], Method="AdjHE", random_groups = "abcd_site", fixed_effects= ["Xc"])
+ests.estimate(npc=[1], mpheno= ["Y"], Method="Combat", random_groups = "abcd_site", fixed_effects= ["Xc"], Naive = False)
 print(ests.results)
