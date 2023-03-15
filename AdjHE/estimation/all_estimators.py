@@ -192,7 +192,30 @@ class Basu_estimation():
         # Forcing type to be integer for a little easier use
         if npc == None:
             npc = [0]
-        
+            
+        # Adjust data if any Combat based method is wanted
+        if Method in ["Combat", "Covbat"] :
+            
+            logging.info("Method: " + Method)
+            
+            FEs = ["pc_" + str(i + 1) for i in range(max(npc))] + fixed_effects
+            no_missing = self.df[["FID", "IID"] + mpheno + FEs + [random_groups]].dropna()
+            
+            transformed_data = neuroCombat(dat=no_missing[mpheno].T,
+                                      covars=no_missing[FEs + [random_groups]],
+                                      batch_col=random_groups)["data"].T
+            
+            
+            random_groups = None
+            if Method == "Covbat" :
+                pca = PCA(n_components=0.9)
+                transformed_data = pca.fit_transform(transformed_data)
+                
+            nonmissing = self.df[self.df.IID.isin(no_missing.IID)].index
+            self.GRM = self.GRM[nonmissing, :][:, nonmissing]
+
+            self.df[mpheno] = transformed_data
+            # After transforming, Combat and Covbat procedures proceed just as the basic AdjHE estimator
 
         
         logging.info("Beginning estimation")
@@ -204,30 +227,6 @@ class Basu_estimation():
             for mp, nnpc in tqdm(itertools.product(self.mpheno, npc), desc = "Phenotype, PC combination counter"):
                 
                 start_est = timeit.default_timer()
-
-                # Adjust data if any Combat based method is wanted
-                if Method in ["Combat", "Covbat"] :
-
-                    logging.info("Method: " + Method)
-                    
-                    FEs = ["pc_" + str(i + 1) for i in range(nnpc)] + fixed_effects
-                    no_missing = self.df[mpheno + FEs + [random_groups]].dropna()
-                    
-                    transformed_data = neuroCombat(dat=no_missing[mpheno].T,
-                                              covars=no_missing[FEs],
-                                              batch_col=random_groups)["data"].T
-                    
-                    
-
-                    if Method == "Covbat" :
-                        pca = PCA(n_components=0.9)
-                        transformed_data = pca.fit_transform(transformed_data)
-                        
-                    nonmissing = self.df[self.df.IID.isin(no_missing.IID)].index
-                    self.GRM = self.GRM[nonmissing, :][:, nonmissing]
-
-                        
-                    self.df[mpheno] = transformed_data
 
 
                 
@@ -241,8 +240,9 @@ class Basu_estimation():
                           "Covariates" : C}
 
                 if not Naive:
-                    r = load_n_estimate(
-                        df=self.df, fixed_effects=covs, nnpc=nnpc, mp=mp, GRM=self.GRM, std=False, Method=Method, random_groups=random_groups, homo=homo)
+                    r = load_n_estimate(df=self.df, fixed_effects=covs, nnpc=nnpc,
+                                        mp=mp, GRM=self.GRM, std=False, Method=Method,
+                                        random_groups=random_groups, homo=homo)
 
                 else:
                     # Empty results list

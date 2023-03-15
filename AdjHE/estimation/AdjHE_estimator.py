@@ -29,8 +29,8 @@ def AdjHE_estimator(A, df, mp, random_groups = None, npc=0, std=False):
         n x n array containing the GRM values.
     df : pandas dataframe
         A dataframe containing all covariates, principal components, and phenotype that has been residualized if necessary.
-    mp : int
-        1 based index specifying the phenotype to be estimated on.
+    mp : string
+        name of the phenotype to be estimated on.
     random_groups : string
         A string specifying what variable to use as a random variable. Default = None leads to no random variable
     npc : int, optional
