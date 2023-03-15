@@ -326,14 +326,14 @@ class pheno_simulator():
 
 #%%
 
-sim = pheno_simulator(nsubjects= 1000, nSNPs = 10000)
+#sim = pheno_simulator(nsubjects= 1000, nSNPs = 10000)
 # Run through full simulation and estimation
-sim.full_sim(nsites= 25, sigma= [0.5,0.25,0.25], phens = 5, nclusts = 2, races_differ = True,
-              prop_causal = 0.01, cov_effect = True, ortho_cov = True, random_BS = False)
+#sim.full_sim(nsites= 25, sigma= [0.5,0.25,0.25], phens = 5, nclusts = 2, races_differ = True,
+#              prop_causal = 0.01, cov_effect = True, ortho_cov = True, random_BS = False)
 #%%
-ests = Basu_estimation()
-ests.df= sim.df
-ests.GRM = sim.GRM
-ests.mpheno = ["Y", "Y1"] 
-ests.estimate(npc=[1], mpheno= ["Y", "Y1"], Method="Covbat", random_groups = "abcd_site", fixed_effects= ["Xc"], Naive = False)
-print(ests.results)
+#ests = Basu_estimation()
+#ests.df= sim.df
+#ests.GRM = sim.GRM
+#ests.mpheno = ["Y", "Y1"] 
+#ests.estimate(npc=[1], mpheno= ["Y", "Y1"], Method="Covbat", random_groups = "abcd_site", fixed_effects= ["Xc"], Naive = False)
+#print(ests.results)
