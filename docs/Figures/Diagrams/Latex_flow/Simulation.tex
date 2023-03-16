@@ -47,21 +47,18 @@ draw=black]
 \node (anc_freq) [tnode, fill = red!30] {
   Ancestral frequencies
   \nodepart{second}
-  $p \sim Uni(0.1, 0.9 $)
+  $p_{0g} \stackrel{iid}{\sim} Uni(0.1, 0.9 $) 
+  \nodepart{third}
+  \#SNPs
 };
-\node[dnode,above=  of anc_freq, fill=red!30] (Genetic){
-	Gene inputs
-	\nodepart{second}
-	nSNPs	
-	};
 
   
 \node (sub_freq) [tnode, fill = red!30, below=  of anc_freq] {
   Subpopulation frequencies
   \nodepart{second}
-  for ancestry $a, p_a \sim f_g(\theta, p)$
+  for ancestry $a, p_{ag} \sim f_g(\theta, p_{0g})$
   \nodepart{third}
-  $\theta, f_g, n_a$, 
+  $\theta, f_g$ 
 };
 
 
@@ -90,10 +87,10 @@ draw=black]
 	$X_{ai} \sim f(c_s|s=X_{si})$
 };           
 
-\node (gene_assign) [tnode, fill = yellow!30, below left = of site_anc_assign] {
+\node (gene_assign) [dnode, fill = yellow!30, below left = of site_anc_assign] {
 	Gene assignment
 	\nodepart{second}
-	$X_{gi} \sim f_g(p_a | a = X_{ai})$
+	$X_{gi} \sim Ber(p_a | a = X_{ai})$
 	\nodepart{third}
 };        
 
@@ -105,11 +102,10 @@ draw=black]
 	$p_{causal}, \sigma_G^2$
 };           
 
-\node (pheno) [tnode, fill = green!30, right = of gene_eff] {
+\node (pheno) [dnode, fill = green!30, right = of gene_eff] {
 	Phenotype
 	\nodepart{second}
 	$Y_i = X_{gi}\beta_G + X_{si}\beta_S + \epsilon_i$
-	\nodepart{third}
 };           
 
    
