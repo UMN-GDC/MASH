@@ -166,9 +166,11 @@ def AdjHE_estimator(A, df, mp, random_groups = None, npc=0, std=False):
 
         
     # Calculate variance of estimate
-    var_h2 = 2/ ( trA2 - 2*trA + n - np.sum(Sjs**2))
+    # var_h2 = 2/ ( trA2 - 2*trA + n - np.sum(Sjs**2))
+    var_h2 = 2 / (trA2 - trA^2)
     if var_h2 < 0:
-        logging.warning("Variance estimate is negative")
+        logging.warning("Variance estimate is negative setting as absolute value")
+        var_h2 = abs(var_h2)
 
     results = {"h2" : h2, "ss": ss, "var(h2)" : var_h2}
     
