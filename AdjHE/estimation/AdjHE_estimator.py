@@ -49,6 +49,7 @@ def AdjHE_estimator(A, df, mp, random_groups = None, npc=0, std=False):
     if npc ==0 :
         Sjs = 0
         Tjs =0
+        resid_GRM=A
     else :
         # Grab the PCs
         PC_cols = [ col.startswith("pc")   for col in df ]
@@ -69,6 +70,10 @@ def AdjHE_estimator(A, df, mp, random_groups = None, npc=0, std=False):
     
         # Calculated Sj's
         Sjs = np.matmul(np.matmul(PCsT, A), PCs).flatten()
+        
+        # Calculate residual GRM
+        resid_GRM = A - np.sum(PPt, 0)
+
 
     # Compute elements of regression matrix
     n = A.shape[0]
@@ -167,6 +172,8 @@ def AdjHE_estimator(A, df, mp, random_groups = None, npc=0, std=False):
         
     # Calculate variance of estimate
     # var_h2 = 2/ ( trA2 - 2*trA + n - np.sum(Sjs**2))
+    trA2 = np.trace(resid_GRM ** 2)
+    trA = np.trace(resid_GRM)
     var_h2 = 2 / (trA2 - trA^2)
     if var_h2 < 0:
         logging.warning("Variance estimate is negative setting as absolute value")
