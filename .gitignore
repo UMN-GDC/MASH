@@ -13,3 +13,4 @@ slurm*
 !Example/
 !Genes_n_sims/
 !Simulations/*
+!docs/Tutorials/Simulating_phenotypes.ipynb
