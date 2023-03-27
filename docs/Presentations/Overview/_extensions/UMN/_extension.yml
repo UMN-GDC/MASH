@@ -1,0 +1,12 @@
+title: "YOUR ORGANIZATION TITLE"
+author: "Christian Coffman"
+institute: "University of Minnesota"
+version: 1.0.0
+contributes:
+  formats:
+    revealjs:
+      filters: [copy-resources.lua] # This is so resources get copied
+      theme: [default, theme.scss]
+      format-resources:
+        - M_blk.png
+        - M_gold.png 

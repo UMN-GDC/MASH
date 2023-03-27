@@ -21,7 +21,6 @@ from AdjHE.estimation.AdjHE_estimator import AdjHE_estimator #, load_n_MOM
 from AdjHE.estimation.PredLMM_estimator import load_n_PredLMM
 from AdjHE.estimation.GCTA_wrapper import gcta, GCTA
 from AdjHE.estimation.combat import neuroCombat
-from AdjHE.estimation.covbat import covbat
 
 
 #%%
