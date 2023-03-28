@@ -1,8 +1,11 @@
 ---
-title: "TITLE"
+title: "Heritability of regional volumes in the adolescent brain"
+bibliography: references.bib
+csl: /home/christian/Templates/Citations/nature.csl
+link-citations: true
 author: "Christian Coffman"
 institute: "University of Minnesota"
-date: today
+date: "03-30-2023"
 # title-slide-attributes: # this is if you want a background image on the title screen. Use the right path to the image you want
   # data-background-image: # if want background to all slides
   # data-background-opacity: "0.5"
@@ -13,96 +16,186 @@ format:
     slide-number: c/t
     width: 1600
     height: 900
-    logo: "D2D-maroon-blk.png"
+    logo: "M_gold.png"
     footer: "[University of Minnesota](https://umn.edu)"
+    toc: true
+    toc-depth: 1
 ---
 
-```{r}
-#| echo: false
-options(tidyverse.quiet=TRUE)
-library(tidyverse)
-```
+# Subcortical heritability through lifetime
 
+## Subcortical volumes associated with psychological disorders {auto-animate="true"}
 
-This is a slide with a background image
+-   Major depressive disorder - hippocampus, putamen, caudate nucleus @koolschijn_brain_2009
 
-# NEW SECTION
+-   Schizophrenia - anterior cingulate, hippocampus/amygdala, thalamus, insula @shepherd_systematic_2012
 
-## Bullets
+-   Anxiety - amygdala, insula, anterior cingulate cortex @holzschneider_neuroimaging_2011
 
-Remove the incremental ::: bracketed div for plain lists
+![Subcortical regions highlighted in red](figures/Subcortical_regions.png){alt="Subcortical regions highlighted in red data-id"}
 
-::: {.incremental}
-- the quick
-- brown fox
-- jumps over
-- the lazy dog
+*Imaged generated at theanatomyoflove.com*
+
+## Subcortical volumes are heritable\* {auto-animate="true"}
+
+-   In young adults and adults @zhao_heritability_2019
+
+-   Head heritability changes through lifespan @smit_heritability_2010
+
+![Heritability across brain including subcortical](figures/UKB_herit.jpeg){alt="Heritability across brain including subcortical data-id"}
+
+## Extending the trajectory
+
+-   Regional heritability varies through lifetime in adults @zhao_heritability_2019
+
+-   Want to extend their scale to younger years
+
+-   **Q: Are regional volumes heritabile in adolescents (9-10 years old)?**
+
+![Trajectory](figures/UKB_trajectory.jpeg)
+
+# Difficulties in extending timeline
+
+## Difficult to estimate since the largest dataset is multiple sites
+
+-   Adolescent Brain Cognitive Development study (ABCD)
+
+-   Largest adolescent dataset with imaging and genetics
+
+-   Taken over 22 sites
+
+-   Confounding with scanner and site effects
+
+-   No heritability estimators currently adjust for these effects
+
+## AdjHE extension accounts for site effects
+
+-   AdjHE estimator is variance component estimator
+
+$$
+EY = X\beta_d \\
+Var(Y) = \sigma_G^2 GRM + \sigma_S^2S + \sigma_E^2I
+$$
+
+-   Partition variance between Genetic relatedness matrix ($\sigma_G^2$) and unmodeled variance ($\sigma_E^2$)
+
+-   Treat site as a random effect ($\sigma_S^2$)
+
+-   Heritability $h^2 = \frac{\sigma_G^2}{\sigma_G^2 + \sigma_E^2}$
+
+-   Expands unbiased estimation to imbalanced sites
+
+-   OLS solution
+
+-   No need for $S\perp GRM$
+
+## Outperforms existing methods adjusting for site effects
+
+-   Other estimators necessitate $S\perp GRM$
+-   Up to 4 times faster computations
+-   More speed gains to come
+
+![Simulation comparisons](figures/Adding_sites_n_clusts_het.png)
+
+# Multiple subcortical volumes highly heritable in adolescence
+
+-   Lowest heritability in oldest part of brain: brain stem
+
+-   Higher heritability in outer regions: hippocampus, cerrebellum
+
+![Heritability estimates](figures/AdjHE_RE_brain.png)
+
+# Future Extensions
+
+## Multivariate {auto-animate="true" auto-animate-easing="ease-in-out"}
+
+::: r-hstack
+::: {.absolute data-id="pheno1" auto-animate-delay="0" style="background: #2780e3; width: 40px; height: 350px;" bottom="300" left="700"}
 :::
 
-## Columns
-
-:::: {.columns}
-
-::: {.column width="50%"}
-Some text on the left of the slide
+::: {.absolute data-id="pheno2" auto-animate-delay="0" style="background: #3fb618; width: 40px; height: 350px;" bottom="300" left="800"}
 :::
 
-::: {.column width="50%"}
-Some text on the right of the slide
+::: {.absolute data-id="pheno3" auto-animate-delay="0" style="background: #e83e8c; width: 40px; height: 350px;" bottom="300" left="900"}
+:::
 :::
 
-::::
+-   Phenotypes have share information
 
-## Smaller Slide {.smaller}
+## Multivariate {auto-animate="true" auto-animate-easing="ease-in-out"}
 
-The text on this slide will be, um, _smaller_.
-
-## Speaker Notes
-
-This is how to add speaker notes and replace the footer on a single slide.
-
-**SPEAKER NOTES REQUIRE A WEB SERVER**
-
-::: footer
-Custom!
+::: r-hstack
+::: {.absolute data-id="pheno1" style="background: #2780e3; width: 350px; height: 350px; border-radius: 200px;" bottom="300" left="800"}
 :::
 
-::: {.notes}
-do re me fa so la ti doh!
+::: {.absolute data-id="pheno2" style="background: #3fb618; width: 250px; height: 250px; border-radius: 200px;" bottom="300" left="800"}
 :::
 
-## Sneaky Info (Asides & Bootnotes) 
-
-This is cool! ^[No it is not] 
-
-Add `reference-location: document` to the YAML for end notes.
-
-::: aside
-I am at the bottom of the slide
+::: {.absolute data-id="pheno3" style="background: #e83e8c; width: 150px; height: 150px; border-radius: 200px;" bottom="300" left="800"}
+:::
 :::
 
-## Scrolly Slide {.scrollable}
+-   Utilize shared information between phenotypes
+    -   Multivariate regression
+    -   Heirarchical
 
-Overflowed content will be scrollable on this slide.
+## Multivariate {auto-animate="true" auto-animate-easing="ease-in-out"}
 
-## Bootnotes
+::: r-stack
+::: {data-id="pheno1" style="background: #2780e3; width: 350px; height: 350px; border-radius: 200px;"}
+:::
 
-## A slide with a plot
+::: {data-id="pheno2" style="background: #3fb618; width: 250px; height: 250px; border-radius: 200px;"}
+:::
 
-```{r}
-#| echo: true
-#| fig.retina: 2
-#| fig.height: 9
-#| fig.width: 16
-#| output-location: column
-# ^^ could be fragment, slide, column, column-fragment
-ggplot() +
-  geom_point(
-    data = mtcars,
-    aes(wt, mpg),
-    color = "goldenrod"
-  ) +
-  labs(
-    title = "Some Dots"
-  ) 
-```
+::: {data-id="pheno3" style="background: #e83e8c; width: 150px; height: 150px; border-radius: 200px;"}
+:::
+:::
+
+-   Utilize shared information between phenotypes
+    -   Multivariate regression
+    -   Heirarchical
+
+## Longitudinal {auto-animate="true" auto-animate-easing="ease-in-out"}
+
+::: r-hstack
+::: {.absolute data-id="pheno1" auto-animate-delay="0" style="background: #2780e3; width: 40px; height: 350px;" bottom="300" left="700"}
+:::
+
+::: {.absolute data-id="pheno2" auto-animate-delay="0" style="background: #3fb618; width: 40px; height: 350px;" bottom="300" left="800"}
+:::
+
+::: {.absolute data-id="pheno3" auto-animate-delay="0" style="background: #e83e8c; width: 40px; height: 350px;" bottom="300" left="900"}
+:::
+:::
+
+-   Phenotypes vary over time
+
+## Longitudinal {auto-animate="true" auto-animate-easing="ease-in-out" auto-animate-duration="5"}
+
+::: r-hstack
+::: {data-id="pheno1" auto-animate-delay="0" style="background: #2780e3; width: 50px; height: 50px; margin: 10px;"}
+:::
+
+::: {data-id="pheno2" auto-animate-delay="0" style="background: #3fb618; width: 10px; height: 250px; margin: 10px;"}
+:::
+
+::: {data-id="pheno3" auto-animate-delay="0" style="background: #f93e8c; width: 70px; height: 350px; margin: 10px;"}
+:::
+:::
+
+-   Utilize time varying information
+
+# Toolbox
+
+-   United a host of site adjustment methods for heritability estimation
+
+-   Also simulates phenotypes from existing or simulated GWAS data
+
+![Simulation diagram](figures/simulation_diagram.png)
+
+## Thank you
+
+**Questions?**
+
+## References
