@@ -32,17 +32,19 @@ format:
 
 -   Anxiety - amygdala, insula, anterior cingulate cortex @holzschneider_neuroimaging_2011
 
-![Subcortical regions highlighted in red](figures/Subcortical_regions.png){alt="Subcortical regions highlighted in red data-id"}
+![Subcortical regions highlighted in red](figures/Subcortical_regions.png){alt="Subcortical regions highlighted in red data-id" fig-align="center"}
 
-*Imaged generated at theanatomyoflove.com*
+``` {style="font-size: 50%;"}
+Image generated at theanatomyoflove.com
+```
 
-## Subcortical volumes are heritable\* {auto-animate="true"}
+## Subcortical volumes are heritable {auto-animate="true"}
 
 -   In young adults and adults @zhao_heritability_2019
 
 -   Head heritability changes through lifespan @smit_heritability_2010
 
-![Heritability across brain including subcortical](figures/UKB_herit.jpeg){alt="Heritability across brain including subcortical data-id"}
+![Heritability across brain including subcortical](figures/UKB_herit.jpeg){alt="Heritability across brain including subcortical data-id" fig-align="center"}
 
 ## Extending the trajectory
 
@@ -52,7 +54,7 @@ format:
 
 -   **Q: Are regional volumes heritabile in adolescents (9-10 years old)?**
 
-![Trajectory](figures/UKB_trajectory.jpeg)
+![Heritability of brain regions for different age groups](figures/UKB_trajectory.jpeg){fig-align="center"}
 
 # Difficulties in extending timeline
 
@@ -60,13 +62,11 @@ format:
 
 -   Adolescent Brain Cognitive Development study (ABCD)
 
--   Largest adolescent dataset with imaging and genetics
-
 -   Taken over 22 sites
 
 -   Confounding with scanner and site effects
 
--   No heritability estimators currently adjust for these effects
+![](figures/ABCD_map.jpg){data-id="" fig-align="center"}
 
 ## AdjHE extension accounts for site effects
 
@@ -91,11 +91,19 @@ $$
 
 ## Outperforms existing methods adjusting for site effects
 
+::: columns
+::: {.column .column width="45%"}
 -   Other estimators necessitate $S\perp GRM$
--   Up to 4 times faster computations
--   More speed gains to come
 
-![Simulation comparisons](figures/Adding_sites_n_clusts_het.png)
+-   up to 4x faster computation
+
+-   More speed gains to come
+:::
+
+::: {.column .column width="55%"}
+![](figures/Adding_sites_n_clusts_het.png){alt="Simulation comparisons" fig-align="center"}
+:::
+:::
 
 # Multiple subcortical volumes highly heritable in adolescence
 
@@ -103,9 +111,9 @@ $$
 
 -   Higher heritability in outer regions: hippocampus, cerrebellum
 
-![Heritability estimates](figures/AdjHE_RE_brain.png)
+![Heritability estimates visualized on the brain](figures/AdjHE_RE_brain.png){fig-align="center"}
 
-# Future Extensions
+# Future extensions
 
 ## Multivariate {auto-animate="true" auto-animate-easing="ease-in-out"}
 
@@ -188,11 +196,15 @@ $$
 
 # Toolbox
 
--   United a host of site adjustment methods for heritability estimation
+::: columns
+::: {.column width="45%"}
+-   United 8 site adjustment methods
 
--   Also simulates phenotypes from existing or simulated GWAS data
+-   Simulates phenotypes from existing or simulated GWAS data
 
-![Simulation diagram](figures/simulation_diagram.png)
+![Simulation diagram](figures/simulation_diagram.png){alt="Simulation diagram" fig-align="center"}
+:::
+:::
 
 ## Thank you
 

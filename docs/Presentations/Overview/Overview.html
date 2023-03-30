@@ -382,10 +382,10 @@ Christian Coffman
 <li><p>Anxiety - amygdala, insula, anterior cingulate cortex<span class="citation" data-cites="holzschneider_neuroimaging_2011"><sup><a href="#/references" role="doc-biblioref" onclick="">3</a></sup></span></p></li>
 </ul>
 
-<img data-src="figures/Subcortical_regions.png" alt="Subcortical regions highlighted in red data-id" class="r-stretch quarto-figure-center"><p class="caption">Subcortical regions highlighted in red</p><p><em>Imaged generated at theanatomyoflove.com</em></p>
+<img data-src="figures/Subcortical_regions.png" alt="Subcortical regions highlighted in red data-id" class="r-stretch quarto-figure-center"><p class="caption">Subcortical regions highlighted in red</p><pre style="font-size: 50%;"><code>Image generated at theanatomyoflove.com</code></pre>
 </section>
 <section id="subcortical-volumes-are-heritable" class="slide level2" data-auto-animate="true">
-<h2 data-id="quarto-animate-title">Subcortical volumes are heritable*</h2>
+<h2 data-id="quarto-animate-title">Subcortical volumes are heritable</h2>
 <ul>
 <li><p>In young adults and adults<span class="citation" data-cites="zhao_heritability_2019"><sup><a href="#/references" role="doc-biblioref" onclick="">4</a></sup></span></p></li>
 <li><p>Head heritability changes through lifespan<span class="citation" data-cites="smit_heritability_2010"><sup><a href="#/references" role="doc-biblioref" onclick="">5</a></sup></span></p></li>
@@ -400,7 +400,7 @@ Christian Coffman
 <li><p><strong>Q: Are regional volumes heritabile in adolescents (9-10 years old)?</strong></p></li>
 </ul>
 
-<img data-src="figures/UKB_trajectory.jpeg" class="r-stretch quarto-figure-center"><p class="caption">Trajectory</p></section></section>
+<img data-src="figures/UKB_trajectory.jpeg" class="r-stretch quarto-figure-center"><p class="caption">Heritability of brain regions for different age groups</p></section></section>
 <section>
 <section id="difficulties-in-extending-timeline" class="title-slide slide level1 center">
 <h1>Difficulties in extending timeline</h1>
@@ -410,12 +410,11 @@ Christian Coffman
 <h2>Difficult to estimate since the largest dataset is multiple sites</h2>
 <ul>
 <li><p>Adolescent Brain Cognitive Development study (ABCD)</p></li>
-<li><p>Largest adolescent dataset with imaging and genetics</p></li>
 <li><p>Taken over 22 sites</p></li>
 <li><p>Confounding with scanner and site effects</p></li>
-<li><p>No heritability estimators currently adjust for these effects</p></li>
 </ul>
-</section>
+
+<img data-src="figures/ABCD_map.jpg" data-id="" class="r-stretch quarto-figure-center"></section>
 <section id="adjhe-extension-accounts-for-site-effects" class="slide level2">
 <h2>AdjHE extension accounts for site effects</h2>
 <ul>
@@ -436,13 +435,22 @@ Var(Y) = \sigma_G^2 GRM + \sigma_S^2S + \sigma_E^2I
 </section>
 <section id="outperforms-existing-methods-adjusting-for-site-effects" class="slide level2">
 <h2>Outperforms existing methods adjusting for site effects</h2>
+<div class="columns">
+<div class="column column" style="width:45%;">
 <ul>
-<li>Other estimators necessitate <span class="math inline">\(S\perp GRM\)</span></li>
-<li>Up to 4 times faster computations</li>
-<li>More speed gains to come</li>
+<li><p>Other estimators necessitate <span class="math inline">\(S\perp GRM\)</span></p></li>
+<li><p>up to 4x faster computation</p></li>
+<li><p>More speed gains to come</p></li>
 </ul>
-
-<img data-src="figures/Adding_sites_n_clusts_het.png" class="r-stretch quarto-figure-center"><p class="caption">Simulation comparisons</p></section></section>
+</div><div class="column column" style="width:55%;">
+<div class="quarto-figure quarto-figure-center">
+<figure>
+<p><img data-src="figures/Adding_sites_n_clusts_het.png" alt="Simulation comparisons"></p>
+</figure>
+</div>
+</div>
+</div>
+</section></section>
 <section id="multiple-subcortical-volumes-highly-heritable-in-adolescence" class="title-slide slide level1 center">
 <h1>Multiple subcortical volumes highly heritable in adolescence</h1>
 <ul>
@@ -450,7 +458,7 @@ Var(Y) = \sigma_G^2 GRM + \sigma_S^2S + \sigma_E^2I
 <li><p>Higher heritability in outer regions: hippocampus, cerrebellum</p></li>
 </ul>
 
-<img data-src="figures/AdjHE_RE_brain.png" class="r-stretch quarto-figure-center"><p class="caption">Heritability estimates</p></section>
+<img data-src="figures/AdjHE_RE_brain.png" class="r-stretch quarto-figure-center"><p class="caption">Heritability estimates visualized on the brain</p></section>
 
 <section>
 <section id="future-extensions" class="title-slide slide level1 center">
@@ -553,12 +561,22 @@ Var(Y) = \sigma_G^2 GRM + \sigma_S^2S + \sigma_E^2I
 <section>
 <section id="toolbox" class="title-slide slide level1 center">
 <h1>Toolbox</h1>
+<div class="columns">
+<div class="column" style="width:45%;">
 <ul>
-<li><p>United a host of site adjustment methods for heritability estimation</p></li>
-<li><p>Also simulates phenotypes from existing or simulated GWAS data</p></li>
+<li><p>United 8 site adjustment methods</p></li>
+<li><p>Simulates phenotypes from existing or simulated GWAS data</p></li>
 </ul>
-
-<img data-src="figures/simulation_diagram.png" class="r-stretch quarto-figure-center"><p class="caption">Simulation diagram</p></section>
+</div><div class="column" style="width:55%;">
+<div class="quarto-figure quarto-figure-center">
+<figure>
+<p><img data-src="figures/simulation_diagram.png" alt="Simulation diagram"></p>
+<p></p><figcaption>Simulation diagram</figcaption><p></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
 <section id="thank-you" class="slide level2">
 <h2>Thank you</h2>
 <p><strong>Questions?</strong></p>
