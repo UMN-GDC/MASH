@@ -174,7 +174,7 @@ def AdjHE_estimator(A, df, mp, random_groups = None, npc=0, std=False):
     # var_h2 = 2/ ( trA2 - 2*trA + n - np.sum(Sjs**2))
     trA2 = np.trace(resid_GRM ** 2)
     trA = np.trace(resid_GRM)
-    var_h2 = 2 / (trA2 - trA^2)
+    var_h2 = 2 / (trA2 - trA**2)
     if var_h2 < 0:
         logging.warning("Variance estimate is negative setting as absolute value")
         var_h2 = abs(var_h2)
