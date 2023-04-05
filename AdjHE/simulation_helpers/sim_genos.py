@@ -62,7 +62,10 @@ def sim_genos(seed, ancestral_frequencies, cluster_frequencies, subject_ancestri
     elif (nclusts >1 ) and (admixing) :
         genotypes = np.zeros((nsubjects, nSNPs))
         for i in range(nsubjects): 
-            admixture = rng.dirichlet(np.repeat(1, nclusts))
+            # Bias admixing proportion toward "reported race"
+            admixture = np.repeat(1,nclusts)
+            admixture[subject_ancestries[i]] = 2
+            admixture = admixture / np.sum(admixture)
             genotypes[i,:] = sample_admixed_genotypes(seed, cluster_freqs = cluster_frequencies, admixture = admixture, nsubjects=1)
         
         
