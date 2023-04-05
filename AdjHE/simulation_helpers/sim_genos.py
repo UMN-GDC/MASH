@@ -49,7 +49,7 @@ def sim_genos(seed, ancestral_frequencies, cluster_frequencies, subject_ancestri
     """
     
     rng = np.random.default_rng(seed)
-    (nclusts, nSNPs) = cluster_frequencies.shape[1]
+    (nclusts, nSNPs) = cluster_frequencies.shape
     nsubjects = subject_ancestries.shape[0]
     
     if nclusts == 1:

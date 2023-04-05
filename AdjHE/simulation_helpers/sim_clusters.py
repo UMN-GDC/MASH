@@ -8,7 +8,7 @@ Created on Thu Mar 16 13:08:24 2023
 import numpy as np
 import pandas as pd
 
-def sim_pop_alleles(seed, theta_alleles = [0.5, 0.5], nclusts=1, nSNPs = 1000, shared_causal= 1, shared_noncausal = 0, prop_causal = 0.1) :
+def sim_pop_alleles(seed, theta_alleles = [0.5, 0.5], nclusts=1, nSNPs = 1000, shared_causal= 0.8, shared_noncausal = 0.8, prop_causal = 0.1) :
     """
     Simulate the allele frequencies for a common ancestor and for all genetic clusters taking into account if the causal snps are shared or not.
 
@@ -34,6 +34,8 @@ def sim_pop_alleles(seed, theta_alleles = [0.5, 0.5], nclusts=1, nSNPs = 1000, s
     -------
     tuple with (nSNPs x 1) numpy array where the first column corresponds to the common ancestral frequencies,
     (nSNPs x (nclusts +1)) numpy array columns correspond to each subclusters allele frequencies.
+    indices of shared snps
+    incides of causal snps
 
     """
     if theta_alleles[0] < theta_alleles[1] :
@@ -64,16 +66,18 @@ def sim_pop_alleles(seed, theta_alleles = [0.5, 0.5], nclusts=1, nSNPs = 1000, s
                 theta = theta_alleles[0]
             else :
                 theta = theta_alleles[1]
-            print(region, bounds, theta)
     
             cluster_freqs[:, bounds] = rng.beta(ancest_freqs[bounds] * (1- theta) / theta,
                                       (1-ancest_freqs[bounds]) *
                                       (1-theta)/theta,
                                       size=(nclusts, len(bounds)))
     
+    # Get vectors annotating genomes for being shared or causal
+    shared_idx = list(range(*boundaries["causal_shared"])) + list(range(*boundaries["noncausal_shared"]))
+    causal_idx = list(range(*boundaries["causal_shared"])) + list(range(*boundaries["causal_nonshared"]))
     
-    return ancest_freqs, cluster_freqs
-anc, clust = sim_pop_alleles(3, theta_alleles=[0.6,0.4], nclusts=7)
+    
+    return ancest_freqs, cluster_freqs, np.array(shared_idx), np.array(causal_idx)
 
 def assign_clusters(df, rng, theta_alleles=0.5, nclusts=1, nsites = 1, site_comp="IID", dominance=2, eq_sites = False):
     """
