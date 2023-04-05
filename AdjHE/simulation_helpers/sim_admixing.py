@@ -8,7 +8,7 @@ Created on Tue Apr  4 13:29:28 2023
 
 import numpy as np
 
-def sample_admixed_genotype(seed, cluster_freqs, admixture, nsubjects=1) :
+def sample_admixed_genotypes(seed, cluster_freqs, admixture, nsubjects=1) :
     """
     Sample subject genotypes from admixtures of multiple genetic clusters
 

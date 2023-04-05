@@ -55,5 +55,7 @@ def plot_genetic_clusters(sim, output = None) :
     p = sns.FacetGrid(test, col="Type", col_wrap = 2)
     p = p.map_dataframe(sns.scatterplot, x = "PC1", y= "PC2", hue = "subj_ancestries")
     
-    plt.savefig(fname= output + ".png", dpi= 300, format = "png")
-
+    if output == None :
+        p.show()
+    else :
+        plt.savefig(fname= output + ".png", dpi= 300, format = "png")
