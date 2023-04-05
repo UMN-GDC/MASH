@@ -1,5 +1,5 @@
 ---
-title: "Heritability of regional volumes in the adolescent brain"
+title: "Heritability of subcortical volumes in the adolescent brain"
 bibliography: references.bib
 csl: /home/christian/Templates/Citations/nature.csl
 link-citations: true
@@ -70,30 +70,26 @@ Image generated at theanatomyoflove.com
 
 ## AdjHE extension accounts for site effects
 
--   AdjHE estimator is variance component estimator
+-   Adjusted Haseman-Elston (AdjHE) estimator is variance component estimator
 
 $$
 EY = X\beta_d \\
 Var(Y) = \sigma_G^2 GRM + \sigma_S^2S + \sigma_E^2I
 $$
 
--   Partition variance between Genetic relatedness matrix ($\sigma_G^2$) and unmodeled variance ($\sigma_E^2$)
-
 -   Treat site as a random effect ($\sigma_S^2$)
 
--   Heritability $h^2 = \frac{\sigma_G^2}{\sigma_G^2 + \sigma_E^2}$
+-   OLS solution on 2nd moment
+
+-   Heritability: genetic influence ($\sigma_G^2$) vs environment ($\sigma_E^2$)
 
 -   Expands unbiased estimation to imbalanced sites
-
--   OLS solution
-
--   No need for $S\perp GRM$
 
 ## Outperforms existing methods adjusting for site effects
 
 ::: columns
 ::: {.column .column width="45%"}
--   Other estimators necessitate $S\perp GRM$
+-   Other estimators necessitate site indep of genetics
 
 -   up to 4x faster computation
 
@@ -101,7 +97,7 @@ $$
 :::
 
 ::: {.column .column width="55%"}
-![](figures/Adding_sites_n_clusts_het.png){alt="Simulation comparisons" fig-align="center"}
+![](figures/Adding_sites_n_clusts_homo.png){alt="Simulation comparisons" fig-align="center"}
 :::
 :::
 
@@ -197,12 +193,14 @@ $$
 # Toolbox
 
 ::: columns
+::: {.column width="55%"}
+![Simulation diagram](figures/simulation_diagram.png){alt="Simulation diagram" fig-align="center"}
+:::
+
 ::: {.column width="45%"}
 -   United 8 site adjustment methods
 
 -   Simulates phenotypes from existing or simulated GWAS data
-
-![Simulation diagram](figures/simulation_diagram.png){alt="Simulation diagram" fig-align="center"}
 :::
 :::
 

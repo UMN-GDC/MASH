@@ -9,15 +9,17 @@ Created on Thu Oct 13 09:25:44 2022
 import numpy as np
 import pandas as pd
 from sklearn.decomposition import PCA
+from AdjHE.simulation_helpers.sim_admixing import sample_admixed_genotype
 
 
-def sim_genos(rng, ancestral_frequencies, cluster_frequencies, subject_ancestries, clusters_differ = False, prop_causal=0.1, maf_filter = 0.05):
+def sim_genos(seed, ancestral_frequencies, cluster_frequencies, subject_ancestries,
+              clusters_differ = False, prop_causal=0.1, maf_filter = 0.05, admixing = False):
     """
     Simulate genotypes of the subjects given their cluster ID and the respective cluster allele frequencies
 
     Parameters
     ----------
-    rng : numpy random number generator Generator object
+    seed : seed or numpy random number generator Generator object
         random number generator.
     cluster_frequencies : numpy array
         (nsubjects x nclusts) array contianing allele frequencies for each cluster.
@@ -45,20 +47,21 @@ def sim_genos(rng, ancestral_frequencies, cluster_frequencies, subject_ancestrie
         numpy array of the causal SNPs
 
     """
-    nSNPs = cluster_frequencies.shape[1]
-    nclusts = cluster_frequencies.shape[0]
+    
+    rng = np.random.default_rng(seed)
+    (nclusts, nSNPs) = cluster_frequencies.shape[1]
     nsubjects = subject_ancestries.shape[0]
     
     if nclusts == 1:
         # simulate genotypes
         genotypes = rng.binomial(n=np.repeat(2, nSNPs), p=cluster_frequencies[0],
                                  size=(nsubjects, nSNPs))
-    elif clusters_differ:
+    elif (nclusts > 1) and (clusters_differ) :
         # simulate genotypes
         genotypes = rng.binomial(n=np.repeat(2, nSNPs), p= cluster_frequencies[subject_ancestries],
                                  size=(nsubjects, nSNPs))
         
-    elif not clusters_differ: 
+    elif (nclusts > 1) and (not clusters_differ): 
         anc_region = range(int(nSNPs *(1-prop_causal)))
         causal_region = range(max(anc_region)+1, nSNPs)
         anc_geno = rng.binomial(n=np.repeat(2, len(anc_region)),

@@ -8,19 +8,27 @@ Created on Thu Mar 16 13:08:24 2023
 import numpy as np
 import pandas as pd
 
-def sim_pop_alleles(rng, theta_alleles = 0.5, nclusts=1, nSNPs = 1000) :
+def sim_pop_alleles(seed, theta_alleles = [0.5, 0.5], nclusts=1, nSNPs = 1000, shared_causal= 1, shared_noncausal = 0, prop_causal = 0.1) :
     """
-    Simulate the allele frequencies for a common ancestor and for all genetic clusters
+    Simulate the allele frequencies for a common ancestor and for all genetic clusters taking into account if the causal snps are shared or not.
 
     Parameters
     ----------
-    theta_alleles : float, optional
-        between 0, 1, parameter controling the similarity between genetic clusters. near 0- similar clusters, near 1- distinct clusters.
+    theta_alleles : list of floats, optional
+        between 0, 1, parameter controling the similarity between genetic clusters. near 0- similar clusters, near 1- distinct clusters. 
+        First value is for nonshared regions, second is for shared regions
         The default is 0.5.
     nclusts : int, optional
         number of genetic clusters. The default is 1.
     nSNPs : int, optional
         Number of snps to simulate for the genome. The default is 1000.
+    shared_causal : floa64
+        specify the proportion of causal snps shared between genetic clusters, between 0 and 1.
+    shared_noncasaul : float64
+        specify the proportion of non-causal snps shared between genetic clusters, between 0 and 1.
+    prop_causal : float64
+        specify the proportion snps that are causal.
+
 
     Returns
     -------
@@ -28,18 +36,44 @@ def sim_pop_alleles(rng, theta_alleles = 0.5, nclusts=1, nSNPs = 1000) :
     (nSNPs x (nclusts +1)) numpy array columns correspond to each subclusters allele frequencies.
 
     """
+    if theta_alleles[0] < theta_alleles[1] :
+        raise ValueError("Shared regions should be more conserved than nonshared regions (i.e. theta_alleles[1] should be less than theta_alleles[0]")
+    
+    rng = np.random.default_rng(seed)
+    boundaries = {"causal_shared" : np.array([0, int(prop_causal * nSNPs * shared_causal)])}
+    boundaries["causal_nonshared"] = np.array([0 , int(prop_causal * nSNPs * (1-shared_causal))]) + np.max(boundaries["causal_shared"]) 
+    boundaries["noncausal_shared"] = np.array([0, int((1-prop_causal) * nSNPs * shared_noncausal)]) + np.max(boundaries["causal_nonshared"])
+    boundaries["noncausal_nonshared"] = np.array([0, int((1-prop_causal) * nSNPs * (1-shared_noncausal))]) + np.max(boundaries["noncausal_shared"])
+    
+    
     # simulate ancestral frequency of each SNP, dimensions = (SNPs,)
     ancest_freqs = rng.uniform(low=0.1, high=0.9, size=nSNPs)
 
-    # simulate allele frequency for each population, Dim = (nclusts x SNPS)
-    cluster_frequencies = rng.beta(ancest_freqs * (1- theta_alleles) / theta_alleles,
-                              (1-ancest_freqs) *
-                              (1-theta_alleles)/theta_alleles,
-                              size=(nclusts, nSNPs))
+    if nclusts == 1:
+        cluster_freqs = ancest_freqs
+
+    else :
+
+        # simulate allele frequencies for each cluster
+        cluster_freqs = np.zeros((nclusts, nSNPs))
+        
+        # simulate the allele frequencies across the four regions and join them for each cluster
+        for (region, bounds) in boundaries.items() :
+            bounds = range(*bounds)
+            if "nonshared" in region :
+                theta = theta_alleles[0]
+            else :
+                theta = theta_alleles[1]
+            print(region, bounds, theta)
     
-    return ancest_freqs, cluster_frequencies
-
-
+            cluster_freqs[:, bounds] = rng.beta(ancest_freqs[bounds] * (1- theta) / theta,
+                                      (1-ancest_freqs[bounds]) *
+                                      (1-theta)/theta,
+                                      size=(nclusts, len(bounds)))
+    
+    
+    return ancest_freqs, cluster_freqs
+anc, clust = sim_pop_alleles(3, theta_alleles=[0.6,0.4], nclusts=7)
 
 def assign_clusters(df, rng, theta_alleles=0.5, nclusts=1, nsites = 1, site_comp="IID", dominance=2, eq_sites = False):
     """
