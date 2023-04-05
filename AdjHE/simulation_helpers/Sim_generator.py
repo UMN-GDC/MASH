@@ -20,6 +20,7 @@ from AdjHE.simulation_helpers.sim_plink_pheno import sim_plink_pheno
 
 class pheno_simulator():
     def __init__(self, nsubjects=1000, nSNPs=1000, plink_prefix=None):
+        self.plink_prefix = plink_prefix
         
         if plink_prefix == None :
             self.nsubjects = nsubjects
@@ -50,7 +51,8 @@ class pheno_simulator():
         self.df[["abcd_site", "Site_contrib"]] = sim_sites(rng = self.rng, nsubjects = self.nsubjects, 
                                                            nsites=nsites, eq_sites=eq_sites, random_BS = random_BS)
 
-    def sim_pops(self, theta_alleles=0.5, nclusts=1, site_comp="IID", dominance=2):
+    def sim_pops(self, theta_alleles=[0.5, 0.5], nclusts=1, site_comp="IID", dominance=2, 
+                 shared_causal= 0.8, shared_noncausal = 0.8, prop_causal = 0.1):
         # site_comp = ["EQUAL", "RAND", "IID", "HET"]
         if self.eq_sites == True:
             site_comp = "EQUAL"
@@ -59,27 +61,31 @@ class pheno_simulator():
         # Clusts are distinct ancestries
         self.nclusts = nclusts
         self.site_comp = site_comp
+        self.shared_causal= shared_causal
+        self.shared_noncausal = shared_noncausal
         
         # dominance is only referenced for heterogeneous cluster sampling
         if site_comp == "HET" :
             self.dominance = dominance 
 
         # Simualte allele frequencies for common ancestor and for genetic clusters
-        (self.ancest_freqs, self.cluster_frequencies) = sim_pop_alleles(rng = self.rng, theta_alleles = self.theta_alleles,
-                                                              nclusts=self.nclusts, nSNPs = self.nSNPs)
+        (self.ancest_freqs, self.cluster_frequencies, self.shared_idx, self.causal_idx) = sim_pop_alleles(seed = self.rng, theta_alleles = self.theta_alleles,
+                                                              nclusts=self.nclusts, nSNPs = self.nSNPs,
+                                                              shared_causal= shared_causal, shared_noncausal = shared_noncausal,
+                                                              prop_causal = prop_causal)
 
         # Sample ancesrties for each individual Dim = (nsubjects,)
         self.df["subj_ancestries"] = assign_clusters(df = self.df, rng = self.rng, theta_alleles=self.theta_alleles, nclusts=self.nclusts, 
                                                      nsites = self.nsites, site_comp= site_comp, dominance=dominance, eq_sites = self.eq_sites)
 
-    def sim_genos(self, clusters_differ = False, prop_causal=0.1, maf_filter = 0.05):
-        self.clusters_differ = clusters_differ
+    def sim_genos(self, prop_causal=0.1, maf_filter = 0.05, admixing = False):
         self.prop_causal = prop_causal
         self.maf_filter  = maf_filter
-        (self.genotypes, self.GRM, pcs, self.causal_snps) = sim_genos(rng = self.rng, ancestral_frequencies= self.ancest_freqs,
+        self.admixing = admixing
+        (self.genotypes, self.GRM, pcs) = sim_genos(seed = self.rng, ancestral_frequencies= self.ancest_freqs,
                                                                       cluster_frequencies = self.cluster_frequencies, 
-                                                       subject_ancestries = self.df["subj_ancestries"], clusters_differ = clusters_differ,
-                                                       prop_causal=self.prop_causal, maf_filter = maf_filter)
+                                                       subject_ancestries = self.df["subj_ancestries"],
+                                                       prop_causal=self.prop_causal, maf_filter = maf_filter, admixing = admixing)
         
         # update the number of SNPs
         self.nSNPS_post_filter = self.genotypes.shape[1]
@@ -88,8 +94,8 @@ class pheno_simulator():
 
     def sim_gen_effects(self, site_dep=False):
         # genetic contribution
-        self.df["Gene_contrib"] = sim_gen_effects(rng = self.rng, genotypes = self.genotypes, causals= self.causal_snps, df = self.df,
-                                                  prop_causal=self.prop_causal, site_dep=site_dep, clusters_differ= self.clusters_differ)
+        self.df["Gene_contrib"] = sim_gen_effects(rng = self.rng, genotypes = self.genotypes, causals= self.causal_idx, df = self.df,
+                                                  prop_causal=self.prop_causal, site_dep=site_dep)
     
     def sim_covars(self, cov_effect= True, ortho_cov = False) :
         self.cov_effect= cov_effect
@@ -111,10 +117,10 @@ class pheno_simulator():
                                                                           nclusts =self.nclusts)
             
     def full_sim(self, sigma = [0.5,0.25,0.25], site_comp="IID",
-                        nsites=30, theta_alleles=0.5, nclusts=5, dominance=5,
+                        nsites=30, theta_alleles=[0.5, 0.5], nclusts=5, dominance=5,
                         prop_causal=0.25, site_dep=False, nsubjects=1000,
-                        nnpc=0, phens = 2, site_het = False, clusters_differ=False, cov_effect = True,
-                        ortho_cov = True, random_BS = True, npcs = 0):
+                        nnpc=0, phens = 2, site_het = False, cov_effect = True,
+                        ortho_cov = True, random_BS = True, npcs = 0, admixing = False):
         
         # Only simulate genes if plink file not specified
         if self.plink_prefix == None: 
@@ -128,7 +134,7 @@ class pheno_simulator():
             self.sim_sites(nsites= nsites, eq_sites=eq_sites, random_BS = random_BS)
             
             self.sim_pops(theta_alleles=theta_alleles, nclusts=nclusts, site_comp= site_comp, dominance=dominance)
-            self.sim_genos(clusters_differ = clusters_differ, prop_causal=prop_causal)
+            self.sim_genos(prop_causal=prop_causal, admixing = admixing)
             self.sim_gen_effects(site_dep= site_dep)
             self.sim_covars(cov_effect= cov_effect, ortho_cov = ortho_cov)
             

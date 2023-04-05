@@ -9,15 +9,17 @@ Created on Thu Oct 13 09:25:44 2022
 import numpy as np
 import pandas as pd
 from sklearn.decomposition import PCA
+from AdjHE.simulation_helpers.sim_admixing import sample_admixed_genotypes
 
 
-def sim_genos(rng, ancestral_frequencies, cluster_frequencies, subject_ancestries, clusters_differ = False, prop_causal=0.1, maf_filter = 0.05):
+def sim_genos(seed, ancestral_frequencies, cluster_frequencies, subject_ancestries,
+              clusters_differ = False, prop_causal=0.1, maf_filter = 0.05, admixing = False):
     """
     Simulate genotypes of the subjects given their cluster ID and the respective cluster allele frequencies
 
     Parameters
     ----------
-    rng : numpy random number generator Generator object
+    seed : seed or numpy random number generator Generator object
         random number generator.
     cluster_frequencies : numpy array
         (nsubjects x nclusts) array contianing allele frequencies for each cluster.
@@ -41,48 +43,36 @@ def sim_genos(rng, ancestral_frequencies, cluster_frequencies, subject_ancestrie
         (nsubjects x nsubjects) array containing standardized genetic relatedness matrix .
     pcs : pandas dataframe
         dataframe containing loadings along all eigenvectors.
-    causal_snps : numpy array
-        numpy array of the causal SNPs
 
     """
-    nSNPs = cluster_frequencies.shape[1]
-    nclusts = cluster_frequencies.shape[0]
+    
+    rng = np.random.default_rng(seed)
+    (nclusts, nSNPs) = cluster_frequencies.shape
     nsubjects = subject_ancestries.shape[0]
     
     if nclusts == 1:
         # simulate genotypes
         genotypes = rng.binomial(n=np.repeat(2, nSNPs), p=cluster_frequencies[0],
                                  size=(nsubjects, nSNPs))
-    elif clusters_differ:
+    elif (nclusts > 1) and (not admixing)  :
         # simulate genotypes
         genotypes = rng.binomial(n=np.repeat(2, nSNPs), p= cluster_frequencies[subject_ancestries],
                                  size=(nsubjects, nSNPs))
         
-    elif not clusters_differ: 
-        anc_region = range(int(nSNPs *(1-prop_causal)))
-        causal_region = range(max(anc_region)+1, nSNPs)
-        anc_geno = rng.binomial(n=np.repeat(2, len(anc_region)),
-                                 p= cluster_frequencies[subject_ancestries][:,anc_region],
-                                 size=(nsubjects, len(anc_region)))
-        causal_geno = rng.binomial(n=np.repeat(2, len(causal_region)),
-                                 p=ancestral_frequencies[causal_region],
-                                 size=(nsubjects, len(causal_region)))
-        genotypes= np.concatenate((anc_geno, causal_geno), axis = 1)
+    elif (nclusts >1 ) and (admixing) :
+        genotypes = np.zeros((nsubjects, nSNPs))
+        for i in range(nsubjects): 
+            # Bias admixing proportion toward "reported race"
+            admixture = np.repeat(1,nclusts)
+            admixture[subject_ancestries[i]] = 2
+            admixture = admixture / np.sum(admixture)
+            genotypes[i,:] = sample_admixed_genotypes(seed, cluster_freqs = cluster_frequencies, admixture = admixture, nsubjects=1)
         
         
     # keep SNPs with MAF greater than 0.05
     maf_filter = np.logical_and((np.sum(genotypes, axis=0) / (2 * nsubjects)) > maf_filter,
                                 (np.sum(genotypes, axis=0) / (2 * nsubjects)) < 1-maf_filter)
     
-    if not clusters_differ :
-        anc_region = range(int(nSNPs *(1-prop_causal)))
-        causal_region = range(max(anc_region)+1, nSNPs)
-
-        anc_regionsize = sum(maf_filter[anc_region])
-        causal_regionsize = sum(maf_filter[causal_region])
-        causal_snps = [False for i in range(anc_regionsize)]
-        causal_snps += [True for i in range(causal_regionsize)]
-
     # Use MAF filter
     filtered_geno = genotypes[:,  maf_filter]
     
@@ -100,6 +90,6 @@ def sim_genos(rng, ancestral_frequencies, cluster_frequencies, subject_ancestrie
     pcs = pd.DataFrame(PCA(n_components = 20).fit_transform(np.asarray(GRM)))
     pcs.columns = ["pc_" + str(col + 1) for col in pcs.columns]
     
-    return genotypes, GRM, pcs, causal_snps
+    return genotypes, GRM, pcs
 
 

@@ -10,7 +10,7 @@
   <meta name="generator" content="quarto-1.2.335">
 
   <meta name="author" content="Christian Coffman">
-  <title>Heritability of regional volumes in the adolescent brain</title>
+  <title>Heritability of subcortical volumes in the adolescent brain</title>
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
@@ -343,7 +343,7 @@
     <div class="slides">
 
 <section id="title-slide" class="quarto-title-block center">
-  <h1 class="title">Heritability of regional volumes in the adolescent brain</h1>
+  <h1 class="title">Heritability of subcortical volumes in the adolescent brain</h1>
 
 <div class="quarto-title-authors">
 <div class="quarto-title-author">
@@ -364,7 +364,7 @@ Christian Coffman
 <li><a href="#/subcortical-heritability-through-lifetime" id="/toc-subcortical-heritability-through-lifetime">Subcortical heritability through lifetime</a></li>
 <li><a href="#/difficulties-in-extending-timeline" id="/toc-difficulties-in-extending-timeline">Difficulties in extending timeline</a></li>
 <li><a href="#/multiple-subcortical-volumes-highly-heritable-in-adolescence" id="/toc-multiple-subcortical-volumes-highly-heritable-in-adolescence">Multiple subcortical volumes highly heritable in adolescence</a></li>
-<li><a href="#/future-extensions" id="/toc-future-extensions">Future Extensions</a></li>
+<li><a href="#/future-extensions" id="/toc-future-extensions">Future extensions</a></li>
 <li><a href="#/toolbox" id="/toc-toolbox">Toolbox</a></li>
 </ul>
 </nav>
@@ -418,19 +418,17 @@ Christian Coffman
 <section id="adjhe-extension-accounts-for-site-effects" class="slide level2">
 <h2>AdjHE extension accounts for site effects</h2>
 <ul>
-<li>AdjHE estimator is variance component estimator</li>
+<li>Adjusted Haseman-Elston (AdjHE) estimator is variance component estimator</li>
 </ul>
 <p><span class="math display">\[
 EY = X\beta_d \\
 Var(Y) = \sigma_G^2 GRM + \sigma_S^2S + \sigma_E^2I
 \]</span></p>
 <ul>
-<li><p>Partition variance between Genetic relatedness matrix (<span class="math inline">\(\sigma_G^2\)</span>) and unmodeled variance (<span class="math inline">\(\sigma_E^2\)</span>)</p></li>
 <li><p>Treat site as a random effect (<span class="math inline">\(\sigma_S^2\)</span>)</p></li>
-<li><p>Heritability <span class="math inline">\(h^2 = \frac{\sigma_G^2}{\sigma_G^2 + \sigma_E^2}\)</span></p></li>
+<li><p>OLS solution on 2nd moment</p></li>
+<li><p>Heritability: genetic influence (<span class="math inline">\(\sigma_G^2\)</span>) vs environment (<span class="math inline">\(\sigma_E^2\)</span>)</p></li>
 <li><p>Expands unbiased estimation to imbalanced sites</p></li>
-<li><p>OLS solution</p></li>
-<li><p>No need for <span class="math inline">\(S\perp GRM\)</span></p></li>
 </ul>
 </section>
 <section id="outperforms-existing-methods-adjusting-for-site-effects" class="slide level2">
@@ -438,14 +436,14 @@ Var(Y) = \sigma_G^2 GRM + \sigma_S^2S + \sigma_E^2I
 <div class="columns">
 <div class="column column" style="width:45%;">
 <ul>
-<li><p>Other estimators necessitate <span class="math inline">\(S\perp GRM\)</span></p></li>
+<li><p>Other estimators necessitate site indep of genetics</p></li>
 <li><p>up to 4x faster computation</p></li>
 <li><p>More speed gains to come</p></li>
 </ul>
 </div><div class="column column" style="width:55%;">
 <div class="quarto-figure quarto-figure-center">
 <figure>
-<p><img data-src="figures/Adding_sites_n_clusts_het.png" alt="Simulation comparisons"></p>
+<p><img data-src="figures/Adding_sites_n_clusts_homo.png" alt="Simulation comparisons"></p>
 </figure>
 </div>
 </div>
@@ -462,7 +460,7 @@ Var(Y) = \sigma_G^2 GRM + \sigma_S^2S + \sigma_E^2I
 
 <section>
 <section id="future-extensions" class="title-slide slide level1 center">
-<h1>Future Extensions</h1>
+<h1>Future extensions</h1>
 
 </section>
 <section id="multivariate" class="slide level2" data-auto-animate="true" data-auto-animate-easing="ease-in-out">
@@ -562,18 +560,18 @@ Var(Y) = \sigma_G^2 GRM + \sigma_S^2S + \sigma_E^2I
 <section id="toolbox" class="title-slide slide level1 center">
 <h1>Toolbox</h1>
 <div class="columns">
-<div class="column" style="width:45%;">
-<ul>
-<li><p>United 8 site adjustment methods</p></li>
-<li><p>Simulates phenotypes from existing or simulated GWAS data</p></li>
-</ul>
-</div><div class="column" style="width:55%;">
+<div class="column" style="width:55%;">
 <div class="quarto-figure quarto-figure-center">
 <figure>
 <p><img data-src="figures/simulation_diagram.png" alt="Simulation diagram"></p>
 <p></p><figcaption>Simulation diagram</figcaption><p></p>
 </figure>
 </div>
+</div><div class="column" style="width:45%;">
+<ul>
+<li><p>United 8 site adjustment methods</p></li>
+<li><p>Simulates phenotypes from existing or simulated GWAS data</p></li>
+</ul>
 </div>
 </div>
 </section>
