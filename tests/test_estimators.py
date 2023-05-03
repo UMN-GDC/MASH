@@ -12,12 +12,10 @@ from AdjHE.estimation.all_estimators import Basu_estimation
 import pytest
 
 
-# all pytests will read the same json file
 @pytest.fixture
 def args() : 
     return read_flags({"argfile" : "AdjHE/examples/Generic.json"})
 
-# all pytests have the common fixture of reading arguments
 @pytest.fixture
 def estimator(args) :
     ests = Basu_estimation(prefix = args["prefix"],
@@ -28,35 +26,48 @@ def estimator(args) :
     return ests
 
 
-#%%
-
-# Call this with 
-# python -m pytest -m loading 
 @pytest.mark.AdjHE
 def test_AdjHE_basic(args, estimator) : 
     estimator.estimate(Method = "AdjHE", npc = [3], fixed_effects = args["fixed_effects"],
                   mpheno = args["mpheno"], loop_covars = args["loop_covars"], 
-                  random_groups = args["random_groups"], Naive= args["Naive"])
+                  random_groups = None, Naive= False)
     h = estimator.results["h2"][0]
     
     assert (h<0.9) and (h > 0.5)
 
 @pytest.mark.AdjHE
-def test_AdjHE_w_site_effects(args, estimator) :
-    estimator.estimate(Method = args["Method"], npc = [3], fixed_effects = args["fixed_effects"],
+def test_AdjHE_RE(args, estimator) :
+    estimator.estimate(Method = "AdjHE", npc = [3], fixed_effects = args["fixed_effects"],
                   mpheno = args["mpheno"], loop_covars = args["loop_covars"],
-                  random_groups = "abcd_site", Naive= args["Naive"])
-    h= estimator.results["h2"][0]
+                  random_groups = "abcd_site", Naive= False)
+    h = estimator.results["h2"][0]
+    
     assert (h<0.9) and (h > 0.5)
 
 @pytest.mark.AdjHE
-def test_AdjHE_naive(args, estimator) :
-    estimator.estimate(Method = args["Method"], npc = [3], fixed_effects = args["fixed_effects"],
+def test_AdjHE_meta(args, estimator) :
+    estimator.estimate(Method = "AdjHE", npc = [3], fixed_effects = args["fixed_effects"],
+                  mpheno = args["mpheno"], loop_covars = args["loop_covars"],
+                  random_groups = "abcd_site", Naive= True)
+    h = estimator.results["h2"][0]
+    
+    assert (h<0.9) and (h > 0.5)
+
+# Test GCTA
+
+@pytest.mark.GCTA
+def test_GCTA_basic(args, estimator) :
+    estimator.estimate(Method = "GCTA", npc = [3], fixed_effects = args["fixed_effects"],
+                  mpheno = args["mpheno"], loop_covars = args["loop_covars"],
+                  random_groups = "abcd_site", Naive= False)
+    h = estimator.results["h2"][0]
+    assert (h<0.9) and (h>0.5)
+
+@pytest.mark.GCTA
+def test_GCTA_meta(args, estimator) :
+    estimator.estimate(Method = "GCTA", npc = [3], fixed_effects = args["fixed_effects"],
                   mpheno = args["mpheno"], loop_covars = args["loop_covars"],
                   random_groups = "abcd_site", Naive= True)
     h = estimator.results["h2"][0]
     assert (h<0.9) and (h>0.5)
-
-
-
 

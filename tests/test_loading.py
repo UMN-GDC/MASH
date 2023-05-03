@@ -16,8 +16,6 @@ from AdjHE.estimation.all_estimators import Basu_estimation
 
        
         
-#%%
-
 # Call this with 
 # python -m pytest -m loading 
 @pytest.mark.loading

@@ -5,12 +5,13 @@ Created on Mon Nov 21 07:35:15 2022
 
 @author: christian
 """
+import sys
 import os
-import datetime
 import logging
 import subprocess
 import numpy as np
 import pandas as pd 
+# os.chdir("/home/christian/Research/Stat_gen/tools/Basu_herit")
 
 
 # Find GCTA
@@ -20,36 +21,11 @@ gcta = subprocess.run(["whereis", "gcta64"], capture_output=True
 
 
 #%%
-def GCTA(df, covars, nnpc, mp, GRM, gcta, silent = True):
-    """
-    This function estimates the heritability of a phenotype using GCTA.
-
-    Parameters
-    ----------  
-    df : dataframe
-       A dataframe containing the phenotype, covariates and PCs.
-    covars : list
-        A list of covariates to include in the model.
-    nnpc : int
-       The number of PCs to include in the model.
-    mp : str
-       The name of the phenotype.
-    GRM : numpy array
-       A numpy array containing the GRM.
-    gcta : path
-       The path to the GCTA executable.The path to the GCTA executable.
-
-    Returns
-    -------
-    dataframe : dataframe
-        contianing the heritability estimate and the variance of the estimate.
-    """
-
-
+def GCTA(df, covars, nnpc, mp, GRM, gcta, silent=False):
     # Store random integer to save to temp file name
     rng = np.random.default_rng()    
-    timenow = datetime.datetime.now()
-    temp_name = "temp" + str(timenow)
+    numb = rng.integers(10000)
+    temp_name = "temp" + str(numb)
 
     # write the phenotype file
     df[["FID", "IID", mp]].to_csv(temp_name + "_pheno.txt", sep = " ", header = False, index= False, na_rep = "NA")
@@ -100,29 +76,20 @@ def GCTA(df, covars, nnpc, mp, GRM, gcta, silent = True):
     bashcommand = gcta + " --grm " + temp_name + " --pheno " + temp_name + "_pheno.txt --mpheno 1 --reml --out " + temp_name + " " + covars
     process = subprocess.Popen(bashcommand.split(), stdout=subprocess.PIPE)
     __output, __error = process.communicate()
-    
-    # Take covars, which is either a string or a list of string and make it a single string joined by + signs if necessary
-    # check if instance of covars is string type
-    if isinstance(covars, str) :
-        Covariates = covars
-    elif isinstance(covars, list):
-        Covariates = "+".join(covars)
-    else : 
-        Covariates = "None"
-        
 
     # parse output for estimate
     try :
         df = pd.read_table(temp_name + ".hsq", sep="\t").query( "Source == 'V(G)/Vp'").reset_index()
-        result = {"h2": df.Variance[0], "var(h2)": df.SE[0]**2, "ss" : np.nan, "Pheno": mp, "PCs": nnpc, "Covariates": Covariates, "time": np.nan,
+        result = {"h2": df.Variance[0], "var(h2)": df.SE[0]**2, "ss" : np.nan, "Pheno": mp, "PCs": nnpc, "Covariates": "+".join(covars), "Time for analysis(s)": np.nan,
              "Memory Usage": np.nan}
 
 
     except FileNotFoundError:
         logging.error("Estimations were not made. Usually this is due to small sample sizes for GCTA")
-        result = {"h2": np.nan, "var(h2)": np.nan, "ss" : np.nan, "Pheno": mp, "PCs": nnpc, "Covariates": Covariates, "time": np.nan,
+        result = {"h2": np.nan, "var(h2)": np.nan, "ss" : np.nan, "Pheno": mp, "PCs": nnpc, "Covariates": "+".join(covars), "Time for analysis(s)": np.nan,
              "Memory Usage": np.nan}
 
+    
     
     
     # tidy up by removing temporary files

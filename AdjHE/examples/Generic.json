@@ -13,8 +13,8 @@
   "loop_covars" : false,
   "covar_relates" : false,
   "random_groups" : "abcd_site",
-  "Naive" : true,
-  "Method" : "GCTA",
+  "Naive" : false,
+  "Method" : "AdjHE",
   "ids" : null
 }
 
