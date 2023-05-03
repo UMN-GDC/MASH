@@ -20,16 +20,6 @@ from AdjHE.data_input.parser import get_args, read_flags
 # from AdjHE.traits_visualizer import covs_vs_cov_of_interest
 from AdjHE.estimation.all_estimators import Basu_estimation
 
-#######################################
-#######################################
-#%% For troubleshootingg
-# args= read_flags({"argfile" : "Example/basic_AdjHE.json"})
-# args= read_flags({"argfile" : "Example/basic_GCTA.json"})
-# args= read_flags({'argfile' : "simulations/Analysis_jsons/first_full.json"})
-#######################################
-#######################################
-
-
 if __name__ == "__main__" :
     #%% Get command line arguments
     # Get CL arguments and convert them to usable Python objects in a dictionary
