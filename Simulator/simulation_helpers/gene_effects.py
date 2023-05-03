@@ -8,7 +8,7 @@ Created on Thu Mar 16 14:42:57 2023
 import numpy as np
 
 
-def sim_gen_effects(rng, genotypes, causals = [], prop_causal=0.1, variance_propto_frequency = False, maf_filter = 0.1, races_differ = False):
+def sim_gen_effects(rng, genotypes, causals = [], prop_causal=0.1, variance_propto_frequency = False, maf_filter = 0.1, clusters_differ = False):
     """
     
 

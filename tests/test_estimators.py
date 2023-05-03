@@ -71,3 +71,25 @@ def test_GCTA_meta(args, estimator) :
     h = estimator.results["h2"][0]
     assert (h<0.9) and (h>0.5)
 
+
+# Test SWD
+@pytest.mark.SWD
+def test_SWD(args, estimator) :
+    estimator.estimate(Method = "SWD", npc = [3], fixed_effects = args["fixed_effects"],
+                  mpheno = args["mpheno"], loop_covars = args["loop_covars"],
+                  random_groups = "abcd_site", Naive= False)
+    h = estimator.results["h2"][0]
+    assert (h<0.9) and (h>0.5)
+
+# Test Combat
+@pytest.mark.Combat
+def test_Combat(args, estimator) :
+    estimator.estimate(Method = "Combat", npc = [3], fixed_effects = args["fixed_effects"],
+                  mpheno = args["mpheno"], loop_covars = args["loop_covars"],
+                  random_groups = "abcd_site", Naive= False)
+    h = estimator.results["h2"][0]
+    assert (h<0.9) and (h>0.5)
+
+
+
+
