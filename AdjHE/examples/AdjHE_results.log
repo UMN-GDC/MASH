@@ -9,3 +9,18 @@ root - INFO - RV: abcd_site
 root - INFO - Beginning estimation
 root - DEBUG - ['Tidyness', 'Happy_camper']
 root - DEBUG - Formula is Head_size~ 1
+root - ERROR - Estimations were not made. Usually this is due to small sample sizes for GCTA
+root - DEBUG - Formula is Head_size~ 1
+root - ERROR - Estimations were not made. Usually this is due to small sample sizes for GCTA
+root - DEBUG - Started112767.573619154
+root - DEBUG - Ended112768.317200679
+root - DEBUG - 0.743581524991896
+root - DEBUG - Formula is Head_size~ 1
+root - ERROR - Estimations were not made. Usually this is due to small sample sizes for GCTA
+root - DEBUG - Formula is Head_size~ 1
+root - ERROR - Estimations were not made. Usually this is due to small sample sizes for GCTA
+root - DEBUG - Started112768.318290716
+root - DEBUG - Ended112769.09930036
+root - DEBUG - 0.7810096440080088
+root - INFO - Writing results to AdjHE/examples/AdjHE_results
+root - INFO - Finished

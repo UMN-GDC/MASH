@@ -9,6 +9,15 @@ import numpy as np
 import statsmodels.formula.api as smf
 
 
+def rescalar(vec1, vec2, var1, var2) :
+    """
+    rescale vec2 so that the ratio of the variances of vec2 to vec1 are the same as the ratio of var2 over var1
+    """
+    var_vec1 = np.var(vec1)
+    var_vec2 = np.var(vec2)
+    ratio = var2/var1
+    return vec2 * np.sqrt(ratio * var_vec1/var_vec2)
+
 def sim_pheno(rng, df, var_comps=[0.5, 0.25, 0.25], phen = 1, site_het = False, nsites = 1, nclusts =1, cluster_contribs = None):
     """
     Simulate the phenotype given the differnt contributions from site, genetic, and error, and scale them by the var_comps variable.
