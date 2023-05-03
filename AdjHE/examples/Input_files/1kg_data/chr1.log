@@ -1,0 +1,26 @@
+PLINK v2.00a3 SSE4.2 (18 Feb 2022)
+Options in effect:
+  --make-bed
+  --max-alleles 2
+  --out chr1
+  --pfile chr1
+  --snps-only just-acgt
+  --thin 0.001
+
+Hostname: thecoffmans
+Working directory: /home/christian/Downloads
+Start time: Tue Apr 11 16:16:21 2023
+
+Random number seed: 1681247781
+3836 MiB RAM detected; reserving 1918 MiB for main workspace.
+Using up to 4 compute threads.
+2504 samples (1271 females, 1233 males; 2504 founders) loaded from chr1.psam.
+6196151 out of 6468094 variants loaded from chr1.pvar.
+2 categorical phenotypes loaded.
+--thin: 6189957 variants removed (6194 remaining).
+6194 variants remaining after main filters.
+Writing chr1.fam ... done.
+Writing chr1.bim ... done.
+Writing chr1.bed ... done.
+
+End time: Tue Apr 11 16:16:42 2023

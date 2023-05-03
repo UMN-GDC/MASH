@@ -9,7 +9,7 @@ import numpy as np
 import statsmodels.formula.api as smf
 
 
-def sim_pheno(rng, df, var_comps=[0.5, 0.25, 0.25], phen = 1, site_het = False, nsites = 1, nclusts =1):
+def sim_pheno(rng, df, var_comps=[0.5, 0.25, 0.25], phen = 1, site_het = False, nsites = 1, nclusts =1, cluster_contribs = None):
     """
     Simulate the phenotype given the differnt contributions from site, genetic, and error, and scale them by the var_comps variable.
 
@@ -29,6 +29,9 @@ def sim_pheno(rng, df, var_comps=[0.5, 0.25, 0.25], phen = 1, site_het = False, 
         number of sites in the simulation. The default is 1.
     nclusts : int, optional
         number of clusters in thhe study. The default is 1.
+    cluster_contribs : list of floats, optional
+        A list specifying additional cluster specific effects. If these values differ, they will change the heritability of each 
+        cluster (they will be added to the shared variance component in var_comps)
 
     Returns
     -------
@@ -87,6 +90,18 @@ def sim_pheno(rng, df, var_comps=[0.5, 0.25, 0.25], phen = 1, site_het = False, 
     EtoG_sim = np.var(errors) / gen_var
     error_variance_scaling = EtoG_sim / EtoG
 
+    if cluster_contribs != None :
+        for (cluster, cluster_contrib) in enumerate(cluster_contribs) :
+            CtoG = cluster_contrib / var_comps[0]
+            CtoG_sim = np.var(df["Gene_contrib_c" + str(cluster)])
+            Cvariance_scaling = CtoG_sim/CtoG
+            df["Gene_contrib_c" + str(cluster)] = df["Gene_contrib_c" + str(cluster)] / np.sqrt(Cvariance_scaling)
+
+        return_columns = ["Gene_contrib", "Site_contrib", "errors"] + ["Gene_contrib_c" + str(i) for i in range(len(cluster_contribs))]
+    else : 
+       return_columns = ["Gene_contrib", "Site_contrib", "errors"] 
+
+
     # Scale site effects so total contributed variance is as presecribed
     df["Site_contrib"] = df["Site_contrib"] / \
         np.sqrt(site_variance_scaling)
@@ -100,7 +115,10 @@ def sim_pheno(rng, df, var_comps=[0.5, 0.25, 0.25], phen = 1, site_het = False, 
         phenoname = "Y"
     else :
         phenoname = "Y" + str(phen)
-    df[phenoname] = df.Gene_contrib + df.Site_contrib + df.errors + df.Covar_contrib
-    df[phenoname] = df[phenoname] - np.mean(df[phenoname])
+
+    if np.sum(np.isnan(df.Site_contrib)) > 100 :
+        df.Site_contrib = 0
+    df[phenoname] = df[["Gene_contrib", "Site_contrib", "errors", "Covar_contrib"]].sum(axis=1)
+    df[phenoname] = df[phenoname] - np.nanmean(df[phenoname])
     
-    return df["Gene_contrib"], df["Site_contrib"], df["errors"], df[phenoname]
+    return df[return_columns + [phenoname]]

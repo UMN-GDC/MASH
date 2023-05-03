@@ -8,7 +8,7 @@ Created on Thu Mar 16 13:08:24 2023
 import numpy as np
 import pandas as pd
 
-def sim_pop_alleles(seed, theta_alleles = [0.5, 0.5], nclusts=1, nSNPs = 1000, shared_causal= 0.8, shared_noncausal = 0.8, prop_causal = 0.1) :
+def sim_pop_alleles(seed, theta_alleles = [0.5, 0.5], nclusts=1, nSNPs = 1000, shared_causal= 0.8, shared_noncausal = 0.8, prop_causal = 0.1, maf_filter = 0.1) :
     """
     Simulate the allele frequencies for a common ancestor and for all genetic clusters taking into account if the causal snps are shared or not.
 
@@ -28,7 +28,8 @@ def sim_pop_alleles(seed, theta_alleles = [0.5, 0.5], nclusts=1, nSNPs = 1000, s
         specify the proportion of non-causal snps shared between genetic clusters, between 0 and 1.
     prop_causal : float64
         specify the proportion snps that are causal.
-
+    maf_filter : float64
+        between 0 and 0.5, the minimum allowable maf for causal snps
 
     Returns
     -------
@@ -75,8 +76,9 @@ def sim_pop_alleles(seed, theta_alleles = [0.5, 0.5], nclusts=1, nSNPs = 1000, s
     # Get vectors annotating genomes for being shared or causal
     shared_idx = list(range(*boundaries["causal_shared"])) + list(range(*boundaries["noncausal_shared"]))
     causal_idx = list(range(*boundaries["causal_shared"])) + list(range(*boundaries["causal_nonshared"]))
-    
-    
+    # filter out the causal_idx for which the cluster_freqs are less than the maf or greater than 1-maf for at least one columns
+    causal_idx = np.array(causal_idx)[np.all((cluster_freqs[:, causal_idx] > maf_filter) & (cluster_freqs[:, causal_idx] < 1-maf_filter), axis=0)]
+
     return ancest_freqs, cluster_freqs, np.array(shared_idx), np.array(causal_idx)
 
 def assign_clusters(df, rng, theta_alleles=0.5, nclusts=1, nsites = 1, site_comp="IID", dominance=2, eq_sites = False):

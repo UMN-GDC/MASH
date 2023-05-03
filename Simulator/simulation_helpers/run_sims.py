@@ -6,17 +6,18 @@ Created on Thu Dec  1 18:08:00 2022
 @author: christian
 """
 
-
-import os
-os.chdir("/home/christian/Research/Stat_gen/tools/Basu_herit")
+import logging
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 import itertools
 from tqdm.auto import tqdm
-from AdjHE.simulation_helpers.Sim_generator import pheno_simulator
+from Simulator.simulation_helpers.Sim_generator import pheno_simulator
 from AdjHE.estimation.all_estimators import Basu_estimation
+
+
+
 
 rng = np.random.default_rng()
 
@@ -34,11 +35,11 @@ rng = np.random.default_rng()
 
 def sim_n_est(nsubjects = 1000, sigma = [0.5,0.25, 0.25], site_comp = "IID", nsites = 30,
               theta_alleles =0.5, nclusts =1, dominance=3, prop_causal=0.25, site_dep=False, nnpc = 1,
-              nSNPs=20, phens = 2, site_het = False, races_differ = False, cov_effect = True,
+              nSNPs=20, phens = 2, site_het = False, clusters_differ = False, cov_effect = True,
               ortho_cov = True, random_BS=True) :
     sim = pheno_simulator(nsubjects= nsubjects, nSNPs = nSNPs)
     # Run through full simulation and estimation
-    sim.full_sim(nsites= nsites, sigma= sigma, phens = phens, nclusts = nclusts, races_differ = races_differ,
+    sim.full_sim(nsites= nsites, sigma= sigma, phens = phens, nclusts = nclusts, clusters_differ = clusters_differ,
                  prop_causal = prop_causal, cov_effect = cov_effect, ortho_cov = ortho_cov, random_BS = True)
 
     ests = Basu_estimation()
@@ -66,8 +67,8 @@ def sim_n_est(nsubjects = 1000, sigma = [0.5,0.25, 0.25], site_comp = "IID", nsi
         RE 
     except NameError :
         RE = []
-        
-    print(sim.df.columns.tolist())
+    
+    logging.info(sim.df.columns.tolist())
         
         
     # Estimate always
@@ -81,7 +82,7 @@ def sim_n_est(nsubjects = 1000, sigma = [0.5,0.25, 0.25], site_comp = "IID", nsi
         try :
             nGCTA = ests.estimate(Method = "GCTA", npc = [nnpc], fixed_effects = RE, mpheno = ["Y"], random_groups = "abcd_site", Naive = True)
         except FileNotFoundError :
-            print("No estimate since sample size too small for GCTA")
+            logging.error("No estimate since sample size too small for GCTA")
             nGCTA = np.nan
 
         SWD = ests.estimate(Method = "SWD", npc = [nnpc], fixed_effects = RE, mpheno = ["Y"], random_groups = "abcd_site", Naive = False)
@@ -90,45 +91,44 @@ def sim_n_est(nsubjects = 1000, sigma = [0.5,0.25, 0.25], site_comp = "IID", nsi
 
 
     else :
-        nAdjHE = pd.DataFrame({"h2" : np.nan, "var(h2)" : np.nan, "Analysis time" : np.nan}, index = [0])
-        AdjHE_RE = pd.DataFrame({"h2" : np.nan, "var(h2)" : np.nan, "Analysis time" : np.nan}, index = [0])
-        nGCTA = pd.DataFrame({"h2" : np.nan, "var(h2)" : np.nan, "Analysis time" : np.nan}, index = [0])
-        SWD = pd.DataFrame({"h2" : np.nan, "var(h2)" : np.nan, "Analysis time" : np.nan}, index = [0])
-        Combat = pd.DataFrame({"h2" : np.nan, "var(h2)" : np.nan, "Analysis time" : np.nan}, index = [0])
-        Covbat = pd.DataFrame({"h2" : np.nan, "var(h2)" : np.nan, "Analysis time" : np.nan}, index = [0])
+        nAdjHE = pd.DataFrame({"h2" : np.nan, "var(h2)" : np.nan, "time" : np.nan}, index = [0])
+        AdjHE_RE = pd.DataFrame({"h2" : np.nan, "var(h2)" : np.nan, "time" : np.nan}, index = [0])
+        nGCTA = pd.DataFrame({"h2" : np.nan, "var(h2)" : np.nan, "time" : np.nan}, index = [0])
+        SWD = pd.DataFrame({"h2" : np.nan, "var(h2)" : np.nan, "time" : np.nan}, index = [0])
+        Combat = pd.DataFrame({"h2" : np.nan, "var(h2)" : np.nan, "time" : np.nan}, index = [0])
+        Covbat = pd.DataFrame({"h2" : np.nan, "var(h2)" : np.nan, "time" : np.nan}, index = [0])
 
-        
     result = {"GCTA" : GCTA_est["h2"][0],
               "var_GCTA" : GCTA_est["var(h2)"][0],
-              "time_GCTA" : GCTA_est["Analysis time"][0],
+              "time_GCTA" : GCTA_est["time"][0],
               
               "nGCTA": nGCTA["h2"][0],
               "var_nGCTA" : nGCTA["var(h2)"][0],
-              "time_nGCTA" : nGCTA["Analysis time"][0],
+              "time_nGCTA" : nGCTA["time"][0],
 
               "nAdjHE": nAdjHE["h2"][0],
               "var_nAdjHE" : nAdjHE["var(h2)"][0],
-              "time_nAdjHE" : nAdjHE["Analysis time"][0],
+              "time_nAdjHE" : nAdjHE["time"][0],
 
               "AdjHE": AdjHE["h2"][0],
               "var_AdjHE" : AdjHE["var(h2)"][0],
-              "time_AdjHE" : AdjHE["Analysis time"][0],
+              "time_AdjHE" : AdjHE["time"][0],
 
               "SWD": SWD["h2"][0],
               "var_SWD" : SWD["var(h2)"][0],
-              "time_SWD" : SWD["Analysis time"][0],
+              "time_SWD" : SWD["time"][0],
               
               "Combat": Combat["h2"][0],
               "var_Combat" : Combat["var(h2)"][0],
-              "time_Combat" : Combat["Analysis time"][0],
+              "time_Combat" : Combat["time"][0],
               
               "Covbat": Combat["h2"][0],
               "var_Covbat" : Combat["var(h2)"][0],
-              "time_Covbat" : Combat["Analysis time"][0],
+              "time_Covbat" : Combat["time"][0],
 
               "AdjHE_RE" : AdjHE_RE["h2"][0],
               "var_AdjHE_RE" : AdjHE_RE["var(h2)"][0],
-              "time_AdjHE_RE" : AdjHE_RE["Analysis time"][0],
+              "time_AdjHE_RE" : AdjHE_RE["time"][0],
               #["MOM_est",MOM_est]
               }
         
@@ -156,7 +156,7 @@ def sim_n_est(nsubjects = 1000, sigma = [0.5,0.25, 0.25], site_comp = "IID", nsi
 
 def sim_experiment(nsubjectss = [1000], sigmas = [[0.5,0.25, 0.25]], site_comps = ["IID"], nsites = [25],
               theta_alleless = [0.9], nclustss = [5], dominances= [3], prop_causals= [0.05], site_deps= [False], nnpcs = [1],
-              nSNPss= [200], phenss= [2], reps = 10, site_het = False,races_differ = False, cov_effect = True,
+              nSNPss= [200], phenss= [2], reps = 10, site_het = False, clusters_differ = False, cov_effect = True,
               ortho_cov = True, random_BS = True) :
     # Seed empty dataframe
     sim_results = pd.DataFrame()
@@ -175,7 +175,7 @@ def sim_experiment(nsubjectss = [1000], sigmas = [[0.5,0.25, 0.25]], site_comps 
         result = sim_n_est(nsubjects = nsubjects, sigma = sigma, site_comp = site_comp, nsites = nsite,
                            theta_alleles = theta_alleles, nclusts = nclusts, dominance= dominance, prop_causal= prop_causal, 
                            site_dep= site_dep, nnpc = nnpc,
-                           nSNPs=nSNPs, phens = phens, site_het = site_het, races_differ = races_differ, cov_effect = cov_effect,
+                           nSNPs=nSNPs, phens = phens, site_het = site_het, clusters_differ = clusters_differ, cov_effect = cov_effect,
                            ortho_cov = ortho_cov, random_BS = random_BS)
         sim_results= sim_results.append(result, ignore_index = True)
         # Remove any temps
@@ -208,7 +208,7 @@ sigmas = [[0.5,0.25,0.25]]
 
 df = sim_experiment(nsubjectss= [N], reps= 5, nsites=[1], site_comps = ["EQUAL"], sigmas = sigmas, nnpcs = [1], nclustss=[nc], 
                     ortho_cov = True, cov_effect= True, phenss= [3], random_BS = False)
-print(df[["GCTA", "AdjHE", "AdjHE_RE", "Combat", "SWD"]].mean())
+logging.info(df[["GCTA", "AdjHE", "AdjHE_RE", "Combat", "SWD"]].mean())
 
 #%%
 # # df.to_csv("Simulations/Sim_working_Combat1.csv", header=  True, index= False)

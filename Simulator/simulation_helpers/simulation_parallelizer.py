@@ -10,10 +10,8 @@ Last Updated 2022-06-06
 ##############################################################
 # Simulation runner for AdjHE package 
 ##############################################################
-
-import os
-#os.chdir("/home/christian/Research/Stat_gen/tools/Basu_herit")
-from functions.Data_input.sim_parser import get_args #, read_flags
+import logging
+from AdjHE.data_input.sim_parser import get_args
 import itertools
 import json
 
@@ -22,8 +20,8 @@ import json
 # Get CL arguments and convert them to usable Python objects in a dictionary
 #args= read_flags({"argfile" : "Simulations/Sim_params/Adding_sites_clusts.json"})
 args = get_args()
-print("Simulating with the following parameters:")
-print(args)
+logging.info("Simulating with the following parameters:")
+logging(args)
 
 
 sigmas = []

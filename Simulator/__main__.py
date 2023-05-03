@@ -12,12 +12,10 @@ Last Updated 2022-06-06
 ##############################################################
 
 import os
-#os.chdir("/home/christian/Research/Stat_gen/tools/Basu_herit")
-from functions.Data_input.sim_parser import get_args #, read_flags
-from run_sims import sim_experiment
+from AdjHE.data_input.parser import get_args #, read_flags
+from Simulator.simulation_helpers.run_sims import sim_experiment
 import itertools
 import json
-
 
 #%% Get command line arguments
 # Get CL arguments and convert them to usable Python objects in a dictionary

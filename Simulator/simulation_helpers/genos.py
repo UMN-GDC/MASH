@@ -9,11 +9,11 @@ Created on Thu Oct 13 09:25:44 2022
 import numpy as np
 import pandas as pd
 from sklearn.decomposition import PCA
-from AdjHE.simulation_helpers.sim_admixing import sample_admixed_genotypes
+from Simulator.simulation_helpers.admixing import sample_admixed_genotypes
 
 
 def sim_genos(seed, ancestral_frequencies, cluster_frequencies, subject_ancestries,
-              clusters_differ = False, prop_causal=0.1, maf_filter = 0.05, admixing = False):
+              clusters_differ = False, prop_causal=0.1, admixing = False):
     """
     Simulate genotypes of the subjects given their cluster ID and the respective cluster allele frequencies
 
@@ -30,8 +30,6 @@ def sim_genos(seed, ancestral_frequencies, cluster_frequencies, subject_ancestri
         The default is False.
     prop_causal : float, optional
         between 0 and 1 specifyin the number of SNPs that are causal. The default is 0.1.
-    maf_filter: float, optional
-        between 0 and 0.5 specifyin the minimum allowable minor allele frequency. The default is 0.05.
 
 
     Returns
@@ -69,20 +67,16 @@ def sim_genos(seed, ancestral_frequencies, cluster_frequencies, subject_ancestri
             genotypes[i,:] = sample_admixed_genotypes(seed, cluster_freqs = cluster_frequencies, admixture = admixture, nsubjects=1)
         
         
-    # keep SNPs with MAF greater than 0.05
-    maf_filter = np.logical_and((np.sum(genotypes, axis=0) / (2 * nsubjects)) > maf_filter,
-                                (np.sum(genotypes, axis=0) / (2 * nsubjects)) < 1-maf_filter)
-    
-    # Use MAF filter
-    filtered_geno = genotypes[:,  maf_filter]
-    
     # standardize the genotpyes
-    allele_freqs = np.mean(filtered_geno, axis=0) / 2
-    filtered_geno = np.matrix((filtered_geno- 2 * allele_freqs) /
-                          np.sqrt(2 * allele_freqs * (1 - allele_freqs)))
+    freqs = np.mean(genotypes, axis=0) / 2
+    # remove snps with frequencies of 0 or 1
+    genotypes = genotypes[:, (freqs > 0.01) & (freqs < 0.99)]
+    freqs = freqs[(freqs>0.01) & (freqs< 0.99)]
+    stand_geno = np.matrix((genotypes- 2 * freqs) /
+                          np.sqrt(2 * freqs * (1 - freqs)))
 
     # Calc standardized GRM
-    GRM = np.dot(filtered_geno, filtered_geno.T) / nSNPs
+    GRM = np.dot(stand_geno, stand_geno.T) / nSNPs
     
     
     

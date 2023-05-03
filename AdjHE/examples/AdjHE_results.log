@@ -8,23 +8,4 @@ root - INFO - Estimating with GCTA
 root - INFO - RV: abcd_site
 root - INFO - Beginning estimation
 root - DEBUG - ['Tidyness', 'Happy_camper']
-root - DEBUG - Selecting columns and removing missingness
 root - DEBUG - Formula is Head_size~ 1
-root - DEBUG - GRM dimensions2500
-root - DEBUG - Selecting columns and removing missingness
-root - DEBUG - Formula is Head_size~ 1
-root - DEBUG - GRM dimensions2500
-root - DEBUG - Started7158.972262191
-root - DEBUG - Ended7181.633910101
-root - DEBUG - 22.661647910000283
-root - DEBUG - Selecting columns and removing missingness
-root - DEBUG - Formula is Head_size~ 1
-root - DEBUG - GRM dimensions2500
-root - DEBUG - Selecting columns and removing missingness
-root - DEBUG - Formula is Head_size~ 1
-root - DEBUG - GRM dimensions2500
-root - DEBUG - Started7181.6348168
-root - DEBUG - Ended7210.651907693
-root - DEBUG - 29.017090892999477
-root - INFO - Writing results to AdjHE/examples/AdjHE_results
-root - INFO - Finished
