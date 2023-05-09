@@ -12,7 +12,7 @@ Last Updated 2022-06-06
 ##############################################################
 
 import os
-from AdjHE.data_input.parser import get_args #, read_flags
+from AdjHE.data_input.parser import get_args, read_flags
 from Simulator.simulation_helpers.run_sims import sim_experiment
 import itertools
 import json
@@ -20,7 +20,7 @@ import json
 #%% Get command line arguments
 # Get CL arguments and convert them to usable Python objects in a dictionary
 #args= read_flags({"argfile" : "Simulations/Sim_params/Adding_sites_clusts.json"})
-args = get_args()
+args = read_flags(get_args())
 print("Simulating with the following parameters:")
 print(args)
 
@@ -49,7 +49,7 @@ df = sim_experiment(nsubjectss = args["nsubjectss"],
               phenss= args["phenss"],
               reps = args["reps"],
               site_het = args["site_het"],
-              races_differ=True,
+              clusters_differ=True,
               cov_effect=True,
               ortho_cov=True,
               random_BS=args["random_BS"])

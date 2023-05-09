@@ -3,11 +3,3 @@ root - INFO - These are the list of arguments that were input:
 root - INFO - {'PC': 'AdjHE/examples/Input_files/pcas.eigenvec', 'covar': 'AdjHE/examples/Input_files/covar.txt', 'prefix': 'AdjHE/examples/Input_files/grm', 'pheno': 'AdjHE/examples/Input_files/pheno.phen', 'out': 'AdjHE/examples/AdjHE_results', 'npc': [5, 10], 'mpheno': ['Head_size'], 'k': 0, 'std': False, 'fixed_effects': ['Tidyness', 'Happy_camper'], 'argfile': '/home/christian/Research/Stat_gen/tools/Basu_herit/Example/Arg_file.json', 'loop_covars': False, 'covar_relates': False, 'random_groups': 'abcd_site', 'Naive': False, 'Method': 'AdjHE', 'ids': None}
 root - INFO - Loading data
 root - INFO - Loading data...
-root - INFO - Estimating
-root - INFO - Estimating with AdjHE
-root - INFO - RV: abcd_site
-root - INFO - Beginning estimation
-root - DEBUG - ['Tidyness', 'Happy_camper']
-root - DEBUG - Formula is Head_size~ Tidyness + Happy_camper
-root - DEBUG - (5000,)
-root - DEBUG - (5, 5000, 5000)

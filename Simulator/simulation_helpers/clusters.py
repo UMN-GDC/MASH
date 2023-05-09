@@ -76,8 +76,12 @@ def sim_pop_alleles(seed, theta_alleles = [0.5, 0.5], nclusts=1, nSNPs = 1000, s
     # Get vectors annotating genomes for being shared or causal
     shared_idx = list(range(*boundaries["causal_shared"])) + list(range(*boundaries["noncausal_shared"]))
     causal_idx = list(range(*boundaries["causal_shared"])) + list(range(*boundaries["causal_nonshared"]))
-    # filter out the causal_idx for which the cluster_freqs are less than the maf or greater than 1-maf for at least one columns
-    causal_idx = np.array(causal_idx)[np.all((cluster_freqs[:, causal_idx] > maf_filter) & (cluster_freqs[:, causal_idx] < 1-maf_filter), axis=0)]
+    
+    if nclusts >1 :
+        # filter out the causal_idx for which the cluster_freqs are less than the maf or greater than 1-maf for at least one columns
+        causal_idx = np.array(causal_idx)[np.all((cluster_freqs[:, causal_idx] > maf_filter) & (cluster_freqs[:, causal_idx] < 1-maf_filter), axis=0)]
+    else :
+        causal_idx = np.array(causal_idx)[(cluster_freqs[causal_idx] > maf_filter) & (cluster_freqs[causal_idx] < 1-maf_filter)]
 
     return ancest_freqs, cluster_freqs, np.array(shared_idx), np.array(causal_idx)
 

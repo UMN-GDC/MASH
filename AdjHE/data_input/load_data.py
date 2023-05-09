@@ -30,8 +30,7 @@ def ReadGRMBin(prefix, sub_ids = None):
     dt = np.dtype('f4') # Relatedness is stored as a float of size 4 in the binary file
 
     # Read IDs
-    ids = pd.DataFrame(np.loadtxt(prefix + ".grm.id",
-                                  delimiter = '\t', dtype = str), columns = ["FID", "IID"], dtype = str)
+    ids = pd.read_table(prefix + ".grm.id", names = ["FID", "IID"], dtype = str)
     n = ids.shape[0]
 
     ## Read GRM from binary 
@@ -45,10 +44,9 @@ def ReadGRMBin(prefix, sub_ids = None):
     GRM = GRM + GRM.T - np.diag(np.diag(GRM))
     
     if sub_ids != None :
-        ids2 = pd.read_csv(sub_ids, sep = "\t", header = None, dtype = str)
-        ids2.columns = ["FID", "IID"]
+        ids2 = pd.read_table(sub_ids, names= ["FID", "IID"], dtype = str)
         # keep the ids that overlap with the additionally specified ids
-        ids = ids.merge(ids2, on = ["FID", "IID"])
+        ids = ids.reset_index().merge(ids2, on = ["FID", "IID"]).set_index("index")
         # Subset the GRM too
         GRM = GRM[ids.index, :][:, ids.index]        
 

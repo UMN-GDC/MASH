@@ -14,7 +14,7 @@ import pytest
 
 @pytest.fixture
 def args() : 
-    return read_flags({"argfile" : "AdjHE/examples/Generic.json"})
+    return read_flags({"argfile" : "tests/data/small_est.json"})
 
 @pytest.fixture
 def estimator(args) :

@@ -45,19 +45,22 @@ def sim_genos(seed, ancestral_frequencies, cluster_frequencies, subject_ancestri
     """
     
     rng = np.random.default_rng(seed)
-    (nclusts, nSNPs) = cluster_frequencies.shape
+    nclusts = np.unique(subject_ancestries).shape[0]
     nsubjects = subject_ancestries.shape[0]
     
     if nclusts == 1:
+        nSNPs = cluster_frequencies.shape[0]
         # simulate genotypes
         genotypes = rng.binomial(n=np.repeat(2, nSNPs), p=cluster_frequencies[0],
                                  size=(nsubjects, nSNPs))
     elif (nclusts > 1) and (not admixing)  :
+        nSNPs = cluster_frequencies.shape[1]
         # simulate genotypes
         genotypes = rng.binomial(n=np.repeat(2, nSNPs), p= cluster_frequencies[subject_ancestries],
                                  size=(nsubjects, nSNPs))
         
     elif (nclusts >1 ) and (admixing) :
+        nSNPs = cluster_frequencies.shape[1]
         genotypes = np.zeros((nsubjects, nSNPs))
         for i in range(nsubjects): 
             # Bias admixing proportion toward "reported race"
