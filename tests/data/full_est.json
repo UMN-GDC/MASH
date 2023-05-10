@@ -1,0 +1,20 @@
+{
+  "PC" : null,
+  "covar" : null,
+  "prefix" : "tests/data/S2_C2",
+  "pheno" : "tests/data/S2_C2_pheno_covars_pcs.txt",
+  "out" : "tests/data/output",
+  "npc"  : [0,1,2],
+  "mpheno" : ["Y"],
+  "k" : 0,
+  "std" :  false,
+  "fixed_effects" : ["Xc"],
+  "argfile" : null,
+  "loop_covars" : false,
+  "covar_relates" : false,
+  "random_groups" : null,
+  "Naive" : false,
+  "Method" : "AdjHE",
+  "ids" : null 
+}
+

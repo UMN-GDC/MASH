@@ -1,0 +1,30 @@
+root - INFO - Started
+root - INFO - These are the list of arguments that were input:
+root - INFO - {'PC': None, 'covar': None, 'prefix': 'tests/data/S2_C2', 'pheno': 'tests/data/S2_C2_pheno_covars_pcs.txt', 'out': 'tests/data/output', 'npc': [0, 1, 2], 'mpheno': ['Y'], 'k': 0, 'std': False, 'fixed_effects': ['Xc'], 'argfile': None, 'loop_covars': False, 'covar_relates': False, 'random_groups': None, 'Naive': False, 'Method': 'AdjHE', 'ids': None}
+root - INFO - Loading data
+root - INFO - Loading data...
+root - INFO - Estimating
+root - INFO - Estimating with AdjHE
+root - INFO - Beginning estimation
+root - DEBUG - ['Xc']
+root - DEBUG - Formula is Y~ Xc
+root - WARNING - Variance estimate is negative setting as absolute value
+root - DEBUG - Started311116.166083396
+root - DEBUG - Ended311116.190079669
+root - DEBUG - 0.023996272997464985
+root - DEBUG - Formula is Y~ Xc
+root - DEBUG - (500,)
+root - DEBUG - (1, 500, 500)
+root - WARNING - Variance estimate is negative setting as absolute value
+root - DEBUG - Started311116.191495848
+root - DEBUG - Ended311116.218327506
+root - DEBUG - 0.02683165797498077
+root - DEBUG - Formula is Y~ Xc
+root - DEBUG - (500,)
+root - DEBUG - (2, 500, 500)
+root - WARNING - Variance estimate is negative setting as absolute value
+root - DEBUG - Started311116.219657319
+root - DEBUG - Ended311116.245241721
+root - DEBUG - 0.02558440197026357
+root - INFO - Writing results to tests/data/output
+root - INFO - Finished

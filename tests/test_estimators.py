@@ -11,10 +11,12 @@ from AdjHE.estimation.all_estimators import Basu_estimation
 
 import pytest
 
+tolerance = 0.15
+
 
 @pytest.fixture
 def args() : 
-    return read_flags({"argfile" : "tests/data/small_est.json"})
+    return read_flags({"argfile" : "tests/data/full_est.json"})
 
 @pytest.fixture
 def estimator(args) :
@@ -33,7 +35,7 @@ def test_AdjHE_basic(args, estimator) :
                   random_groups = None, Naive= False)
     h = estimator.results["h2"][0]
     
-    assert (h<0.9) and (h > 0.5)
+    assert abs(h - 0.5) < tolerance
 
 @pytest.mark.AdjHE
 def test_AdjHE_RE(args, estimator) :
@@ -42,7 +44,8 @@ def test_AdjHE_RE(args, estimator) :
                   random_groups = "abcd_site", Naive= False)
     h = estimator.results["h2"][0]
     
-    assert (h<0.9) and (h > 0.5)
+    assert abs(h - 0.5) < tolerance
+
 
 @pytest.mark.AdjHE
 def test_AdjHE_meta(args, estimator) :
@@ -51,7 +54,7 @@ def test_AdjHE_meta(args, estimator) :
                   random_groups = "abcd_site", Naive= True)
     h = estimator.results["h2"][0]
     
-    assert (h<0.9) and (h > 0.5)
+    assert abs(h - 0.5) < tolerance
 
 # Test GCTA
 
@@ -61,7 +64,7 @@ def test_GCTA_basic(args, estimator) :
                   mpheno = args["mpheno"], loop_covars = args["loop_covars"],
                   random_groups = "abcd_site", Naive= False)
     h = estimator.results["h2"][0]
-    assert (h<0.9) and (h>0.5)
+    assert abs(h - 0.5) < tolerance
 
 @pytest.mark.GCTA
 def test_GCTA_meta(args, estimator) :
@@ -69,7 +72,7 @@ def test_GCTA_meta(args, estimator) :
                   mpheno = args["mpheno"], loop_covars = args["loop_covars"],
                   random_groups = "abcd_site", Naive= True)
     h = estimator.results["h2"][0]
-    assert (h<0.9) and (h>0.5)
+    assert abs(h - 0.5) < tolerance
 
 
 # Test SWD
@@ -79,7 +82,7 @@ def test_SWD(args, estimator) :
                   mpheno = args["mpheno"], loop_covars = args["loop_covars"],
                   random_groups = "abcd_site", Naive= False)
     h = estimator.results["h2"][0]
-    assert (h<0.9) and (h>0.5)
+    assert abs(h - 0.5) < tolerance
 
 # Test Combat
 @pytest.mark.Combat
@@ -88,7 +91,7 @@ def test_Combat(args, estimator) :
                   mpheno = args["mpheno"], loop_covars = args["loop_covars"],
                   random_groups = "abcd_site", Naive= False)
     h = estimator.results["h2"][0]
-    assert (h<0.9) and (h>0.5)
+    assert abs(h - 0.5) < tolerance
 
 
 
