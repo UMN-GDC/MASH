@@ -8,13 +8,14 @@
   "mpheno" : ["Y"],
   "k" : 0,
   "std" :  false,
-  "fixed_effects" : ["Xc"],
+  "fixed_effects" : ["Xc", "abcd_site"],
   "argfile" : null,
   "loop_covars" : false,
   "covar_relates" : false,
   "random_groups" : null,
   "Naive" : false,
   "Method" : "AdjHE",
-  "ids" : "tests/data/S1_C1.grm.id"
+  "ids" : "tests/data/S1_C1.grm.id",
+  "pc_2moment" : false
 }
 

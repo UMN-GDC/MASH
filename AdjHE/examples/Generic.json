@@ -3,7 +3,7 @@
   "covar" : "AdjHE/examples/Input_files/covar.txt",
   "prefix" : "AdjHE/examples/Input_files/grm",
   "pheno" : "AdjHE/examples/Input_files/pheno.phen",
-  "out" : "AdjHE/examples/AdjHE_results",
+  "out" : "AdjHE/examples/AdjHE_results2",
   "npc"  : [5, 10],
   "mpheno" : ["Head_size"],
   "k" : 0,
@@ -15,6 +15,7 @@
   "random_groups" : "abcd_site",
   "Naive" : false,
   "Method" : "AdjHE",
+  "pc_2moment" : true,
   "ids" : null
 }
 

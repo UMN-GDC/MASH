@@ -29,29 +29,54 @@ def estimator(args) :
 
 
 @pytest.mark.AdjHE
-def test_AdjHE_basic(args, estimator) : 
+def test_AdjHE_all_1st(args, estimator) : 
     estimator.estimate(Method = "AdjHE", npc = [3], fixed_effects = args["fixed_effects"],
                   mpheno = args["mpheno"], loop_covars = args["loop_covars"], 
-                  random_groups = None, Naive= False)
+                  random_groups = None, Naive= False, pc_2moment = False)
     h = estimator.results["h2"][0]
     
     assert abs(h - 0.5) < tolerance
 
 @pytest.mark.AdjHE
-def test_AdjHE_RE(args, estimator) :
+def test_AdjHE_pc2nd(args,estimator): 
+    estimator.estimate(Method = "AdjHE", npc = [3], fixed_effects = args["fixed_effects"],
+                       mpheno = args["mpheno"], loop_covars = args["loop_covars"],
+                       random_groups = None, Naive= False, pc_2moment = True)
+
+
+@pytest.mark.AdjHE
+def test_AdjHE_site2nd(args, estimator) :
     estimator.estimate(Method = "AdjHE", npc = [3], fixed_effects = args["fixed_effects"],
                   mpheno = args["mpheno"], loop_covars = args["loop_covars"],
-                  random_groups = "abcd_site", Naive= False)
+                  random_groups = "abcd_site", Naive= False, pc_2moment=False)
+    h = estimator.results["h2"][0]
+    
+    assert abs(h - 0.5) < tolerance
+
+@pytest.mark.AdjHE
+def test_AdjHE_all2nd(args, estimator) :
+    estimator.estimate(Method = "AdjHE", npc = [3], fixed_effects = args["fixed_effects"],
+                  mpheno = args["mpheno"], loop_covars = args["loop_covars"],
+                  random_groups = "abcd_site", Naive= False, pc_2moment = True)
     h = estimator.results["h2"][0]
     
     assert abs(h - 0.5) < tolerance
 
 
 @pytest.mark.AdjHE
-def test_AdjHE_meta(args, estimator) :
+def test_AdjHE_meta_1st(args, estimator) :
     estimator.estimate(Method = "AdjHE", npc = [3], fixed_effects = args["fixed_effects"],
                   mpheno = args["mpheno"], loop_covars = args["loop_covars"],
-                  random_groups = "abcd_site", Naive= True)
+                  random_groups = "abcd_site", Naive= True, pc_2moment = False)
+    h = estimator.results["h2"][0]
+    
+    assert abs(h - 0.5) < tolerance
+
+
+def test_AdjHE_meta_2nd(args, estimator) :
+    estimator.estimate(Method = "AdjHE", npc = [3], fixed_effects = args["fixed_effects"],
+                  mpheno = args["mpheno"], loop_covars = args["loop_covars"],
+                  random_groups = "abcd_site", Naive= True, pc_2moment = True)
     h = estimator.results["h2"][0]
     
     assert abs(h - 0.5) < tolerance

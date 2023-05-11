@@ -20,7 +20,7 @@ import pandas as pd
 
 
 
-def AdjHE_estimator(A, df, mp, random_groups = None, npc=0, std=False):
+def AdjHE_estimator(A, df, mp, random_groups = None, npc=0, std=False, pc_2moment=False):
     """
     Fucntion for generating heritability estimates from an Adjusted HE standpoint in closed form.
     Parameters
@@ -49,7 +49,6 @@ def AdjHE_estimator(A, df, mp, random_groups = None, npc=0, std=False):
     if npc ==0 :
         Sjs = 0
         Tjs =0
-        resid_GRM=A
     else :
         # Grab the PCs
         PC_cols = [ col.startswith("pc")   for col in df ]
@@ -66,15 +65,13 @@ def AdjHE_estimator(A, df, mp, random_groups = None, npc=0, std=False):
         logging.debug(str(y.shape))
         logging.debug(str(PPt.shape))
         # Calculate tj's
-        Tjs = np.matmul(np.matmul(y, PPt), y.T)
-    
+        if pc_2moment :
+            Tjs = np.matmul(np.matmul(y, PPt), y.T)
+        else : 
+            Tjs =0
         # Calculated Sj's
         Sjs = np.matmul(np.matmul(PCsT, A), PCs).flatten()
         
-        # Calculate residual GRM
-        resid_GRM = A - np.sum(PPt, 0)
-
-
     # Compute elements of regression matrix
     n = A.shape[0]
     
@@ -172,8 +169,8 @@ def AdjHE_estimator(A, df, mp, random_groups = None, npc=0, std=False):
         
     # Calculate variance of estimate
     # var_h2 = 2/ ( trA2 - 2*trA + n - np.sum(Sjs**2))
-    trA2 = np.trace(resid_GRM ** 2)
-    trA = np.trace(resid_GRM)
+    trA2 = np.trace(A ** 2)
+    trA = np.trace(A)
     var_h2 = 2 / (trA2 - trA**2)
     if var_h2 < 0:
         logging.warning("Variance estimate is negative setting as absolute value")
