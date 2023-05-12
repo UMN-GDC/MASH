@@ -83,8 +83,10 @@ def sim_n_est(nsubjects = 1000, sigma = [0.5,0.25, 0.25], site_comp = "IID", nsi
             result["site_het"] = site_het
             
             full_results = pd.concat([full_results, result], axis = 0)
-        except FileNotFoundError :
-            continue
+        except TypeError :
+            return
+        except np.linalg.LinAlgError :
+            return
 
         
 def sim_experiment(nsubjectss = [1000], sigmas = [[0.5,0.25, 0.25]], site_comps = ["IID"], nsites = [25],

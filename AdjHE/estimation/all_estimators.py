@@ -90,57 +90,63 @@ def load_n_estimate(df, fixed_effects, nnpc, mp, GRM, std=False, Method="AdjHE",
     # save a temporary dataframe
         
     # Select method of estimation
-    if Method == "AdjHE":
-        if (nnpc >0) and (pc_2moment) :
-            form = form + "+" +  " + ".join(pc_cols)
-        # AdjHE projects away covariates to start
-        resid = smf.ols(formula=form, data=df, missing='drop').fit().resid
-        print(resid.shape)
-        resid.name = "resid"
-        temp = df.merge(resid, left_index = True, right_index =True, how = "inner")
-        temp[mp] = temp["resid"]
-        nonmissing = df[df.IID.isin(temp.IID)].index
-        GRM_nonmissing = GRM[nonmissing, :][:, nonmissing]
-        result = AdjHE_estimator(A = GRM_nonmissing, df=temp, mp = mp, random_groups = random_groups, npc= nnpc, std=std)
+    try :
+        if Method == "AdjHE":
+            if (nnpc >0) and (pc_2moment) :
+                form = form + "+" +  " + ".join(pc_cols)
+            # AdjHE projects away covariates to start
+            resid = smf.ols(formula=form, data=df, missing='drop').fit().resid
+            print(resid.shape)
+            resid.name = "resid"
+            temp = df.merge(resid, left_index = True, right_index =True, how = "inner")
+            temp[mp] = temp["resid"]
+            nonmissing = df[df.IID.isin(temp.IID)].index
+            GRM_nonmissing = GRM[nonmissing, :][:, nonmissing]
+            result = AdjHE_estimator(A = GRM_nonmissing, df=temp, mp = mp, random_groups = random_groups, npc= nnpc, std=std)
 
-    # MOM estimator is under construction
-    # elif Method == "MOM":
-    #     result = load_n_MOM(temp, covars, nnpc, mp,
-    #                         GRM_nonmissing, std=False, RV=RV)
-    elif Method == "PredlMM":
-        result = load_n_PredLMM(temp, fixed_effects, nnpc, mp,
-                                GRM_nonmissing, std=False, random_groups=random_groups)
-        
-    elif Method == "GCTA":
-        result = GCTA(df, fixed_effects, nnpc, mp, GRM, gcta=gcta, silent=False)
-        
-    elif Method == "SWD":
-        # SWD projects away sites then projects away covaraites
-        resid = smf.ols(formula= mp + " ~ " + random_groups, data=df, missing='drop').fit().resid
-        resid.name = "resid"
-        temp = df.merge(resid, left_index = True, right_index =True, how = "inner")
-        temp[mp] = temp["resid"]
-        
-        resid = smf.ols(formula=form, data=temp, missing='drop').fit().resid 
-        resid.name= "resid2"
-        temp = temp.merge(resid, left_index= True, right_index = True,how = "inner")
-        temp[mp] = temp["resid2"]
-        nonmissing = df[df.IID.isin(temp.IID)].index
-        GRM_nonmissing = GRM[nonmissing, :][:, nonmissing]
+        # MOM estimator is under construction
+        # elif Method == "MOM":
+        #     result = load_n_MOM(temp, covars, nnpc, mp,
+        #                         GRM_nonmissing, std=False, RV=RV)
+        elif Method == "PredlMM":
+            result = load_n_PredLMM(temp, fixed_effects, nnpc, mp,
+                                    GRM_nonmissing, std=False, random_groups=random_groups)
+            
+        elif Method == "GCTA":
+            result = GCTA(df, fixed_effects, nnpc, mp, GRM, gcta=gcta, silent=False)
+            
+        elif Method == "SWD":
+            # SWD projects away sites then projects away covaraites
+            resid = smf.ols(formula= mp + " ~ " + random_groups, data=df, missing='drop').fit().resid
+            resid.name = "resid"
+            temp = df.merge(resid, left_index = True, right_index =True, how = "inner")
+            temp[mp] = temp["resid"]
+            
+            resid = smf.ols(formula=form, data=temp, missing='drop').fit().resid 
+            resid.name= "resid2"
+            temp = temp.merge(resid, left_index= True, right_index = True,how = "inner")
+            temp[mp] = temp["resid2"]
+            nonmissing = df[df.IID.isin(temp.IID)].index
+            GRM_nonmissing = GRM[nonmissing, :][:, nonmissing]
 
-        result = AdjHE_estimator(A = GRM_nonmissing, df = temp, mp = mp, random_groups = None, npc=nnpc, std=False)
+            result = AdjHE_estimator(A = GRM_nonmissing, df = temp, mp = mp, random_groups = None, npc=nnpc, std=False)
 
-    elif Method in ["Combat", "Covbat"]:
-        # AdjHE projects away covariates to start
-        result = AdjHE_estimator(A = GRM, df=df, mp = mp, random_groups = None, npc= nnpc, std=std)
+        elif Method in ["Combat", "Covbat"]:
+            # AdjHE projects away covariates to start
+            result = AdjHE_estimator(A = GRM, df=df, mp = mp, random_groups = None, npc= nnpc, std=std)
 
 
-    else:
-        logging.error("Not an accepted method of estimation: " + Method)
+        else:
+            logging.error("Not an accepted method of estimation: " + Method)
+        result["pheno"] = mp
+        return pd.DataFrame(result, index=[0])
+
+    except np.linalg.LinAlgError :
+        logging.error("Singular Matrix")
+    except TypeError :
+        logging.error("Muffed estimate")
         
     
-    result["pheno"] = mp
-    return pd.DataFrame(result, index=[0])
 
 
 # %%
@@ -243,7 +249,7 @@ class Basu_estimation():
                           "PCs" : nnpc,
                           "Covariates" : C}
 
-                if not Naive:
+                if (not Naive) or (random_groups == None):
                     r = load_n_estimate(df=self.df, fixed_effects=covs, nnpc=nnpc,
                                         mp=mp, GRM=self.GRM, std=False, Method=Method,
                                         random_groups=random_groups, homo=homo, pc_2moment = pc_2moment)
