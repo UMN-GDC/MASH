@@ -101,8 +101,9 @@ class pheno_simulator():
                                                   prop_causal=self.prop_causal, variance_propto_frequency = variance_propto_frequency,
                                                   maf_filter = maf_filter) 
 
-        # if differ is false then simulate clusters specific genetic contribution
-        if clusters_differ == True :
+        # if differ is true then simulate clusters specific genetic contribution
+        #if clusters_differ :
+        if False :
             for cluster in range(self.nclusts) :
                 # find the indices of the group variable
                 idx = self.df["subj_ancestries"] == cluster
