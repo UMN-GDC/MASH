@@ -46,42 +46,35 @@ def sim_n_est(nsubjects = 1000, sigma = [0.5,0.25, 0.25], site_comp = "IID", nsi
     
     logging.info(sim.df.columns.tolist())
 
-    # List of methods to estimate
-    Methods = ["AdjHE", "GCTA"]
-    # Meta 
-    Metas = [True, False]
-    # Treating pcs
-    pc_2moments = [True, False]
-    random_groups = [None, "abcd_site"]
-
     full_results = pd.DataFrame({}, columns= ["Method", "Meta", "PC_moment", "RV", "h2", "V(h2)", "time"])
     # iterate over all combinations of Methods, Meta, and pc_2moment 
-    for Method, Meta, pc_2nd, random_group in itertools.product(Methods, Metas, pc_2moments, random_groups):
+    for (Met, M, pc2, rg) in itertools.product(["AdjHE", "GCTA"], [True, False], [True, False], [None, "abcd_site"]):
+        print(Met, M,pc2,rg)
+        
         try :
-            r = ests.estimate(Method = Method, npc = [nnpc], fixed_effects= FE, mpheno =ests.mpheno[0],
-                        Naive = Meta, pc_2moment = pc_2nd, random_groups = random_group)
-
-            result = pd.DataFrame({"Method" : Method,
-                                  "Meta" : Meta,
-                                  "PC_moment" : pc_2nd,
-                                  "RV" : random_group,
+            r = ests.estimate(Method = Met, npc = [nnpc], fixed_effects= FE, mpheno =ests.mpheno[0],
+                        Naive = M, pc_2moment = pc2, random_groups = rg)
+            result = pd.DataFrame({"Method" : Met,
+                                  "Meta" : M,
+                                  "PC_moment" : pc2,
+                                  "RV" : rg,
                                   "h2" : r["h2"][0],
                                   "Var(h2)" : r["var(h2)"][0],
-                                   "time" : r["time"][0]}, index= [0])
-            result["sg"] = sigma[0]
-            result["ss"] = sigma[1]
-            result["se"] = sigma[2]
-            result["nsubjects"] = nsubjects
-            result["nsites"] = nsites
-            result["theta_alleles"] = theta_alleles
-            result["nclusts"] = nclusts
-            result["prop_causal"] = prop_causal
-            result["nnpc"] = nnpc
-            result["nSNPs"] = nSNPs
-            result["site_comp"] = site_comp
-            result["dominance"] = dominance
-            result["site_dep"] = site_dep
-            result["site_het"] = site_het
+                                   "time" : r["time"][0],
+                                  "sg" : sigma[0],
+                                  "ss" : sigma[1],
+                                  "se" : sigma[2],
+                                  "nsubjects" : nsubjects,
+                                  "nsites" : nsites,
+                                  "theta_alleles" : theta_alleles,
+                                   "nclusts" : nclusts,
+                                   "prop_causal" : prop_causal,
+                                   "nnpc" : nnpc,
+                                   "nSNPs" : nSNPs, 
+                                   "site_comp" : site_comp,
+                                   "dominance" : dominance,
+                                   "site_dep" : site_dep,
+                                   "site_het" : site_het}, index= [0])
             full_results = pd.concat([full_results, result], axis = 0)
             return full_results
         except TypeError :
@@ -116,6 +109,7 @@ def sim_experiment(nsubjectss = [1000], sigmas = [[0.5,0.25, 0.25]], site_comps 
         # Remove any temps
     return sim_results
                                                      
+
 
 
 #%% Create domain for simulations
