@@ -57,10 +57,10 @@ df = sim_experiment(nsubjectss = args["nsubjectss"],
 
 # python program to check if a path exists
 #if path doesn’t exist we create a new path
-os.makedirs(os.path.dirname("Simulations/" + args["out"]+ ".csv"), exist_ok = True)
+os.makedirs(os.path.dirname(args["out"]), exist_ok = True)
 
 # write to out
-df.dropna().to_csv(args["out"] + ".csv", 
+df.to_csv(args["out"] + ".csv", 
           header=  True, index= False)
 
 

@@ -1,8 +1,8 @@
 {
-  "nsubjectss": [100],
-  "sgs" : [0.5],
+  "nsubjectss": [250],
+  "sgs" : [0, 0.25, 0.5],
   "sss" : [0],
-  "ses" : [0.5],
+  "ses" : [0.5, 0.75, 1],
   "site_comps" : ["EQUAL"],
   "nsites" : [1],
   "theta_alleless" : [0.1],
@@ -13,11 +13,12 @@
   "nnpcs" :[0],
   "nSNPss" : [2000],
   "phenss" : [2],
-  "reps" : 10,
-  "all_ests" : false,
+  "reps" : 5,
+  "all_ests" : true,
   "site_het" : true,
   "Meta" : false,
   "pc_2moment" : true,
   "site_2moment" : true,
-  "random_BS" : true
+  "random_BS" : true,
+  "out" : "tests/temp/small"
 }

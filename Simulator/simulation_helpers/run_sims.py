@@ -60,6 +60,7 @@ def sim_n_est(nsubjects = 1000, sigma = [0.5,0.25, 0.25], site_comp = "IID", nsi
         try :
             r = ests.estimate(Method = Method, npc = [nnpc], fixed_effects= FE, mpheno =ests.mpheno[0],
                         Naive = Meta, pc_2moment = pc_2nd, random_groups = random_group)
+
             result = pd.DataFrame({"Method" : Method,
                                   "Meta" : Meta,
                                   "PC_moment" : pc_2nd,
@@ -81,13 +82,12 @@ def sim_n_est(nsubjects = 1000, sigma = [0.5,0.25, 0.25], site_comp = "IID", nsi
             result["dominance"] = dominance
             result["site_dep"] = site_dep
             result["site_het"] = site_het
-            
             full_results = pd.concat([full_results, result], axis = 0)
+            return full_results
         except TypeError :
-            return
+            return None
         except np.linalg.LinAlgError :
-            return
-
+            return None
         
 def sim_experiment(nsubjectss = [1000], sigmas = [[0.5,0.25, 0.25]], site_comps = ["IID"], nsites = [25],
               theta_alleless = [0.9], nclustss = [5], dominances= [3], prop_causals= [0.05], site_deps= [False], nnpcs = [1],
