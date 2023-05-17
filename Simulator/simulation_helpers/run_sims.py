@@ -76,11 +76,10 @@ def sim_n_est(nsubjects = 1000, sigma = [0.5,0.25, 0.25], site_comp = "IID", nsi
                                    "site_dep" : site_dep,
                                    "site_het" : site_het}, index= [0])
             full_results = pd.concat([full_results, result], axis = 0)
-            return full_results
         except TypeError :
-            return None
+            pass
         except np.linalg.LinAlgError :
-            return None
+            pass
         
 def sim_experiment(nsubjectss = [1000], sigmas = [[0.5,0.25, 0.25]], site_comps = ["IID"], nsites = [25],
               theta_alleless = [0.9], nclustss = [5], dominances= [3], prop_causals= [0.05], site_deps= [False], nnpcs = [1],

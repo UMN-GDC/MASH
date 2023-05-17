@@ -7,16 +7,7 @@ Created on Thu Mar 16 15:09:08 2023
 """
 import numpy as np
 import statsmodels.formula.api as smf
-
-
-def rescalar(vec1, vec2, var1, var2) :
-    """
-    rescale vec2 so that the ratio of the variances of vec2 to vec1 are the same as the ratio of var2 over var1
-    """
-    var_vec1 = np.var(vec1)
-    var_vec2 = np.var(vec2)
-    ratio = var2/var1
-    return vec2 * np.sqrt(ratio * var_vec1/var_vec2)
+from Simulator.simulation_helpers.sim_effects import sim_effects 
 
 def sim_pheno(rng, df, var_comps=[0.5, 0.25, 0.25], phen = 1, site_het = False, nsites = 1, nclusts =1, cluster_contribs = None):
     """
@@ -108,17 +99,16 @@ def sim_pheno(rng, df, var_comps=[0.5, 0.25, 0.25], phen = 1, site_het = False, 
 
         return_columns = ["Gene_contrib", "Site_contrib", "errors"] + ["Gene_contrib_c" + str(i) for i in range(len(cluster_contribs))]
     else : 
-       return_columns = ["Gene_contrib", "Site_contrib", "errors"] 
+        return_columns = ["Gene_contrib", "Site_contrib", "errors"] 
 
 
     # Scale site effects so total contributed variance is as presecribed
-    df["Site_contrib"] = df["Site_contrib"] / \
-        np.sqrt(site_variance_scaling)
+    df["Site_contrib"] = rescalar(df["Gene_contrib"], df["Site_contrib"], var_comps[0], var_comps[1])
+    df["Site_contrib"] = df["Site_contrib"] / np.sqrt(site_variance_scaling)
     site_var = np.var(df["Site_contrib"])
 
     # Sample errors from normal scaled by the ratio of the intedended variance between genetic and error effects
-    df["errors"] = (
-        errors / np.sqrt(error_variance_scaling)).flatten()
+    df["errors"] = (errors / np.sqrt(error_variance_scaling)).flatten()
     # Sim phenotype
     if phen==0 :
         phenoname = "Y"
