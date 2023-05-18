@@ -8,7 +8,7 @@ Created on Thu Mar 16 14:42:57 2023
 import numpy as np
 
 
-def sim_gen_effects(rng, total_var, genotypes, causals = [], prop_causal=0.1, variance_propto_frequency = False, maf_filter = 0.1, clusters_differ = False):
+def sim_gen_effects(rng, genotypes, causals = [], prop_causal=0.1, variance_propto_frequency = False, maf_filter = 0.1, clusters_differ = False):
     """
     
 
@@ -16,8 +16,6 @@ def sim_gen_effects(rng, total_var, genotypes, causals = [], prop_causal=0.1, va
     ----------
     rng : random number generatorng
         numpy random number generator.
-    total_var : float64
-        total variance attributable to genetics
     genotypes : array
         ( x ) array of unstandardized genotypes.
     causals : list, optional
@@ -71,7 +69,7 @@ def sim_gen_effects(rng, total_var, genotypes, causals = [], prop_causal=0.1, va
 
     else:
         # sim effect from each SNP
-        causal_eff = rng.normal(0, np.sqrt(total_var/(2* Xcausal.shape[1])), (Xcausal.shape[1], 1))
+        causal_eff = rng.normal(0, 1, (Xcausal.shape[1], 1))
         Gene_contrib = np.array(Xcausal * causal_eff).flatten()
 
     return Gene_contrib, causals

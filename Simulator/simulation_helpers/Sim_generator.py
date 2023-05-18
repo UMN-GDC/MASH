@@ -136,7 +136,7 @@ class pheno_simulator():
                                     cluster_contribs = cluster_contribs)
         
         # join pheno_contribs dataframe to simulated dataframe as new columns
-        self.df = self.df.join(pheno_contribs, lsuffix = "_raw")
+        self.df.update(pheno_contribs)
             
     def full_sim(self, sigma = [0.5,0.25,0.25], site_comp="IID",
                  nsites=30, theta_alleles=[0.5, 0.5], nclusts=5, dominance=5,
@@ -165,10 +165,7 @@ class pheno_simulator():
         
         else : 
             for i in range(phens) :
-                if i ==0 :
-                    phenoname = "Y"
-                else :
-                    phenoname = "Y" + str(i)
+                phenoname = "Y" + str(i)
                 self.df[phenoname] = sim_plink_pheno(rng = self.rng, bed = self.genotypes, sigma= sigma, prop_causal = prop_causal, npcs=npcs)
 
     def summary(self) :

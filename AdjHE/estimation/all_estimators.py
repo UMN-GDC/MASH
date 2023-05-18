@@ -143,8 +143,10 @@ def load_n_estimate(df, fixed_effects, nnpc, mp, GRM, std=False, Method="AdjHE",
 
     except np.linalg.LinAlgError :
         logging.error("Singular Matrix")
+        pass
     except TypeError :
         logging.error("Muffed estimate")
+        pass
         
     
 
