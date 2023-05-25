@@ -113,7 +113,11 @@ def sim_pheno(rng, df, var_comps=[0.5, 0.25, 0.25], phen = 1, site_het = False, 
     df["Gene_contrib"] = rescalar(df["Gene_contrib"], var_comps[0])
     df["Site_contrib"] = rescalar(df["Site_contrib"], var_comps[1])
     df["errors"] = rescalar(errors, var_comps[2]) 
-    phenoname = "Y" + str(phen)
+    
+    if phen == 0:
+        phenoname = "Y"
+    else : 
+        phenoname = "Y" + str(phen-1)
 
     if np.sum(np.isnan(df.Site_contrib)) > 10 :
         df.Site_contrib = 0
