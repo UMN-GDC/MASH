@@ -105,7 +105,6 @@ def sim_experiment(nsubjectss = [1000], sigmas = [[0.5,0.25, 0.25]], site_comps 
                            site_dep= site_dep, nnpc = nnpc,
                            nSNPs=nSNPs, phens = phens, site_het = site_het, clusters_differ = clusters_differ, cov_effect = cov_effect,
                            ortho_cov = ortho_cov, random_BS = random_BS)
-        print(result)
         sim_results = pd.concat([sim_results, result], ignore_index=True)
         # Remove any temps
     return sim_results

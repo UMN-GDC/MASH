@@ -1,5 +1,0 @@
-Method,Meta,PC_moment,RV,h2,V(h2),time,Var(h2),sg,ss,se,nsubjects,nsites,theta_alleles,nclusts,prop_causal,nnpc,nSNPs,site_comp,dominance,site_dep,site_het
-AdjHE,True,True,,1,,0.010054970000055619,3.083127186079234e-05,0.5,0.0,0.5,250.0,25.0,0.1,2.0,0.02,0.0,200.0,EQUAL,3.0,False,True
-AdjHE,True,True,,1,,0.0095872120000422,2.331972695078791e-05,0.5,0.0,0.5,250.0,25.0,0.1,2.0,0.02,0.0,200.0,EQUAL,3.0,False,True
-AdjHE,True,True,,0,,0.010954999997920822,2.7595403514006306e-05,0.5,0.0,0.5,250.0,25.0,0.1,2.0,0.02,1.0,200.0,EQUAL,3.0,False,True
-AdjHE,True,True,,0,,0.010950932002742775,2.697228698494844e-05,0.5,0.0,0.5,250.0,25.0,0.1,2.0,0.02,1.0,200.0,EQUAL,3.0,False,True
