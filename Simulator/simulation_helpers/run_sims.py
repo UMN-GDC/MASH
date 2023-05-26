@@ -46,16 +46,15 @@ def sim_n_est(nsubjects = 1000, sigma = [0.5,0.25, 0.25], site_comp = "IID", nsi
     
     logging.info(sim.df.columns.tolist())
 
-    full_results = pd.DataFrame({}, columns= ["Method", "Meta", "PC_moment", "RV", "h2", "V(h2)", "time"])
-    # iterate over all combinations of Methods, Meta, and pc_2moment 
-    for (Met, M, pc2, rg) in itertools.product(["AdjHE", "GCTA"], [True, False], [True, False], [None, "abcd_site"]):
+    full_results = pd.DataFrame({}, columns= ["Method", "Meta", "RV", "h2", "V(h2)", "time"])
+    # iterate over all combinations of Methods and Meta 
+    for (Met, M, rg) in itertools.product(["AdjHE", "GCTA"], [True, False], [None, "abcd_site"]):
         
         try :
             r = ests.estimate(Method = Met, npc = [nnpc], fixed_effects= FE, mpheno =ests.mpheno[0],
-                        Naive = M, pc_2moment = pc2, random_groups = rg)
+                        Naive = M, random_groups = rg)
             result = pd.DataFrame({"Method" : Met,
                                   "Meta" : M,
-                                  "PC_moment" : pc2,
                                   "RV" : rg,
                                   "h2" : r["h2"][0],
                                   "Var(h2)" : r["var(h2)"][0],

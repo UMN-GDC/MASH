@@ -15,7 +15,6 @@
   "random_groups" : "abcd_site",
   "Naive" : false,
   "Method" : "AdjHE",
-  "pc_2moment" : true,
   "ids" : null
 }
 

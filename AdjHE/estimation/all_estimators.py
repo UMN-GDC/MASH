@@ -26,7 +26,7 @@ from AdjHE.estimation.combat import neuroCombat
 #%%
 
 
-def load_n_estimate(df, fixed_effects, nnpc, mp, GRM, std=False, Method="AdjHE", random_groups=None, silent=False, homo=True, gcta=gcta, pc_2moment= False):
+def load_n_estimate(df, fixed_effects, nnpc, mp, GRM, std=False, Method="AdjHE", random_groups=None, silent=False, homo=True, gcta=gcta):
     """
     Estimates heritability, but solves a full OLS problem making it slower than the closed form solution. Takes 
     a dataframe, selects only the necessary columns (so that when we do complete cases it doesnt exclude too many samples)
@@ -51,8 +51,6 @@ def load_n_estimate(df, fixed_effects, nnpc, mp, GRM, std=False, Method="AdjHE",
         Default is AdjHE
     random_groups : string, optional
         Varible to control for as a random effect, if applicable
-    pc_2moment : bool, optional
-        whether to estimate pc effects in the second momnet (as opposed to the first moment)
 
     Returns
     -------
@@ -92,11 +90,10 @@ def load_n_estimate(df, fixed_effects, nnpc, mp, GRM, std=False, Method="AdjHE",
     # Select method of estimation
     try :
         if Method == "AdjHE":
-            if (nnpc >0) and (pc_2moment) :
+            if nnpc >0 :
                 form = form + "+" +  " + ".join(pc_cols)
             # AdjHE projects away covariates to start
             resid = smf.ols(formula=form, data=df, missing='drop').fit().resid
-            print(resid.shape)
             resid.name = "resid"
             temp = df.merge(resid, left_index = True, right_index =True, how = "inner")
             temp[mp] = temp["resid"]
@@ -167,8 +164,7 @@ class Basu_estimation():
                 prefix, pheno_file, cov_file, PC_file, k, ids)
             self.simulation = False
 
-    def estimate(self, npc, mpheno="all", Method=None, random_groups =None, Naive=False, fixed_effects=None, homo=True, loop_covars=False, pc_2moment = False):
-        self.pc_2moment = pc_2moment
+    def estimate(self, npc, mpheno="all", Method=None, random_groups =None, Naive=False, fixed_effects=None, homo=True, loop_covars=False):
         
                 
         # Create list of covariate sets to regress over
@@ -254,7 +250,7 @@ class Basu_estimation():
                 if (not Naive) or (random_groups == None):
                     r = load_n_estimate(df=self.df, fixed_effects=covs, nnpc=nnpc,
                                         mp=mp, GRM=self.GRM, std=False, Method=Method,
-                                        random_groups=random_groups, homo=homo, pc_2moment = pc_2moment)
+                                        random_groups=random_groups, homo=homo)
 
                 else:
                     # Empty results list
@@ -284,7 +280,7 @@ class Basu_estimation():
 
                             # Estimate just on the supsample
                             sub_result = load_n_estimate(df=sub_df, fixed_effects=[],  nnpc=nnpc, mp=mp, GRM=sub_GRM, std=False, Method=Method, random_groups=None,
-                                                     silent=True, homo=homo, pc_2moment = pc_2moment)
+                                                     silent=True, homo=homo)
                             sub_result = pd.DataFrame({"h2": [sub_result["h2"][0]],
                                                    "Size": [sub_n]})
                             # Add to the list of estimates

@@ -16,6 +16,5 @@
   "Naive" : false,
   "Method" : "AdjHE",
   "ids" : "tests/data/S1_C1.grm.id",
-  "pc_2moment" : false
 }
 

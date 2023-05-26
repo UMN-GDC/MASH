@@ -17,7 +17,6 @@
   "all_ests" : true,
   "site_het" : false,
   "Meta" : false,
-  "pc_2moment" : false,
   "site_2moment" : false,
   "random_BS" : true,
   "out" : "tests/simulations/results/S1C1"

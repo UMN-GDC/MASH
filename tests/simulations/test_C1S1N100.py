@@ -36,7 +36,6 @@ def args() :
       "all_ests" : True,
       "site_het" : True,
       "Meta" : False,
-      "pc_2moment" : True,
       "site_2moment" : True,
       "random_BS" : True,
       "out" : "tests/simulations/results/S1C1N100_all"

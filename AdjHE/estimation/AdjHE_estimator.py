@@ -20,7 +20,7 @@ import pandas as pd
 
 
 
-def AdjHE_estimator(A, df, mp, random_groups = None, npc=0, std=False, pc_2moment=False):
+def AdjHE_estimator(A, df, mp, random_groups = None, npc=0, std=False):
     """
     Fucntion for generating heritability estimates from an Adjusted HE standpoint in closed form.
     Parameters
@@ -39,7 +39,7 @@ def AdjHE_estimator(A, df, mp, random_groups = None, npc=0, std=False, pc_2momen
         Specify whether or not to standaridize the variables before estimation. The default is False.
     Returns
     -------
-    tumple(ndarray, scalar)
+    tuple(ndarray, scalar)
         variance parameter estimates.
         standard error estimate
     """
@@ -65,10 +65,8 @@ def AdjHE_estimator(A, df, mp, random_groups = None, npc=0, std=False, pc_2momen
         logging.debug(str(y.shape))
         logging.debug(str(PPt.shape))
         # Calculate tj's
-        if pc_2moment :
-            Tjs = np.matmul(np.matmul(y, PPt), y.T)
-        else : 
-            Tjs =0
+        Tjs = np.matmul(np.matmul(y, PPt), y.T)
+        # potentially could be Tjs = np.dot(y, PC) **2
         # Calculated Sj's
         Sjs = np.matmul(np.matmul(PCsT, A), PCs).flatten()
         

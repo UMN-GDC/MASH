@@ -43,7 +43,7 @@ def main():
     
     #%%
     logging.info("Estimating")
-    ests.estimate(Method = args["Method"], npc = args["npc"], fixed_effects = args["fixed_effects"], mpheno = args["mpheno"], loop_covars = args["loop_covars"], random_groups = args["random_groups"], Naive= args["Naive"], pc_2moment= args["pc_2moment"])
+    ests.estimate(Method = args["Method"], npc = args["npc"], fixed_effects = args["fixed_effects"], mpheno = args["mpheno"], loop_covars = args["loop_covars"], random_groups = args["random_groups"], Naive= args["Naive"])
     # %%
     logging.info(f"Writing results to {args['out']}")
     ests.results.to_csv(args["out"], index=False, na_rep='NA')
