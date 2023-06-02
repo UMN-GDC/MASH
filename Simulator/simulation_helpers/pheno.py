@@ -85,9 +85,9 @@ def sim_pheno(rng, df, var_comps=[0.5, 0.25, 0.25], phen = 1, site_het = False, 
     if nclusts > 1 :
         # If clusters exist, separate PC effects from the local genetic effects
         # Get pc column names
-        pcs = ["pc_" + str(i + 1) for i in range(nclusts)]
+        pcs = ["pc_" + str(i + 1) for i in range(nclusts-1)]
         # Build regression equation
-        form= "Gene_contrib ~ " + " + ".join(pcs)
+        form= "Gene_contrib ~ 1 + " + " + ".join(pcs)
         # Find the Genetic_contribution after accountring for race
         mod = smf.ols(formula = form , data= df).fit()
         df["Gene_contrib"] = mod.resid
@@ -97,19 +97,11 @@ def sim_pheno(rng, df, var_comps=[0.5, 0.25, 0.25], phen = 1, site_het = False, 
         df["PC_contrib"] = 0
 
         
-    if cluster_contribs != None :
-        for (cluster, cluster_contrib) in enumerate(cluster_contribs) :
-            CtoG = cluster_contrib / var_comps[0]
-            CtoG_sim = np.var(df["Gene_contrib_c" + str(cluster)])
-            Cvariance_scaling = CtoG_sim/CtoG
-            df["Gene_contrib_c" + str(cluster)] = df["Gene_contrib_c" + str(cluster)] / np.sqrt(Cvariance_scaling)
-
-        return_columns = ["Gene_contrib", "PC_contrib", "Site_contrib", "errors"] + ["Gene_contrib_c" + str(i) for i in range(len(cluster_contribs))]
-    else : 
-        return_columns = ["Gene_contrib", "PC_contrib", "Site_contrib", "errors"] 
+    return_columns = ["Gene_contrib", "PC_contrib", "Site_contrib", "errors"] 
 
 
     # Scale genetic, site and error contributions to get the desired heritability
+    df["PC_contrib"] = rescalar(df["PC_contrib"], 30 * var_comps[0])
     df["Gene_contrib"] = rescalar(df["Gene_contrib"], var_comps[0])
     df["Site_contrib"] = rescalar(df["Site_contrib"], var_comps[1])
     df["errors"] = rescalar(errors, var_comps[2]) 
