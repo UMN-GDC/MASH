@@ -69,7 +69,7 @@ def sim_gen_effects(rng, genotypes, causals = [], prop_causal=0.1, variance_prop
 
     else:
         # sim effect from each SNP
-        causal_eff = rng.normal(0, 1, (Xcausal.shape[1], 1))
+        causal_eff = rng.normal(0, 0.5/Xcausal.shape[1], (Xcausal.shape[1], 1))
         Gene_contrib = np.array(Xcausal * causal_eff).flatten()
 
     return Gene_contrib, causals

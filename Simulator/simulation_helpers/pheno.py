@@ -9,25 +9,6 @@ import numpy as np
 import statsmodels.formula.api as smf
 from Simulator.simulation_helpers.sim_effects import sim_effects 
 
-# Function: Takes vector X, and scales it such that its variance is equal to V
-def rescalar(X, V): 
-    """
-    Rescale the vector X such that its variance is equal to V.
-
-    Parameters
-    ----------
-    X : numpy array
-        vector to be rescaled.
-    V : float
-        desired variance.
-
-    Returns
-    -------
-    numpy array
-        rescaled vector.
-
-    """
-    return X * np.sqrt(V / np.nanvar(X))
 
 
 def sim_pheno(rng, df, var_comps=[0.5, 0.25, 0.25], phen = 1, site_het = False, nsites = 1, nclusts =1, cluster_contribs = None):
@@ -66,46 +47,9 @@ def sim_pheno(rng, df, var_comps=[0.5, 0.25, 0.25], phen = 1, site_het = False, 
         simulated phenotype as a pandas series.
     """
     nsubjects = df.shape[0]
-
-    # Sim errors
-    if site_het :
-        # Sample the site variances
-        site_var = rng.gamma(4, 4, nsites)
-        # Sample error from the specified variance
-        errors = []
-        for i in range(nsubjects):
-            # determine the persons site
-            site = df["abcd_site"][i]
-            # Sample their errors given that sites' variance
-            errors += [rng.normal(0, site_var[site -1 ])]
-    else : 
-        errors = rng.normal(0, 1, size=nsubjects)
-
-
-    if nclusts > 1 :
-        # If clusters exist, separate PC effects from the local genetic effects
-        # Get pc column names
-        pcs = ["pc_" + str(i + 1) for i in range(nclusts-1)]
-        # Build regression equation
-        form= "Gene_contrib ~ 1 + " + " + ".join(pcs)
-        # Find the Genetic_contribution after accountring for race
-        mod = smf.ols(formula = form , data= df).fit()
-        df["Gene_contrib"] = mod.resid
-        df["PC_contrib"] = mod.predict()
-    else :
-        # If no clusters, there is no PC contribution 
-        df["PC_contrib"] = 0
-
-        
-    return_columns = ["Gene_contrib", "PC_contrib", "Site_contrib", "errors"] 
-
-
-    # Scale genetic, site and error contributions to get the desired heritability
-    df["PC_contrib"] = rescalar(df["PC_contrib"], 30 * var_comps[0])
-    df["Gene_contrib"] = rescalar(df["Gene_contrib"], var_comps[0])
-    df["Site_contrib"] = rescalar(df["Site_contrib"], var_comps[1])
-    df["errors"] = rescalar(errors, var_comps[2]) 
-    
+    df["VG"] = df.groupby("subj_ancestries")["Gene_contrib"].transform(np.nanvar)
+    df["errors"] = rng.normal(np.repeat(0, nsubjects), df["VG"] * (1- var_comps[0])) 
+   
     if phen == 0:
         phenoname = "Y"
     else : 
@@ -113,7 +57,6 @@ def sim_pheno(rng, df, var_comps=[0.5, 0.25, 0.25], phen = 1, site_het = False, 
 
     if np.sum(np.isnan(df.Site_contrib)) > 10 :
         df.Site_contrib = 0
-    df[phenoname] = df[["Gene_contrib", "PC_contrib", "Site_contrib", "errors", "Covar_contrib"]].sum(axis=1)
+    df[phenoname] = df[["Gene_contrib", "Site_contrib", "errors", "Covar_contrib"]].sum(axis=1)
     df[phenoname] = df[phenoname] - np.nanmean(df[phenoname])
-    
-    return df[return_columns + [phenoname]]
+    return df[["Gene_contrib", "Site_contrib", "errors", "Covar_contrib", phenoname]]

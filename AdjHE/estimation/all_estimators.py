@@ -73,6 +73,9 @@ def load_n_estimate(df, fixed_effects, nnpc, mp, GRM, std=False, Method="AdjHE",
     if fixed_effects == None :
         fixed_effects = []
     
+    if Method == "AdjHE" :
+        fixed_effects+= pc_cols
+    
 
     
     # Create formula string

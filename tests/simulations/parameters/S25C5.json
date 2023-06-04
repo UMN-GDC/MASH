@@ -1,16 +1,16 @@
 {
-  "nsubjectss": [1000],
-  "sgs" : [0.8],
-  "sss" : [0],
-  "ses" : [0.2],
+  "nsubjectss": [250],
+  "sgs" : [0.5],
+  "sss" : [0.25],
+  "ses" : [0.25],
   "site_comps" : ["EQUAL"],
-  "nsites" : [1],
+  "nsites" : [25],
   "theta_alleless" : [0.1],
-  "nclustss" : [2],
+  "nclustss" : [5],
   "dominances" : [3],
   "prop_causals" : [0.02],
   "site_deps" : [false],
-  "nnpcs" :[0,1],
+  "nnpcs" :[1, 2, 4],
   "nSNPss" : [200],
   "phenss" : [1],
   "reps" : 5,
@@ -19,5 +19,5 @@
   "Meta" : false,
   "site_2moment" : false,
   "random_BS" : true,
-  "out" : "tests/simulations/results/S1C2_FE"
+  "out" : "tests/simulations/results/S25C5_FE"
 }

@@ -50,7 +50,7 @@ class pheno_simulator():
         self.df[["abcd_site", "Site_contrib"]] = sim_sites(rng = self.rng, nsubjects = self.nsubjects, 
                                                            nsites=nsites, eq_sites=eq_sites, random_BS = random_BS)
 
-    def sim_pops(self, theta_alleles=[0.5, 0.5], nclusts=1, site_comp="IID", dominance=2, 
+    def sim_pops(self, theta_alleles=[0.8, 0.2], nclusts=1, site_comp="IID", dominance=2, 
                  shared_causal= 0.8, shared_noncausal = 0.8, prop_causal = 0.1):
         # site_comp = ["EQUAL", "RAND", "IID", "HET"]
         if self.eq_sites == True:
