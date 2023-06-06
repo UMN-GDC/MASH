@@ -1,0 +1,23 @@
+{
+  "nsubjectss": [1000],
+  "sgs" : [0.5],
+  "sss" : [0],
+  "ses" : [0.5],
+  "site_comps" : ["EQUAL"],
+  "nsites" : [1],
+  "theta_alleless" : [0.1],
+  "nclustss" : [2],
+  "dominances" : [3],
+  "prop_causals" : [0.02],
+  "site_deps" : [false],
+  "nnpcs" :[0,1],
+  "nSNPss" : [200],
+  "phenss" : [1],
+  "reps" : 5,
+  "all_ests" : true,
+  "site_het" : false,
+  "Meta" : false,
+  "site_2moment" : true,
+  "random_BS" : true,
+  "out" : "tests/simulations/results/S1C2_RE"
+}

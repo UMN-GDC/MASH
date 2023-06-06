@@ -73,6 +73,9 @@ def load_n_estimate(df, fixed_effects, nnpc, mp, GRM, std=False, Method="AdjHE",
     if fixed_effects == None :
         fixed_effects = []
     
+    if Method == "AdjHE" :
+        fixed_effects+= pc_cols
+    
 
     
     # Create formula string
@@ -88,55 +91,64 @@ def load_n_estimate(df, fixed_effects, nnpc, mp, GRM, std=False, Method="AdjHE",
     # save a temporary dataframe
         
     # Select method of estimation
-    if Method == "AdjHE":
-        # AdjHE projects away covariates to start
-        resid = smf.ols(formula=form, data=df, missing='drop').fit().resid
-        print(resid.shape)
-        resid.name = "resid"
-        temp = df.merge(resid, left_index = True, right_index =True, how = "inner")
-        temp[mp] = temp["resid"]
-        nonmissing = df[df.IID.isin(temp.IID)].index
-        GRM_nonmissing = GRM[nonmissing, :][:, nonmissing]
-        result = AdjHE_estimator(A = GRM_nonmissing, df=temp, mp = mp, random_groups = random_groups, npc= nnpc, std=std)
+    try :
+        if Method == "AdjHE":
+            if nnpc >0 :
+                form = form + "+" +  " + ".join(pc_cols)
+            # AdjHE projects away covariates to start
+            resid = smf.ols(formula=form, data=df, missing='drop').fit().resid
+            resid.name = "resid"
+            temp = df.merge(resid, left_index = True, right_index =True, how = "inner")
+            temp[mp] = temp["resid"]
+            nonmissing = df[df.IID.isin(temp.IID)].index
+            GRM_nonmissing = GRM[nonmissing, :][:, nonmissing]
+            result = AdjHE_estimator(A = GRM_nonmissing, df=temp, mp = mp, random_groups = random_groups, npc= nnpc, std=std)
 
-    # MOM estimator is under construction
-    # elif Method == "MOM":
-    #     result = load_n_MOM(temp, covars, nnpc, mp,
-    #                         GRM_nonmissing, std=False, RV=RV)
-    elif Method == "PredlMM":
-        result = load_n_PredLMM(temp, fixed_effects, nnpc, mp,
-                                GRM_nonmissing, std=False, random_groups=random_groups)
-        
-    elif Method == "GCTA":
-        result = GCTA(df, fixed_effects, nnpc, mp, GRM, gcta=gcta, silent=False)
-        
-    elif Method == "SWD":
-        # SWD projects away sites then projects away covaraites
-        resid = smf.ols(formula= mp + " ~ " + random_groups, data=df, missing='drop').fit().resid
-        resid.name = "resid"
-        temp = df.merge(resid, left_index = True, right_index =True, how = "inner")
-        temp[mp] = temp["resid"]
-        
-        resid = smf.ols(formula=form, data=temp, missing='drop').fit().resid 
-        resid.name= "resid2"
-        temp = temp.merge(resid, left_index= True, right_index = True,how = "inner")
-        temp[mp] = temp["resid2"]
-        nonmissing = df[df.IID.isin(temp.IID)].index
-        GRM_nonmissing = GRM[nonmissing, :][:, nonmissing]
+        # MOM estimator is under construction
+        # elif Method == "MOM":
+        #     result = load_n_MOM(temp, covars, nnpc, mp,
+        #                         GRM_nonmissing, std=False, RV=RV)
+        elif Method == "PredlMM":
+            result = load_n_PredLMM(temp, fixed_effects, nnpc, mp,
+                                    GRM_nonmissing, std=False, random_groups=random_groups)
+            
+        elif Method == "GCTA":
+            result = GCTA(df, fixed_effects, nnpc, mp, GRM, gcta=gcta, silent=False)
+            
+        elif Method == "SWD":
+            # SWD projects away sites then projects away covaraites
+            resid = smf.ols(formula= mp + " ~ " + random_groups, data=df, missing='drop').fit().resid
+            resid.name = "resid"
+            temp = df.merge(resid, left_index = True, right_index =True, how = "inner")
+            temp[mp] = temp["resid"]
+            
+            resid = smf.ols(formula=form, data=temp, missing='drop').fit().resid 
+            resid.name= "resid2"
+            temp = temp.merge(resid, left_index= True, right_index = True,how = "inner")
+            temp[mp] = temp["resid2"]
+            nonmissing = df[df.IID.isin(temp.IID)].index
+            GRM_nonmissing = GRM[nonmissing, :][:, nonmissing]
 
-        result = AdjHE_estimator(A = GRM_nonmissing, df = temp, mp = mp, random_groups = None, npc=nnpc, std=False)
+            result = AdjHE_estimator(A = GRM_nonmissing, df = temp, mp = mp, random_groups = None, npc=nnpc, std=False)
 
-    elif Method in ["Combat", "Covbat"]:
-        # AdjHE projects away covariates to start
-        result = AdjHE_estimator(A = GRM, df=df, mp = mp, random_groups = None, npc= nnpc, std=std)
+        elif Method in ["Combat", "Covbat"]:
+            # AdjHE projects away covariates to start
+            result = AdjHE_estimator(A = GRM, df=df, mp = mp, random_groups = None, npc= nnpc, std=std)
 
 
-    else:
-        logging.error("Not an accepted method of estimation: " + Method)
+        else:
+            logging.error("Not an accepted method of estimation: " + Method)
+        result["pheno"] = mp
+        return pd.DataFrame(result, index=[0])
+
+    except np.linalg.LinAlgError :
+        logging.error("Singular Matrix")
+        pass
+    except TypeError :
+        logging.error("Muffed estimate")
+        pass
         
     
-    result["pheno"] = mp
-    return pd.DataFrame(result, index=[0])
 
 
 # %%
@@ -238,7 +250,7 @@ class Basu_estimation():
                           "PCs" : nnpc,
                           "Covariates" : C}
 
-                if not Naive:
+                if (not Naive) or (random_groups == None):
                     r = load_n_estimate(df=self.df, fixed_effects=covs, nnpc=nnpc,
                                         mp=mp, GRM=self.GRM, std=False, Method=Method,
                                         random_groups=random_groups, homo=homo)
@@ -275,8 +287,7 @@ class Basu_estimation():
                             sub_result = pd.DataFrame({"h2": [sub_result["h2"][0]],
                                                    "Size": [sub_n]})
                             # Add to the list of estimates
-                            sub_results = sub_results.append(
-                                sub_result, ignore_index=True)
+                            sub_results = pd.concat([sub_results, sub_result], axis=0)
                         except ValueError :
                             logging.error("Not estimated on this subgroups since there wasn't enough samples")
 
