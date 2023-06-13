@@ -6,9 +6,10 @@ Created on Thu Mar 16 14:42:57 2023
 @author: christian
 """
 import numpy as np
+import matplotlib.pyplot as plt
 
-
-def sim_gen_effects(rng, genotypes, causals = [], prop_causal=0.1, variance_propto_frequency = False, maf_filter = 0.1, clusters_differ = False):
+def sim_gen_effects(rng, genotypes, causals = [], prop_causal=0.1, variance_propto_frequency = False, maf_filter = 0.1, clusters_differ = False,
+                    vizualize = False):
     """
     
 
@@ -28,6 +29,8 @@ def sim_gen_effects(rng, genotypes, causals = [], prop_causal=0.1, variance_prop
         do clusters have different heritabilities? The default is False.
     maf_filter : float, optional
         filter out SNPs with MAF < maf_filter and MAF > 1-maf_filter. This is only used when user did not specify causals explicitly. The default is 0.1.
+    vizualize : boolean, optional
+        plot the distribution of causal effects. The default is False.
     Returns
     -------
     Gene_contrib : array 
@@ -72,5 +75,22 @@ def sim_gen_effects(rng, genotypes, causals = [], prop_causal=0.1, variance_prop
         causal_eff = rng.normal(0, 0.5/Xcausal.shape[1], (Xcausal.shape[1], 1))
         Gene_contrib = np.array(Xcausal * causal_eff).flatten()
 
+    # plot distribution of causal effects,
+    # causal effect against index, and 
+    # casual effect vs allele frequency 
+    # in a three panel plot
+    if vizualize:
+        fig, axs = plt.subplots(2, 2)
+        axs[0,0].hist(causal_eff, bins = 100)
+        axs[0,0].set_title('Distribution of causal effects')
+        axs[0,1].scatter(causals, causal_eff)
+        axs[0,1].set_title('Causal effect vs index')
+        axs[1,1].scatter(freqs, causal_eff)
+        axs[1,1].set_title('Causal effect vs allele frequency')
+
     return Gene_contrib, causals
+
+
+
+
 

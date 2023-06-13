@@ -65,15 +65,15 @@ def GCTA(df, covars, nnpc, mp, GRM, gcta, silent=False):
     ##############################
         
     # Format string for controlling variables
-    covars = " "
+    covs = " "
     if os.path.exists(temp_name + "_Cont.txt") :
-        covars += " --qcovar " + temp_name + "_Cont.txt "
+        covs += " --qcovar " + temp_name + "_Cont.txt "
     if os.path.exists(temp_name + "_Discrete.txt") : 
-        covars += " --covar " + temp_name + "_Discrete.txt "
+        covs += " --covar " + temp_name + "_Discrete.txt "
     
     
     # run gcta
-    bashcommand = gcta + " --grm " + temp_name + " --pheno " + temp_name + "_pheno.txt --mpheno 1 --reml --out " + temp_name + " " + covars
+    bashcommand = gcta + " --grm " + temp_name + " --pheno " + temp_name + "_pheno.txt --mpheno 1 --reml --out " + temp_name + " " + covs
     process = subprocess.Popen(bashcommand.split(), stdout=subprocess.PIPE)
     __output, __error = process.communicate()
 

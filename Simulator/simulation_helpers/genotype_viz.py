@@ -59,3 +59,25 @@ def plot_genetic_clusters(sim, output = None) :
         p.show()
     else :
         plt.savefig(fname= output + ".png", dpi= 300, format = "png")
+
+
+
+
+def manhattan_plot(sim) :
+    """
+    Plot a manhattan plot of the causal SNPs.
+    
+    Parameters
+    ----------
+    sim : simulation object
+        DESCRIPTION.
+
+    Returns
+    -------
+    None.
+    
+
+    """
+    plt.scatter(sim.causal_idx, sim.causal_effects)
+    
+
