@@ -48,14 +48,14 @@ def sim_pheno(rng, df, var_comps=[0.5, 0.25, 0.25], phen = 1, site_het = False, 
     """
     nsubjects = df.shape[0]
     df["VG"] = df.groupby("subj_ancestries")["Gene_contrib"].transform(np.nanvar)
-    df["errors"] = rng.normal(np.repeat(0, nsubjects), df["VG"] * (1- var_comps[0])) 
+    df["errors"] = rng.normal(np.repeat(0, nsubjects), np.sqrt(df["VG"] * (1- var_comps[0]))) 
    
     if phen == 0:
         phenoname = "Y"
     else : 
         phenoname = "Y" + str(phen-1)
 
-    if np.sum(np.isnan(df.Site_contrib)) > 10 :
+    if np.sum(np.isnan(df.Site_contrib)) > 2 :
         df.Site_contrib = 0
     df[phenoname] = df[["Gene_contrib", "Site_contrib", "errors", "Covar_contrib"]].sum(axis=1)
     df[phenoname] = df[phenoname] - np.nanmean(df[phenoname])
