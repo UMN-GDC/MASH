@@ -50,32 +50,25 @@ class pheno_simulator():
         self.df[["abcd_site", "Site_contrib"]] = sim_sites(rng = self.rng, nsubjects = self.nsubjects, 
                                                            nsites=nsites, eq_sites=eq_sites, random_BS = random_BS)
 
-    def sim_pops(self, theta_alleles=[0.8, 0.2], nclusts=1, site_comp="IID", dominance=2, 
-                 shared_causal= 0.8, shared_noncausal = 0.8, prop_causal = 0.1):
-        # site_comp = ["EQUAL", "RAND", "IID", "HET"]
-        if self.eq_sites == True:
-            site_comp = "EQUAL"
-        # Theta alleles controls how much ancstry is conserved. low theta_alleles = high conservation
+    def sim_pops(self, theta_alleles = 0.5, nclusts=1, prop_causal = 0.1):
         self.theta_alleles = theta_alleles
         # Clusts are distinct ancestries
         self.nclusts = nclusts
-        self.site_comp = site_comp
-        self.shared_causal= shared_causal
-        self.shared_noncausal = shared_noncausal
         
-        # dominance is only referenced for heterogeneous cluster sampling
-        if site_comp == "HET" :
-            self.dominance = dominance
 
         # Simualte allele frequencies for common ancestor and for genetic clusters
-        (self.ancest_freqs, self.cluster_frequencies, self.shared_idx, self.causal_idx) = sim_pop_alleles(seed = self.rng, theta_alleles = self.theta_alleles,
-                                                                                                          nclusts=self.nclusts, nSNPs = self.nSNPs,
-                                                                                                          shared_causal= shared_causal, shared_noncausal = shared_noncausal,
-                                                                                                          prop_causal = prop_causal)
+        self.ancest_freqs, self.cluster_frequencies = sim_pop_alleles(
+            seed = self.rng,
+            theta_alleles = self.theta_alleles,
+            nclusts=self.nclusts, nSNPs = self.nSNPs,
+            prop_causal = prop_causal)
 
         # Sample ancesrties for each individual Dim = (nsubjects,)
-        self.df["subj_ancestries"] = assign_clusters(df = self.df, rng = self.rng, theta_alleles=self.theta_alleles, nclusts=self.nclusts,
-                                                     nsites = self.nsites, site_comp= site_comp, dominance=dominance, eq_sites = self.eq_sites)
+        self.df["subj_ancestries"] = assign_clusters(
+            df = self.df,
+            rng = self.rng,
+            nclusts=self.nclusts,
+            nsites = self.nsites)
 
     def sim_genos(self, prop_causal=0.1, maf_filter = 0.05, admixing = False):
         self.prop_causal = prop_causal

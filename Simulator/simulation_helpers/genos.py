@@ -12,7 +12,7 @@ from sklearn.decomposition import PCA
 from Simulator.simulation_helpers.admixing import sample_admixed_genotypes
 
 
-def sim_genos(seed, ancestral_frequencies, cluster_frequencies, subject_ancestries,
+def sim_genos(seed, cluster_frequencies, subject_ancestries,
               clusters_differ = False, prop_causal=0.1, admixing = False):
     """
     Simulate genotypes of the subjects given their cluster ID and the respective cluster allele frequencies
@@ -48,28 +48,10 @@ def sim_genos(seed, ancestral_frequencies, cluster_frequencies, subject_ancestri
     nclusts = np.unique(subject_ancestries).shape[0]
     nsubjects = subject_ancestries.shape[0]
     
-    if nclusts == 1:
-        nSNPs = cluster_frequencies.shape[0]
-        # simulate genotypes
-        genotypes = rng.binomial(n=np.repeat(2, nSNPs), p=cluster_frequencies[0],
-                                 size=(nsubjects, nSNPs))
-    elif (nclusts > 1) and (not admixing)  :
-        nSNPs = cluster_frequencies.shape[1]
-        # simulate genotypes
-        genotypes = rng.binomial(n=np.repeat(2, nSNPs), p= cluster_frequencies[subject_ancestries],
-                                 size=(nsubjects, nSNPs))
-        
-    elif (nclusts >1 ) and (admixing) :
-        nSNPs = cluster_frequencies.shape[1]
-        genotypes = np.zeros((nsubjects, nSNPs))
-        for i in range(nsubjects): 
-            # Bias admixing proportion toward "reported race"
-            admixture = np.repeat(1,nclusts)
-            admixture[subject_ancestries[i]] = 2
-            admixture = admixture / np.sum(admixture)
-            genotypes[i,:] = sample_admixed_genotypes(seed, cluster_freqs = cluster_frequencies, admixture = admixture, nsubjects=1)
-        
-        
+    nSNPs = cluster_frequencies.shape[1]
+    # simulate genotypes
+    genotypes = rng.binomial(n=np.repeat(2, nSNPs * nsubjects).reshape(100, 1000), p= cluster_frequencies[list(subject_ancestries)])
+    
     # standardize the genotpyes
     freqs = np.mean(genotypes, axis=0) / 2
     # remove snps with frequencies of 0 or 1
