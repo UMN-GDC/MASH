@@ -97,7 +97,7 @@ class pheno_simulator():
         self.variance_propto_frequency = variance_propto_frequency
         self.maf_filter = maf_filter
         # simulate sared genetic contribution
-        self.df["Gene_contrib"], self.causals = sim_gen_effects(rng = self.rng, genotypes = self.genotypes, causals= self.causal_idx,
+        self.df["Gene_contrib"], self.causals, self.SNP_effects = sim_gen_effects(rng = self.rng, genotypes = self.genotypes, causals= self.causal_idx,
                                                   prop_causal=self.prop_causal, variance_propto_frequency = variance_propto_frequency,
                                                   maf_filter = maf_filter) 
 

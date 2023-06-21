@@ -63,7 +63,7 @@ def plot_genetic_clusters(sim, output = None) :
 
 
 
-def SNPeffectViz(sim, out =None) :
+def SNPeffectFiz(sim) :
     """
     Create vizualizations for SNP effects
     Parameters
@@ -90,8 +90,7 @@ def SNPeffectViz(sim, out =None) :
     ax2.set_xlabel("SNP effect size")
     # increase space between ax1 and ax2 so that the ylabel from ax2 doesn't overlap with ax1
     fig.subplots_adjust(wspace = 0.3)
-    if out != None :
-        fig.savefig(fname= out, dpi= 300, format = "png")
+    fig.savefig(fname= "Simulator/SNP_effects.png", dpi= 300, format = "png")
     fig.show()
     
 

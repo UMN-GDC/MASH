@@ -37,6 +37,8 @@ def sim_gen_effects(rng, genotypes, causals = [], prop_causal=0.1, variance_prop
         1-D array containing the contribution of genetics to each subjects phenotype.
     causals : array
         1-D array of the genotype index that was selected to be causal
+    snp_effects: array
+        1-D array of SNP effects
     """
     nsubjects, nSNPs = genotypes.shape
 
@@ -88,7 +90,7 @@ def sim_gen_effects(rng, genotypes, causals = [], prop_causal=0.1, variance_prop
         axs[1,1].scatter(freqs, causal_eff)
         axs[1,1].set_title('Causal effect vs allele frequency')
 
-    return Gene_contrib, causals
+    return Gene_contrib, causals, causal_eff
 
 
 
