@@ -1,3 +1,6 @@
 [submodule "docs/Presentations/SMI_poster"]
 	path = docs/Presentations/SMI_poster
 	url = https://github.com/coffm049/SMI_2023_poster
+[submodule "Toolbox_paper"]
+	path = Toolbox_paper
+	url = https://github.com/coffm049/Toolbox_paper
