@@ -22,7 +22,7 @@ def test_simNGCTA(singleSiteClust) :
     est = Basu_estimation()
     est.GRM = sim.GRM
     est.df = sim.df
-    est.estimate(mpheno = ["Y0"], npc = [0], Method = "GCTA", fixed_effects= ["Xc"])
+    result = est.estimate(mpheno = ["Y0"], npc = [0], Method = "GCTA", fixed_effects= ["Xc"])
     assert result["h2"][0] == pytest.approx(0.5, abs = 0.4) 
 
 @pytest.mark.simNAdjHE
@@ -31,5 +31,5 @@ def test_simAdjHE(singleSiteClust):
     est = Basu_estimation()
     est.GRM = sim.GRM
     est.df = sim.df
-    est.estimate(mpheno = ["Y0"], npc = [0], Method = "AdjHE", fixed_effects= ["Xc"])
+    result = est.estimate(mpheno = ["Y0"], npc = [0], Method = "AdjHE", fixed_effects= ["Xc"])
     assert result["h2"][0] == pytest.approx(0.5, abs = 0.4) 
