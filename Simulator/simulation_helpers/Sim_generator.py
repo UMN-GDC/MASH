@@ -79,33 +79,12 @@ class pheno_simulator():
         self.df = pd.concat([self.df, pcs], axis=1)
 
 
-    def sim_gen_effects(self, clusters_differ = False, variance_propto_frequency = True, maf_filter =0.1):
+    def sim_gen_effects(self,  alpha = -1):
         # genetic contribution
-        self.clusters_differ = clusters_differ
-        self.variance_propto_frequency = variance_propto_frequency
-        self.maf_filter = maf_filter
+        self.alpha = alpha
         # simulate sared genetic contribution
-        self.df["Gene_contrib"], self.causals, self.SNP_effects = sim_gen_effects(rng = self.rng, genotypes = self.genotypes, causals= self.causal_idx,
-                                                  prop_causal=self.prop_causal, variance_propto_frequency = variance_propto_frequency,
-                                                  maf_filter = maf_filter) 
-
-        # if differ is true then simulate clusters specific genetic contribution
-        #if clusters_differ :
-        if False :
-            for cluster in range(self.nclusts) :
-                # find the indices of the group variable
-                idx = self.df["subj_ancestries"] == cluster
-
-                # subset the genotype rows by the above idx
-                temp_genos = self.genotypes[idx, :]
-                # Simulate the contribution from eahc cluster 
-                temp = np.zeros(self.df.shape[0])
-
-                temp[self.df.subj_ancestries == cluster] = sim_gen_effects(rng=self.rng, genotypes = temp_genos, causals= self.causal_idx,
-                                                                             prop_causal=self.prop_causal, variance_propto_frequency = variance_propto_frequency)
-                self.df["Gene_contrib_c_" + str(cluster)] = temp
-
-
+        self.df["Gene_contrib"], self.causals, self.SNP_effects = sim_gen_effects(rng = self.rng, genotypes = self.genotypes,
+                                                  alpha = self.alpha) 
 
     def sim_covars(self, cov_effect= True, ortho_cov = False) :
         self.cov_effect= cov_effect

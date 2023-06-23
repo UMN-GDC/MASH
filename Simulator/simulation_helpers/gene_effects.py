@@ -8,8 +8,7 @@ Created on Thu Mar 16 14:42:57 2023
 import numpy as np
 import matplotlib.pyplot as plt
 
-def sim_gen_effects(rng, genotypes, causals = [], prop_causal=0.1, variance_propto_frequency = False, maf_filter = 0.1, clusters_differ = False,
-                    vizualize = False):
+def sim_gen_effects(rng, genotypes, alpha = -1):
     """
     
 
@@ -23,6 +22,8 @@ def sim_gen_effects(rng, genotypes, causals = [], prop_causal=0.1, variance_prop
         list of causal snp names.
     df : dataframe
         dataframe containing all covariates and phenotypes.
+    alpha : float, optional
+        exponent for the dependency between SNP frequency and effect size. The default is -1
     prop_causal : float, optional
         if causals are unspecified, then specify the number of SNPs to randomly select as causal. The default is 0.1.
     clusters_differ : bool, optional
@@ -41,41 +42,30 @@ def sim_gen_effects(rng, genotypes, causals = [], prop_causal=0.1, variance_prop
         1-D array of SNP effects
     """
     nsubjects, nSNPs = genotypes.shape
-
+    prop_causal = 0.1
     # randomly sample causals only if 
-    if causals == []:
-        nCausal = int(nSNPs * prop_causal)
-        # select causal snos
-        causals = rng.choice(nSNPs, nCausal, replace=False, shuffle=False)
-        Xcausal = np.matrix(genotypes[:, causals])
-        # calculate frequencies
-        freqs = np.asarray(np.mean(Xcausal, axis = 0)/2).flatten()
-        # filter Xcausal by freqs that are greater than maf_filter, and less than 1-maf_filter
-        Xcausal = Xcausal[:, (freqs > maf_filter) & (freqs < 1-maf_filter)]
-        nCausal = Xcausal.shape[1]
-
-    else :
-        Xcausal = np.matrix(genotypes[:, causals])
-        nCausal = Xcausal.shape[1]
-
-    freqs = np.asarray(np.mean(Xcausal, axis = 0)/2)
-
+    nCausal = int(nSNPs * prop_causal)
+    # select causal snos
+    causals = rng.choice(nSNPs, nCausal, replace=False, shuffle=False)
+    Xcausal = np.matrix(genotypes[:, causals])
+    # calculate frequencies
+    freqs = np.asarray(np.mean(Xcausal, axis = 0)/2).flatten()
 
     # sample effects from normal with variance proportional to some function of allele frequency
-    if variance_propto_frequency : 
-        alpha = -1
-        prop = (freqs * (1-freqs))**alpha
-        prop = prop.reshape(prop.shape[1])
-        causal_eff = rng.normal(np.repeat(0, Xcausal.shape[1]), prop, size =  Xcausal.shape[1])
-        # make sure no infinities
-        causal_eff[np.isinf(causal_eff)] = 0
-        Gene_contrib = np.array(np.dot(Xcausal, causal_eff)).flatten()
+    prop = (freqs * (1-freqs))**alpha
+    causal_eff = rng.normal(np.repeat(0, Xcausal.shape[1]), prop, size =  Xcausal.shape[1])
+    # make sure no infinities
+    causal_eff[np.isinf(causal_eff)] = 0
+    Gene_contrib = np.array(np.dot(Xcausal, causal_eff)).flatten()
+    return Gene_contrib, causals, causal_eff
 
 
-    else:
-        # sim effect from each SNP
-        causal_eff = rng.normal(0, 0.5/Xcausal.shape[1], (Xcausal.shape[1], 1))
-        Gene_contrib = np.array(Xcausal * causal_eff).flatten()
+
+
+
+
+
+#%% different function
 
     # plot distribution of causal effects,
     # causal effect against index, and 
@@ -89,8 +79,7 @@ def sim_gen_effects(rng, genotypes, causals = [], prop_causal=0.1, variance_prop
         axs[0,1].set_title('Causal effect vs index')
         axs[1,1].scatter(freqs, causal_eff)
         axs[1,1].set_title('Causal effect vs allele frequency')
-
-    return Gene_contrib, causals, causal_eff
+    return None
 
 
 
