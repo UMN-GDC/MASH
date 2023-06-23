@@ -11,7 +11,7 @@ from Simulator.simulation_helpers.sim_effects import sim_effects
 
 
 
-def sim_pheno(rng, df, var_comps=[0.5, 0.25, 0.25], phen = 1, site_het = False, nsites = 1, nclusts =1, cluster_contribs = None):
+def sim_pheno(rng, df, h2= 0.5, phen = 1, nsites = 1, nclusts =1):
     """
     Simulate the phenotype given the differnt contributions from site, genetic, and error, and scale them by the var_comps variable.
 
@@ -48,7 +48,7 @@ def sim_pheno(rng, df, var_comps=[0.5, 0.25, 0.25], phen = 1, site_het = False, 
     """
     nsubjects = df.shape[0]
     df["VG"] = df.groupby("subj_ancestries")["Gene_contrib"].transform(np.nanvar)
-    df["errors"] = rng.normal(np.repeat(0, nsubjects), np.sqrt(df["VG"] * (1- var_comps[0]))) 
+    df["errors"] = rng.normal(np.repeat(0, nsubjects), np.sqrt(df["VG"] * (1- h2)/h2)) 
    
     if phen == 0:
         phenoname = "Y"

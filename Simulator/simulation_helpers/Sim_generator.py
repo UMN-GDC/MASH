@@ -91,49 +91,41 @@ class pheno_simulator():
         self.ortho_cov = ortho_cov
         
         self.df["Xc"], self.df["Covar_contrib"] = sim_covariates(rng = self.rng, nclusts=self.nclusts, 
-                                                                 df = self.df, cov_effect=cov_effect,ortho_cov = ortho_cov)
+                                                                 df = self.df)
         
-    def sim_pheno(self, var_comps=[0.5, 0.25, 0.25], phen = 1, site_het = False, cluster_contribs = None):
-        self.cluster_contribs=  cluster_contribs
-
-        self.var_comps = var_comps
-        self.site_het = site_het
-        pheno_contribs  = sim_pheno(rng = self.rng, df = self.df, var_comps=var_comps, 
-                                    phen = phen, site_het = site_het, nsites = self.nsites,nclusts =self.nclusts,
-                                    cluster_contribs = cluster_contribs)
+    def sim_pheno(self, h2=0.5, phen = 1):
+        self.h2 = h2 
+        pheno_contribs  = sim_pheno(rng = self.rng, df = self.df, h2=self.h2, 
+                                    phen = phen, nsites = self.nsites, nclusts =self.nclusts)
         
         # join pheno_contribs dataframe to simulated dataframe as new columns
         self.df.update(pheno_contribs)
             
-    def full_sim(self, sigma = [0.5,0.25,0.25], site_comp="IID",
-                 nsites=30, theta_alleles=[0.5, 0.5], nclusts=5, dominance=5,
-                 prop_causal=0.25, nsubjects=1000,
-                 nnpc=0, phens = 2, site_het = False, cov_effect = True,
-                 ortho_cov = True, random_BS = True, npcs = 0, admixing = False, maf_filter= 0.1, clusters_differ = False):
+    def full_sim(self, h2 = 0.5,
+                 nsites=30, nclusts=5,
+                 nsubjects=1000,
+                 nnpc=0, phens = 2,
+                 alpha=-1,
+                 random_BS = True, npcs = 0,  maf_filter= 0.1):
         
         # Only simulate genes if plink file not specified
         if self.plink_prefix == None: 
   
-            if site_comp == "EQUAL" :
-                eq_sites = True
-            else :
-                eq_sites= False
-            
             # Run through full simulation and estimation
-            self.sim_sites(nsites= nsites, eq_sites=eq_sites, random_BS = random_BS)
+            self.sim_sites(nsites= nsites, random_BS = random_BS)
             
-            self.sim_pops(theta_alleles=theta_alleles, nclusts=nclusts, site_comp= site_comp, dominance=dominance)
-            self.sim_genos(prop_causal=prop_causal, admixing = admixing)
-            self.sim_gen_effects(maf_filter = maf_filter, clusters_differ = clusters_differ)
-            self.sim_covars(cov_effect= cov_effect, ortho_cov = ortho_cov)
+            self.sim_pops(nclusts=nclusts)
+            self.sim_genos()
+            self.sim_gen_effects(alpha = alpha)
+            self.sim_covars()
             
             for i in range(phens) :
-                self.sim_pheno(var_comps=sigma, phen = i, site_het = site_het)
+                self.sim_pheno(h2 = h2, phen = i)
         
         else : 
             for i in range(phens) :
                 phenoname = "Y" + str(i)
-                self.df[phenoname] = sim_plink_pheno(rng = self.rng, bed = self.genotypes, sigma= sigma, prop_causal = prop_causal, npcs=npcs)
+                self.df[phenoname] = sim_plink_pheno(rng = self.rng, bed = self.genotypes, h2= h2, npcs=npcs)
 
     def summary(self) :
         """
