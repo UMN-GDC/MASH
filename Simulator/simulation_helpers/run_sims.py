@@ -21,25 +21,20 @@ from AdjHE.estimation.all_estimators import Basu_estimation
 
 rng = np.random.default_rng()
 
-def sim_n_est(nsubjects = 1000, sigma = [0.5,0.25, 0.25], site_comp = "IID", nsites = 30,
-              theta_alleles =0.5, nclusts =1, dominance=3, prop_causal=0.25, site_dep=False, nnpc = 1,
-              nSNPs=20, phens = 2, site_het = False, clusters_differ = False, cov_effect = True,
-              ortho_cov = True, random_BS=True) :
+def sim_n_est(nsubjects = 1000, h2 = 0.5, nsites = 30,
+              nclusts =1, nnpc = 1,
+              nSNPs=20, phens = 2,
+              random_BS=True) :
     sim = pheno_simulator(nsubjects= nsubjects, nSNPs = nSNPs)
     # Run through full simulation and estimation
-    sim.full_sim(nsites= nsites, sigma= sigma, phens = phens, nclusts = nclusts, clusters_differ = clusters_differ,
-                 prop_causal = prop_causal, cov_effect = cov_effect, ortho_cov = ortho_cov, random_BS = random_BS)
+    sim.full_sim(nsites= nsites, h2= h2, phens = phens, nclusts = nclusts, random_BS = random_BS)
 
     ests = Basu_estimation()
     ests.df= sim.df
     ests.GRM = sim.GRM
     ests.mpheno = ["Y1"] 
     
-    # Cretae covariates for sites if necessary    
-    if cov_effect :
-        FE= ["Xc"]
-    else :
-        FE = []
+    FE= ["Xc"]
         
     if nsites >1 :
         FE += ["abcd_site"]
