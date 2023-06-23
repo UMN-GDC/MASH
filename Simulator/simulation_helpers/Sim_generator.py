@@ -70,15 +70,10 @@ class pheno_simulator():
             nclusts=self.nclusts,
             nsites = self.nsites)
 
-    def sim_genos(self, prop_causal=0.1, maf_filter = 0.05, admixing = False):
-        self.prop_causal = prop_causal
-        self.maf_filter  = maf_filter
-        self.admixing = admixing
-        (self.genotypes, self.GRM, pcs) = sim_genos(seed = self.rng, ancestral_frequencies= self.ancest_freqs,
+    def sim_genos(self):
+        (self.genotypes, self.GRM, pcs) = sim_genos(seed = self.rng,
                                                     cluster_frequencies = self.cluster_frequencies, 
-                                                    subject_ancestries = self.df["subj_ancestries"],
-                                                    prop_causal=self.prop_causal, admixing = admixing)
-        
+                                                    subject_ancestries = self.df["subj_ancestries"]) 
         # update the number of SNPs
         self.nSNPS_post_filter = self.genotypes.shape[1]
         self.df = pd.concat([self.df, pcs], axis=1)

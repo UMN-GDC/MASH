@@ -12,8 +12,7 @@ from sklearn.decomposition import PCA
 from Simulator.simulation_helpers.admixing import sample_admixed_genotypes
 
 
-def sim_genos(seed, cluster_frequencies, subject_ancestries,
-              clusters_differ = False, prop_causal=0.1, admixing = False):
+def sim_genos(seed, cluster_frequencies, subject_ancestries):
     """
     Simulate genotypes of the subjects given their cluster ID and the respective cluster allele frequencies
 
@@ -50,7 +49,8 @@ def sim_genos(seed, cluster_frequencies, subject_ancestries,
     
     nSNPs = cluster_frequencies.shape[1]
     # simulate genotypes
-    genotypes = rng.binomial(n=np.repeat(2, nSNPs * nsubjects).reshape(100, 1000), p= cluster_frequencies[list(subject_ancestries)])
+    genotypes = rng.binomial(n=np.repeat(2, nSNPs * nsubjects).reshape(nsubjects, nSNPs),
+                             p= cluster_frequencies[list(subject_ancestries)])
     
     # standardize the genotpyes
     freqs = np.mean(genotypes, axis=0) / 2
