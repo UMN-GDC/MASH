@@ -189,7 +189,7 @@ class Basu_estimation():
             
         logging.info("Estimating with " + Method)
         
-        if random_groups != None:
+        if random_groups != "None":
             logging.info("RV: " + random_groups)
         # create empty list to store heritability estimates
         results = pd.DataFrame()
