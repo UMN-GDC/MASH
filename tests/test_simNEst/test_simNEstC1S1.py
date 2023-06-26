@@ -3,10 +3,11 @@ from AdjHE.estimation.all_estimators import Basu_estimation
 from Simulator.simulation_helpers.Sim_generator import pheno_simulator
 import numpy as np
 import pytest
-#%%
+
+#%% Basic testing for single site and cluster
 
 @pytest.fixture
-def singleSiteClust() :
+def C1S1() :
     rng = np.random.default_rng(123)
     sim = pheno_simulator(rng = rng, nsubjects= 1000)
     sim.sim_sites(nsites =1)
@@ -20,14 +21,13 @@ def singleSiteClust() :
     est.df = sim.df
     return est 
 
-@pytest.mark.simNest
-def test_simNGCTA(singleSiteClust) :
-    est = singleSiteClust
-    result = est.estimate(mpheno = ["Y0"], npc = [0], Method = "GCTA", fixed_effects= ["Xc"])
+@pytest.mark.C1S1
+def test_simNGCTA(C1S1) :
+    result = C1S1.estimate(mpheno = ["Y0"], npc = [0], Method = "GCTA", fixed_effects= ["Xc"])
     assert result["h2"][0] == pytest.approx(0.5, abs = 0.05) 
 
-@pytest.mark.simNest
-def test_simAdjHE(singleSiteClust):
-    est = singleSiteClust
-    result = est.estimate(mpheno = ["Y0"], npc = [0], Method = "AdjHE", fixed_effects= ["Xc"])
+@pytest.mark.C1S1
+def test_simAdjHE(C1S1):
+    result = C1S1.estimate(mpheno = ["Y0"], npc = [0], Method = "AdjHE", fixed_effects= ["Xc"])
     assert result["h2"][0] == pytest.approx(0.5, abs = 0.05) 
+
