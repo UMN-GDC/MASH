@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#im_/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
 Simulate phenotypes
@@ -20,18 +20,18 @@ from Simulator.simulation_helpers.plink_pheno import sim_plink_pheno
 
 
 class pheno_simulator():
-    def __init__(self, nsubjects=1000, nSNPs=1000, plink_prefix=None):
+    def __init__(self, rng= None, nsubjects=1000, nSNPs=1000, plink_prefix=None):
+        self.rng = np.random.default_rng(rng)
         self.plink_prefix = plink_prefix
         
         if plink_prefix == None :
             self.nsubjects = nsubjects
             self.nSNPs = nSNPs
 
-            # Seed the simulated dataframe
+            # rng the simulated dataframe
             self.df = pd.DataFrame({"FID": np.arange(start=1, stop=nsubjects + 1), 
                                     "IID": np.arange(start=1, stop=nsubjects + 1)})
 
-            self.rng = np.random.default_rng()
         else :
             self.plink_prefix= plink_prefix
             
@@ -44,11 +44,10 @@ class pheno_simulator():
             self.rng = np.random.default_rng()
 
 
-    def sim_sites(self, nsites=1, eq_sites=False, random_BS = True):
-        self.eq_sites = eq_sites
+    def sim_sites(self, nsites=1, random_BS = True):
         self.nsites = nsites
         self.df[["abcd_site", "Site_contrib"]] = sim_sites(rng = self.rng, nsubjects = self.nsubjects, 
-                                                           nsites=nsites, eq_sites=eq_sites, random_BS = random_BS)
+                                                           nsites=nsites, random_BS = random_BS)
 
     def sim_pops(self, theta_alleles = 0.5, nclusts=1, prop_causal = 0.1):
         self.theta_alleles = theta_alleles
@@ -58,7 +57,7 @@ class pheno_simulator():
 
         # Simualte allele frequencies for common ancestor and for genetic clusters
         self.ancest_freqs, self.cluster_frequencies = sim_pop_alleles(
-            seed = self.rng,
+            rng = self.rng,
             theta_alleles = self.theta_alleles,
             nclusts=self.nclusts, nSNPs = self.nSNPs,
             prop_causal = prop_causal)
@@ -71,7 +70,7 @@ class pheno_simulator():
             nsites = self.nsites)
 
     def sim_genos(self):
-        (self.genotypes, self.GRM, pcs) = sim_genos(seed = self.rng,
+        (self.genotypes, self.GRM, pcs) = sim_genos(rng = self.rng,
                                                     cluster_frequencies = self.cluster_frequencies, 
                                                     subject_ancestries = self.df["subj_ancestries"]) 
         # update the number of SNPs

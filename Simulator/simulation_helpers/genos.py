@@ -12,13 +12,13 @@ from sklearn.decomposition import PCA
 from Simulator.simulation_helpers.admixing import sample_admixed_genotypes
 
 
-def sim_genos(seed, cluster_frequencies, subject_ancestries):
+def sim_genos(rng, cluster_frequencies, subject_ancestries):
     """
     Simulate genotypes of the subjects given their cluster ID and the respective cluster allele frequencies
 
     Parameters
     ----------
-    seed : seed or numpy random number generator Generator object
+    rng : rng or numpy random number generator Generator object
         random number generator.
     cluster_frequencies : numpy array
         (nsubjects x nclusts) array contianing allele frequencies for each cluster.
@@ -43,7 +43,7 @@ def sim_genos(seed, cluster_frequencies, subject_ancestries):
 
     """
     
-    rng = np.random.default_rng(seed)
+    rng = np.random.default_rng(rng)
     nclusts = np.unique(subject_ancestries).shape[0]
     nsubjects = subject_ancestries.shape[0]
     

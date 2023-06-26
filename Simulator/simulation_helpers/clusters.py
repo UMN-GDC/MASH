@@ -8,7 +8,7 @@ Created on Thu Mar 16 13:08:24 2023
 import numpy as np
 import pandas as pd
 
-def sim_pop_alleles(seed, theta_alleles = [0.8, 0.2], nclusts=1, nSNPs = 1000, shared_causal= 0.8, shared_noncausal = 0.8, prop_causal = 0.1, maf_filter = 0.1) :
+def sim_pop_alleles(rng, theta_alleles = [0.8, 0.2], nclusts=1, nSNPs = 1000, shared_causal= 0.8, shared_noncausal = 0.8, prop_causal = 0.1, maf_filter = 0.1) :
     """
     Simulate the allele frequencies for a common ancestor and for all genetic clusters taking into account if the causal snps are shared or not.
 
@@ -39,7 +39,7 @@ def sim_pop_alleles(seed, theta_alleles = [0.8, 0.2], nclusts=1, nSNPs = 1000, s
     incides of causal snps
 
     """
-    rng = np.random.default_rng(seed)
+    rng = np.random.default_rng(rng)
     theta = theta_alleles
     # simulate ancestral frequency of each SNP, dimensions = (SNPs,)
     ancest_freqs = rng.uniform(low=0.1, high=0.9, size=nSNPs)
