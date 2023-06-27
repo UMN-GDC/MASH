@@ -36,7 +36,7 @@ def sim_covariates(rng, nclusts, df):
 
     Xc = rng.uniform(0,1, nsubjects)
     
-    Covar_contrib = Xc * np.mean(df["Gene_contrib"])
+    Covar_contrib = Xc * np.mean(df["resid_eff"])
         
     return Xc, Covar_contrib
 

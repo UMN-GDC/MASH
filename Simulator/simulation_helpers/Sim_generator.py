@@ -13,9 +13,8 @@ from pandas_plink import read_plink
 from Simulator.simulation_helpers.sites import sim_sites
 from Simulator.simulation_helpers.clusters import sim_pop_alleles, assign_clusters
 from Simulator.simulation_helpers.genos import sim_genos
-from Simulator.simulation_helpers.gene_effects import sim_gen_effects
+from Simulator.simulation_helpers.pheno import sim_gen_effects, sim_pheno
 from Simulator.simulation_helpers.covariates import sim_covariates
-from Simulator.simulation_helpers.pheno import sim_pheno
 from Simulator.simulation_helpers.plink_pheno import sim_plink_pheno
 
 
@@ -82,7 +81,7 @@ class pheno_simulator():
         # genetic contribution
         self.alpha = alpha
         # simulate sared genetic contribution
-        self.df["Gene_contrib"], self.causals, self.SNP_effects = sim_gen_effects(rng = self.rng, genotypes = self.genotypes,
+        self.df["PC_eff"], self.df["resid_eff"], self.causals, self.SNP_effects = sim_gen_effects(rng = self.rng, genotypes = self.genotypes, df=  self.df,
                                                   alpha = self.alpha) 
 
     def sim_covars(self, cov_effect= True, ortho_cov = False) :
@@ -92,11 +91,9 @@ class pheno_simulator():
         self.df["Xc"], self.df["Covar_contrib"] = sim_covariates(rng = self.rng, nclusts=self.nclusts, 
                                                                  df = self.df)
         
-    def sim_pheno(self, h2=0.5, phen = 1):
+    def sim_pheno(self, h2=0.5):
         self.h2 = h2 
-        pheno_contribs  = sim_pheno(rng = self.rng, df = self.df, h2=self.h2, 
-                                    phen = phen, nsites = self.nsites, nclusts =self.nclusts)
-        
+        pheno_contribs  = sim_pheno(rng = self.rng, df = self.df, h2=self.h2)
         # join pheno_contribs dataframe to simulated dataframe as new columns
         self.df.update(pheno_contribs)
             

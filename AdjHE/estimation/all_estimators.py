@@ -80,7 +80,7 @@ def load_n_estimate(df, fixed_effects, nnpc, mp, GRM, std=False, Method="AdjHE",
     
     # Create formula string
     if len(fixed_effects) != 0:
-        RHS = " + ".join(fixed_effects) + " + 1"
+        RHS = " + ".join(fixed_effects)
     else : 
         RHS = " + 1"
     

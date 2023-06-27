@@ -13,7 +13,7 @@ def C1S1() :
     sim.sim_sites(nsites =1)
     sim.sim_pops(nclusts= 1)
     sim.sim_genos()
-    sim.sim_gen_effects()
+    sim.sim_gen_effects(alpha = 0)
     sim.sim_covars()
     sim.sim_pheno(h2 = 0.5)
     est = Basu_estimation()
@@ -30,7 +30,7 @@ def test_simNGCTA(C1S1) :
 @pytest.mark.C1S1
 def test_simAdjHE(C1S1):
     est = C1S1
-    result = est.estimate(mpheno = ["Y0"], npc = [0], Method = "AdjHE", fixed_effects= ["Xc"])
+    result = est.estimate(mpheno = ["Pheno"], npc = [0], Method = "AdjHE", fixed_effects= ["Xc"])
     assert result["h2"][0] == pytest.approx(0.5, abs = 0.05) 
 
 #%%
@@ -49,5 +49,5 @@ def test_thoroughC1S1():
         est = Basu_estimation()
         est.GRM = sim.GRM
         est.df = sim.df
-        h2s[i]= est.estimate(mpheno = ["Y0"], npc = [0], Method = "AdjHE", fixed_effects= ["Xc"])["h2"][0]
+        h2s[i]= est.estimate(mpheno = ["Y0"], npc = [0], Method = "GCTA", fixed_effects= ["Xc"])["h2"][0]
 
