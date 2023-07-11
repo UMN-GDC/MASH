@@ -104,14 +104,6 @@ def load_n_estimate(df, fixed_effects, nnpc, mp, GRM, std=False, Method="AdjHE",
             GRM_nonmissing = GRM[nonmissing, :][:, nonmissing]
             result = AdjHE_estimator(A = GRM_nonmissing, df=temp, mp = mp, random_groups = random_groups, npc= nnpc, std=std)
 
-        # MOM estimator is under construction
-        # elif Method == "MOM":
-        #     result = load_n_MOM(temp, covars, nnpc, mp,
-        #                         GRM_nonmissing, std=False, RV=RV)
-        elif Method == "PredlMM":
-            result = load_n_PredLMM(temp, fixed_effects, nnpc, mp,
-                                    GRM_nonmissing, std=False, random_groups=random_groups)
-            
         elif Method == "GCTA":
             result = GCTA(df, fixed_effects, nnpc, mp, GRM, gcta=gcta, silent=False)
             
