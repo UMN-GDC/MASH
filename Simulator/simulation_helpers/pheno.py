@@ -72,7 +72,7 @@ def sim_gen_effects(rng, genotypes, df, alpha = -1):
         PC_eff = 0 
     return PC_eff, resid_eff, causals, causal_eff
 
-def sim_pheno(rng, df,  h2, phenoname = "Y")  : 
+def sim_pheno(rng, df,  h2, phenoname = "Y0")  : 
     rng = np.random.default_rng(rng)
     # Scale df resid_eff so that it has a variance of h2
     df["resid_eff"] = df['resid_eff'] * np.sqrt(h2/ np.var(df["resid_eff"]))
