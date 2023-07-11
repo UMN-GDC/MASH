@@ -91,9 +91,9 @@ class pheno_simulator():
         self.df["Xc"], self.df["Covar_contrib"] = sim_covariates(rng = self.rng, nclusts=self.nclusts, 
                                                                  df = self.df)
         
-    def sim_pheno(self, h2=0.5):
+    def sim_pheno(self, h2=0.5, phenoname = "Y0"):
         self.h2 = h2 
-        pheno_contribs  = sim_pheno(rng = self.rng, df = self.df, h2=self.h2)
+        pheno_contribs  = sim_pheno(rng = self.rng, df = self.df, h2=self.h2, phenoname = phenoname)
         # join pheno_contribs dataframe to simulated dataframe as new columns
         self.df.update(pheno_contribs)
             
@@ -116,7 +116,7 @@ class pheno_simulator():
             self.sim_covars()
             
             for i in range(phens) :
-                self.sim_pheno(h2 = h2, phen = i)
+                self.sim_pheno(h2 = h2, phenoname = "Y" + str(i))
         
         else : 
             for i in range(phens) :
