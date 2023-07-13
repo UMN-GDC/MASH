@@ -59,9 +59,11 @@ def sim_gen_effects(rng, genotypes, df, alpha = -1):
     causal_eff[np.isinf(causal_eff)] = 0
     Gene_contrib = np.array(np.dot(Xcausal, causal_eff)).flatten()
     nclusts = df.subj_ancestries.nunique()
+    print(nclusts)
     # Regress out the specified pcs from the Gene_contrib
     if nclusts > 1 :
-        pcs = " + ".join(["pc_" + str(i) for i in range(1, int(np.floor(nclusts ** 0.75)))])
+        pcs = " + ".join(["pc_" + str(i) for i in range(1, int(np.floor((nclusts+1 ) ** 0.75)))])
+        print(pcs)
         mod = smf.ols(formula = 'Gene_contrib ~ ' + pcs, data = df).fit()
         # Get the residuals
         resid_eff = mod.resid

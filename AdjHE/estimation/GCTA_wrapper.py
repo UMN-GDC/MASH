@@ -52,12 +52,12 @@ def GCTA(df, covars, nnpc, mp, GRM, gcta, silent=False):
     # Write GRM and ids
     # Write IDs
     df[["FID", "IID"]].to_csv(temp_name + ".grm.id", sep = " ", header= False, index= False)
-    n = df.shape[0]
-    
-    l= np.tril_indices(n)
     
     # Write GRM to binary 
-    GRM[l].astype("f4").tofile(temp_name + ".grm.bin")   # Relatedness is stored as a float of size 4 in the binary file
+    (GRM[np.tril_indices(df.shape[0])]
+     .astype("f4") # Relatedness is stored as a float of size 4 in the binary file 
+     .tofile(temp_name + ".grm.bin")
+    )
     ##############################
         
     # Format string for controlling variables
