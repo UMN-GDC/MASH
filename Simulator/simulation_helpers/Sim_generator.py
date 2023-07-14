@@ -13,8 +13,7 @@ from pandas_plink import read_plink
 from Simulator.simulation_helpers.sites import sim_sites
 from Simulator.simulation_helpers.clusters import sim_pop_alleles, assign_clusters
 from Simulator.simulation_helpers.genos import sim_genos
-from Simulator.simulation_helpers.pheno import sim_gen_effects, sim_pheno
-from Simulator.simulation_helpers.covariates import sim_covariates
+from Simulator.simulation_helpers.pheno import sim_pheno
 from Simulator.simulation_helpers.plink_pheno import sim_plink_pheno
 
 
@@ -76,26 +75,17 @@ class pheno_simulator():
         self.nSNPS_post_filter = self.genotypes.shape[1]
         self.df = pd.concat([self.df, pcs], axis=1)
 
-
-    def sim_gen_effects(self,  alpha = -1):
-        # genetic contribution
+    def sim_pheno(self, h2Hom=0.5, h2Het=[0], alpha = -1, phenoname = "Y0"):
+        self.h2Hom = h2Hom
+        self.h2Het = h2Het
         self.alpha = alpha
-        # simulate sared genetic contribution
-        self.df["PC_eff"], self.df["resid_eff"], self.causals, self.SNP_effects = sim_gen_effects(rng = self.rng, genotypes = self.genotypes, df=  self.df,
-                                                  alpha = self.alpha) 
-
-    def sim_covars(self, cov_effect= True, ortho_cov = False) :
-        self.cov_effect= cov_effect
-        self.ortho_cov = ortho_cov
-        
-        self.df["Xc"], self.df["Covar_contrib"] = sim_covariates(rng = self.rng, nclusts=self.nclusts, 
-                                                                 df = self.df)
-        
-    def sim_pheno(self, h2=0.5, phenoname = "Y0"):
-        self.h2 = h2 
-        pheno_contribs  = sim_pheno(rng = self.rng, df = self.df, h2=self.h2, phenoname = phenoname)
-        # join pheno_contribs dataframe to simulated dataframe as new columns
-        self.df.update(pheno_contribs)
+        (self.df, self.causals, self.homo_eff, self.het_eff)  = sim_pheno(rng = self.rng,
+                                                                          genotypes = self.genotypes,
+                                                                          df = self.df,
+                                                                          h2Hom = self.h2Hom,
+                                                                          h2Het = self.h2Het,
+                                                                          alpha = self.alpha,
+                                                                          phenoname = phenoname)
             
     def full_sim(self, h2 = 0.5,
                  nsites=30, nclusts=5,
@@ -111,12 +101,10 @@ class pheno_simulator():
             self.sim_sites(nsites= nsites, random_BS = random_BS)
             
             self.sim_pops(nclusts=nclusts)
-            self.sim_genos()
-            self.sim_gen_effects(alpha = alpha)
             self.sim_covars()
             
             for i in range(phens) :
-                self.sim_pheno(h2 = h2, phenoname = "Y" + str(i))
+                self.sim_pheno(h2 = h2, phenoname = "Y" + str(i), alpha = alpha)
         
         else : 
             for i in range(phens) :
