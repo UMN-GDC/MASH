@@ -9,7 +9,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import statsmodels.formula.api as smf
 
-def sim_gen_effects(rng, genotypes, df, alpha = -1):
+def sim_pheno(rng, genotypes, df, h2Hom, h2Het, alpha = -1, phenoname = "Y0"):
     """
     
 
@@ -49,39 +49,44 @@ def sim_gen_effects(rng, genotypes, df, alpha = -1):
     # select causal snos
     causals = rng.choice(nSNPs, nCausal, replace=False, shuffle=False)
     Xcausal = np.matrix(genotypes[:, causals])
-    # calculate frequencies
     freqs = np.asarray(np.mean(Xcausal, axis = 0)/2).flatten()
 
-    # sample effects from normal with variance proportional to some function of allele frequency
+    # sample shared (homogeneous) effects from normal with variance proportional to some function of global allele frequency
     prop = (freqs * (1-freqs))**alpha
-    causal_eff = rng.normal(np.repeat(0, Xcausal.shape[1]), prop, size =  Xcausal.shape[1])
+    homo_eff = rng.normal(np.repeat(0, Xcausal.shape[1]), prop, size =  Xcausal.shape[1])
     # make sure no infinities
-    causal_eff[np.isinf(causal_eff)] = 0
-    Gene_contrib = np.array(np.dot(Xcausal, causal_eff)).flatten()
+    homo_eff[np.isinf(homo_eff)] = 0
+    homo_contrib = np.array(np.dot(Xcausal, homo_eff)).flatten()
+    df["homo_contrib"] = homo_contrib * np.sqrt(h2Hom / np.var(homo_contrib))
     nclusts = df.subj_ancestries.nunique()
-    print(nclusts)
-    # Regress out the specified pcs from the Gene_contrib
+    cluster_eff = np.zeros((nSNPs, nclusts))
+    cluster_contrib = np.zeros(nsubjects)
+    errors = np.zeros(nsubjects)
+    # cluster specific effects
     if nclusts > 1 :
-        pcs = " + ".join(["pc_" + str(i) for i in range(1, int(np.floor((nclusts+1 ) ** 0.75)))])
-        print(pcs)
-        mod = smf.ols(formula = 'Gene_contrib ~ ' + pcs, data = df).fit()
-        # Get the residuals
-        resid_eff = mod.resid
-        # Get the predicted values
-        PC_eff = mod.predict()
-    else : 
-        resid_eff = Gene_contrib
-        PC_eff = 0 
-    return PC_eff, resid_eff, causals, causal_eff
+        for cluster in range(nclusts) :
+            cluster_position = df.subj_ancestries == cluster 
+            cluster_freq = np.asarray(np.mean(genotypes[cluster_position, :], axis = 0)/2).flatten()
+            prop = (cluster_freq * (1- cluster_freq)) ** alpha
+            cluster_eff[:,cluster] = rng.normal(np.repeat(0, Xcausal.shape[1]), prop, size =  Xcausal.shape[1])
+            cluster_eff[np.isinf(cluster_eff)] = 0
 
-def sim_pheno(rng, df,  h2, phenoname = "Y0")  : 
-    rng = np.random.default_rng(rng)
-    # Scale df resid_eff so that it has a variance of h2
-    df["resid_eff"] = df['resid_eff'] * np.sqrt(h2/ np.var(df["resid_eff"]))
-    df["errors"] = rng.normal(0, 1, df.shape[0])
-    df["errors"] = df["errors"] * np.sqrt((1-h2) / np.var(df["errors"]))
-    # df["PC_eff"] = df["PC_eff"] * np.sqrt(h2 / np.var(df["PC_eff"])) / 2
-    df[str(phenoname)] = df[["Covar_contrib", "PC_eff", "resid_eff", "errors"]].sum(axis = 1)
+            temp_contrib = np.array(np.dot(Xcausal[cluster_position, :], cluster_eff)).flatten()
+            # rescale
+            cluster_contrib[cluster_position]= temp_contrib * np.sqrt(h2Het[cluster]/ np.var(temp_contrib))
 
+            cluster_error = rng.normal(0, 1, cluster_contrib.sum())
+            errors[cluster_position] = cluster_error * np.sqrt((1- h2Hom - h2Het[cluster]) / np.var(cluster_error))
+    else :
+        errors = rng.normal(0, np.sqrt(1-h2Hom), nsubjects)
+        # multiply errors such that its variance is equal to 1-h2Hom
 
-    return df[["PC_eff", "resid_eff", "errors", str(phenoname)]] 
+    df["cluster_contrib"] = cluster_contrib
+    df["errors"] = errors
+    df["Xc"] = rng.uniform(0, 1, nsubjects)
+    Beta_c = 0.5
+    df["Covar_contrib"] = Beta_c * df["Xc"] 
+    df[str(phenoname)] = df[["Covar_contrib", "homo_contrib", "cluster_contrib", "errors"]].sum(axis = 1)
+    df[str(phenoname)] = df[str(phenoname)] - np.mean(df[str(phenoname)])   
+
+    return df, causals, homo_eff, cluster_eff 
