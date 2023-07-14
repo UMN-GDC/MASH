@@ -13,9 +13,7 @@ def C1S1() :
     sim.sim_sites(nsites =1)
     sim.sim_pops(nclusts= 1)
     sim.sim_genos()
-    sim.sim_gen_effects(alpha = -1)
-    sim.sim_covars()
-    sim.sim_pheno(h2 = 0.5)
+    sim.sim_pheno(h2Hom = 0.5, h2Het= [0], alpha = -1)
     est = Basu_estimation()
     est.GRM = sim.GRM
     est.df = sim.df
