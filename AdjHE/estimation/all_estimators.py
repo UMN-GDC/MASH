@@ -23,7 +23,7 @@ from AdjHE.estimation.GCTA_wrapper import gcta, GCTA
 from AdjHE.estimation.combat import neuroCombat
 
 
-#%%
+
 
 
 def load_n_estimate(df, fixed_effects, nnpc, mp, GRM, std=False, Method="AdjHE", random_groups=None, silent=False, homo=True, gcta=gcta):
@@ -81,8 +81,8 @@ def load_n_estimate(df, fixed_effects, nnpc, mp, GRM, std=False, Method="AdjHE",
     # Create formula string
     if len(fixed_effects) != 0:
         RHS = " + ".join(fixed_effects)
-    else :
-        RHS = "1"
+    else : 
+        RHS = " + 1"
     
     # Make formula
     form = mp + "~ " +  RHS
@@ -104,14 +104,6 @@ def load_n_estimate(df, fixed_effects, nnpc, mp, GRM, std=False, Method="AdjHE",
             GRM_nonmissing = GRM[nonmissing, :][:, nonmissing]
             result = AdjHE_estimator(A = GRM_nonmissing, df=temp, mp = mp, random_groups = random_groups, npc= nnpc, std=std)
 
-        # MOM estimator is under construction
-        # elif Method == "MOM":
-        #     result = load_n_MOM(temp, covars, nnpc, mp,
-        #                         GRM_nonmissing, std=False, RV=RV)
-        elif Method == "PredlMM":
-            result = load_n_PredLMM(temp, fixed_effects, nnpc, mp,
-                                    GRM_nonmissing, std=False, random_groups=random_groups)
-            
         elif Method == "GCTA":
             result = GCTA(df, fixed_effects, nnpc, mp, GRM, gcta=gcta, silent=False)
             
@@ -151,9 +143,8 @@ def load_n_estimate(df, fixed_effects, nnpc, mp, GRM, std=False, Method="AdjHE",
     
 
 
-# %%
 class Basu_estimation():
-    def __init__(self, prefix=None, pheno_file=None, cov_file=None, PC_file=None, k=0, ids=None, Simulation=False):
+    def __init__(self, prefix=None, pheno_file=None, cov_file=None, PC_file=None, k=0, ids=None):
         if prefix == None:
             logging.info("Enter preloaded values...")
             self.df = None
@@ -167,7 +158,7 @@ class Basu_estimation():
                 prefix, pheno_file, cov_file, PC_file, k, ids)
             self.simulation = False
 
-    def estimate(self, npc, mpheno="all", Method=None, random_groups =None, Naive=False, fixed_effects=None, homo=True, loop_covars=False):
+    def estimate(self, npc, mpheno="all", Method="", random_groups = "None", Naive=False, fixed_effects=None, homo=True, loop_covars=False):
         
                 
         # Create list of covariate sets to regress over
@@ -189,7 +180,7 @@ class Basu_estimation():
             
         logging.info("Estimating with " + Method)
         
-        if random_groups != None:
+        if random_groups != "None":
             logging.info("RV: " + random_groups)
         # create empty list to store heritability estimates
         results = pd.DataFrame()

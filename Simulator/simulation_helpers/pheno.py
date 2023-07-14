@@ -1,62 +1,92 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Thu Mar 16 15:09:08 2023
+Created on Thu Mar 16 14:42:57 2023
 
 @author: christian
 """
 import numpy as np
+import matplotlib.pyplot as plt
 import statsmodels.formula.api as smf
-from Simulator.simulation_helpers.sim_effects import sim_effects 
 
-
-
-def sim_pheno(rng, df, var_comps=[0.5, 0.25, 0.25], phen = 1, site_het = False, nsites = 1, nclusts =1, cluster_contribs = None):
+def sim_pheno(rng, genotypes, df, h2Hom, h2Het, alpha = -1, phenoname = "Y0"):
     """
-    Simulate the phenotype given the differnt contributions from site, genetic, and error, and scale them by the var_comps variable.
+    
 
     Parameters
     ----------
-    rng : numpy random number generator
+    rng : random number generatorng
         numpy random number generator.
-    df : pandas dataframe
-        dataframe containing contributions from genes and sites.
-    var_comps : list of floats, optional
-        specify the proportion of variance attributable to genetics, site, and error, respectively. The default is [0.5, 0.25, 0.25].
-    phen : int, optional
-        specify how many phenotypes to simulate. The default is 1.
-    site_het : bool, optional
-        should the sites have heterogeneous error. The default is False.
-    nsites : int, optional
-        number of sites in the simulation. The default is 1.
-    nclusts : int, optional
-        number of clusters in thhe study. The default is 1.
-    cluster_contribs : list of floats, optional
-        A list specifying additional cluster specific effects. If these values differ, they will change the heritability of each 
-        cluster (they will be added to the shared variance component in var_comps)
-
+    genotypes : array
+        ( x ) array of unstandardized genotypes.
+    causals : list, optional
+        list of causal snp names.
+    df : dataframe
+        dataframe containing all covariates and phenotypes.
+    alpha : float, optional
+        exponent for the dependency between SNP frequency and effect size. The default is -1
+    prop_causal : float, optional
+        if causals are unspecified, then specify the number of SNPs to randomly select as causal. The default is 0.1.
+    clusters_differ : bool, optional
+        do clusters have different heritabilities? The default is False.
+    maf_filter : float, optional
+        filter out SNPs with MAF < maf_filter and MAF > 1-maf_filter. This is only used when user did not specify causals explicitly. The default is 0.1.
+    vizualize : boolean, optional
+        plot the distribution of causal effects. The default is False.
     Returns
     -------
-    pandas series
-        simulated genetic contribution as a pandas series.
-    pandas series
-        simulated site effect as a pandas series.
-    pandas series
-        simulated errors as a pandas series.
-    pandas series
-        simulated phenotype as a pandas series.
+    Gene_contrib : array 
+        1-D array containing the contribution of genetics to each subjects phenotype.
+    causals : array
+        1-D array of the genotype index that was selected to be causal
+    snp_effects: array
+        1-D array of SNP effects
     """
-    nsubjects = df.shape[0]
-    df["VG"] = df.groupby("subj_ancestries")["Gene_contrib"].transform(np.nanvar)
-    df["errors"] = rng.normal(np.repeat(0, nsubjects), np.sqrt(df["VG"] * (1- var_comps[0]))) 
-   
-    if phen == 0:
-        phenoname = "Y"
-    else : 
-        phenoname = "Y" + str(phen-1)
+    nsubjects, nSNPs = genotypes.shape
+    prop_causal = 0.1
+    # randomly sample causals only if 
+    nCausal = int(nSNPs * prop_causal)
+    # select causal snos
+    causals = rng.choice(nSNPs, nCausal, replace=False, shuffle=False)
+    Xcausal = np.matrix(genotypes[:, causals])
+    freqs = np.asarray(np.mean(Xcausal, axis = 0)/2).flatten()
 
-    if np.sum(np.isnan(df.Site_contrib)) > 2 :
-        df.Site_contrib = 0
-    df[phenoname] = df[["Gene_contrib", "Site_contrib", "errors", "Covar_contrib"]].sum(axis=1)
-    df[phenoname] = df[phenoname] - np.nanmean(df[phenoname])
-    return df[["Gene_contrib", "Site_contrib", "errors", "Covar_contrib", phenoname]]
+    # sample shared (homogeneous) effects from normal with variance proportional to some function of global allele frequency
+    prop = (freqs * (1-freqs))**alpha
+    homo_eff = rng.normal(np.repeat(0, nCausal), prop, size =  nCausal)
+    # make sure no infinities
+    homo_eff[np.isinf(homo_eff)] = 0
+    homo_contrib = np.array(np.dot(Xcausal, homo_eff)).flatten()
+    df["homo_contrib"] = homo_contrib * np.sqrt(h2Hom / np.var(homo_contrib))
+    nclusts = df.subj_ancestries.nunique()
+    cluster_eff = np.zeros((nCausal, nclusts))
+    cluster_contrib = np.zeros(nsubjects)
+    errors = np.zeros(nsubjects)
+    # cluster specific effects
+    if nclusts > 1 :
+        for cluster in range(nclusts) :
+            cluster_position = df.subj_ancestries == cluster 
+            cluster_freq = np.asarray(np.mean(genotypes[cluster_position,:][:,causals], axis = 0)/2).flatten()
+            prop = (cluster_freq * (1- cluster_freq)) ** alpha
+            cluster_eff[:,cluster] = rng.normal(np.repeat(0, nCausal), prop, size =  nCausal)
+            cluster_eff[np.isinf(cluster_eff)] = 0
+            cluster_contrib[cluster_position] = np.array(np.dot(Xcausal[cluster_position, :], cluster_eff[:,cluster])).flatten()
+            print(cluster_contrib.shape)
+            # rescale
+            cluster_contrib[cluster_position]= cluster_contrib[cluster_position] * np.sqrt(h2Het[cluster]/ np.var(cluster_contrib[cluster_position]))
+
+            cluster_error = rng.normal(0, 1, cluster_position.sum())
+            errors[cluster_position] = cluster_error * np.sqrt((1- h2Hom - h2Het[cluster]) / np.var(cluster_error))
+    else :
+        errors = rng.normal(0, np.sqrt(1-h2Hom), nsubjects)
+        # multiply errors such that its variance is equal to 1-h2Hom
+
+    df["cluster_contrib"] = cluster_contrib
+    df["errors"] = errors
+    df["Xc"] = rng.uniform(0, 1, nsubjects)
+    Beta_c = 0.5
+    df["Covar_contrib"] = Beta_c * df["Xc"]
+    df[["Covar_contrib", "homo_contrib", "cluster_contrib", "errors"]] =df[["Covar_contrib", "homo_contrib", "cluster_contrib", "errors"]]- df[["Covar_contrib", "homo_contrib", "cluster_contrib", "errors"]].mean()  
+    df[str(phenoname)] = df[["Covar_contrib", "homo_contrib", "cluster_contrib", "errors"]].sum(axis = 1)
+
+    return df, causals, homo_eff, cluster_eff 
