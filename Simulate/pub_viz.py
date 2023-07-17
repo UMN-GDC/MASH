@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from Simulator.simulation_helpers.Sim_generator import pheno_simulator
+from Simulate.simulation_helpers.Sim_generator import pheno_simulator
 
 #%% vizualize different alphas on SNP effect size
 x = np.linspace(0, 0.25, 20)

@@ -9,7 +9,7 @@ Created on Thu Oct 13 09:25:44 2022
 import numpy as np
 import pandas as pd
 from sklearn.decomposition import PCA
-from Simulator.simulation_helpers.admixing import sample_admixed_genotypes
+from Simulate.simulation_helpers.admixing import sample_admixed_genotypes
 
 
 def sim_genos(rng, cluster_frequencies, subject_ancestries):

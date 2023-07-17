@@ -13,7 +13,7 @@ Last Updated 2022-06-06
 
 import os
 from AdjHE.data_input.parser import get_args, read_flags
-from Simulator.simulation_helpers.run_sims import sim_experiment
+from Simulate.simulation_helpers.run_sims import sim_experiment
 import itertools
 import json
 

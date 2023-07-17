@@ -20,7 +20,7 @@ SIM=$(echo $sim_list | cut -d" " -f$SLURM_ARRAY_TASK_ID)
 
 
 # Run estimation
-python Simulator.py --argfile Simulations/Sim_params/Temp/${SIM} --out Simulations/Results/1k25S_5C_Fixed_site_${SLURM_ARRAY_TASK_ID}
+python Simulate.py --argfile Simulations/Sim_params/Temp/${SIM} --out Simulations/Results/1k25S_5C_Fixed_site_${SLURM_ARRAY_TASK_ID}
 
 # remove that file
 rm Simulations/Sim_params/Temp/${SIM}

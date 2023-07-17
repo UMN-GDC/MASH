@@ -10,7 +10,7 @@ import numpy as np
 import statsmodels.api as sm
 from AdjHE.data_input.parser import get_args, read_flags
 from AdjHE.estimation.all_estimators import Basu_estimation
-from Simulator.simulation_helpers.run_sims import sim_experiment
+from Simulate.simulation_helpers.run_sims import sim_experiment
 import pytest
 
 tolerance = 0.15

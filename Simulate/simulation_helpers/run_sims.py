@@ -13,7 +13,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import itertools
 from tqdm.auto import tqdm
-from Simulator.simulation_helpers.Sim_generator import pheno_simulator
+from Simulate.simulation_helpers.Sim_generator import pheno_simulator
 from AdjHE.estimation.all_estimators import Basu_estimation
 
 

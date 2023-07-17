@@ -10,11 +10,11 @@ import logging
 import numpy as np
 import pandas as pd
 from pandas_plink import read_plink
-from Simulator.simulation_helpers.sites import sim_sites
-from Simulator.simulation_helpers.clusters import sim_pop_alleles, assign_clusters
-from Simulator.simulation_helpers.genos import sim_genos
-from Simulator.simulation_helpers.pheno import sim_pheno
-from Simulator.simulation_helpers.plink_pheno import sim_plink_pheno
+from Simulate.simulation_helpers.sites import sim_sites
+from Simulate.simulation_helpers.clusters import sim_pop_alleles, assign_clusters
+from Simulate.simulation_helpers.genos import sim_genos
+from Simulate.simulation_helpers.pheno import sim_pheno
+from Simulate.simulation_helpers.plink_pheno import sim_plink_pheno
 
 
 class pheno_simulator():

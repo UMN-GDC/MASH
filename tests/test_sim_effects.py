@@ -1,7 +1,7 @@
 import pytest
 import numpy as np
 import pandas as pd
-from Simulator.simulation_helpers.sim_effects import sim_effects
+from Simulate.simulation_helpers.sim_effects import sim_effects
 
 tolerance = 0.01
 
