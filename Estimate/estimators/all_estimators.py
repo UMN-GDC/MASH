@@ -17,10 +17,10 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from tqdm.auto import tqdm
 from Estimate.data_input.load_data import load_everything
-from Estimate.estimation.AdjHE import AdjHE #, load_n_MOM
-from Estimate.estimation.PredLMM import load_n_PredLMM
-from Estimate.estimation.GCTA_wrapper import gcta, GCTA
-from Estimate.estimation.combat import neuroCombat
+from Estimate.estimators.AdjHE import AdjHE #, load_n_MOM
+from Estimate.estimators.PredLMM import load_n_PredLMM
+from Estimate.estimators.GCTA_wrapper import gcta, GCTA
+from Estimate.estimators.combat import neuroCombat
 
 
 

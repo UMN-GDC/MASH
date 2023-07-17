@@ -9,7 +9,7 @@ import itertools
 import numpy as np
 import statsmodels.api as sm
 from Estimate.data_input.parser import get_args, read_flags
-from Estimate.estimation.all_estimators import Basu_estimation
+from Estimate.estimators.all_estimators import Basu_estimation
 from Simulate.simulation_helpers.run_sims import sim_experiment
 import pytest
 

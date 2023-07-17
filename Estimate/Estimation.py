@@ -18,7 +18,7 @@ import logging
 # os.chdir("/panfs/roc/groups/3/rando149/coffm049/tools/Basu_herit")
 from Estimate.data_input.parser import get_args, read_flags
 # from Estimate.traits_visualizer import covs_vs_cov_of_interest
-from Estimate.estimation.all_estimators import Basu_estimation
+from Estimate.estimators.all_estimators import Basu_estimation
 
 def main():
     #%% Get command line arguments
