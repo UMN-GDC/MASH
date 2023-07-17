@@ -11,7 +11,7 @@ Last Updated 2022-06-06
 # Simulation runner for AdjHE package 
 ##############################################################
 import logging
-from AdjHE.data_input.sim_parser import get_args
+from Estimate.data_input.sim_parser import get_args
 import itertools
 import json
 

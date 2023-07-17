@@ -16,9 +16,9 @@ import os
 import logging
 #os.chdir("/home/christian/Research/Stat_gen/tools/Basu_herit")
 # os.chdir("/panfs/roc/groups/3/rando149/coffm049/tools/Basu_herit")
-from AdjHE.data_input.parser import get_args, read_flags
-# from AdjHE.traits_visualizer import covs_vs_cov_of_interest
-from AdjHE.estimation.all_estimators import Basu_estimation
+from Estimate.data_input.parser import get_args, read_flags
+# from Estimate.traits_visualizer import covs_vs_cov_of_interest
+from Estimate.estimation.all_estimators import Basu_estimation
 
 def main():
     #%% Get command line arguments

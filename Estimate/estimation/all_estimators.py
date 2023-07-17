@@ -16,11 +16,11 @@ from sklearn.decomposition import PCA
 import matplotlib.pyplot as plt
 import seaborn as sns
 from tqdm.auto import tqdm
-from AdjHE.data_input.load_data import load_everything
-from AdjHE.estimation.AdjHE_estimator import AdjHE_estimator #, load_n_MOM
-from AdjHE.estimation.PredLMM_estimator import load_n_PredLMM
-from AdjHE.estimation.GCTA_wrapper import gcta, GCTA
-from AdjHE.estimation.combat import neuroCombat
+from Estimate.data_input.load_data import load_everything
+from Estimate.estimation.AdjHE_estimator import AdjHE_estimator #, load_n_MOM
+from Estimate.estimation.PredLMM_estimator import load_n_PredLMM
+from Estimate.estimation.GCTA_wrapper import gcta, GCTA
+from Estimate.estimation.combat import neuroCombat
 
 
 

@@ -6,9 +6,9 @@ Lin, Z., Seal, S., & Basu, S. (2020). Estimating SNP heritability in presence of
 
 ## Adjusted-HE with closed form
 
-```AdjHE.py```  estimates SNP-heritability via closed form formula with single [Genetic Relatedness Matrix (GRM)](https://ibg.colorado.edu/cdrom2020/medland/tuesday1/Tuesday1.pdf) as input. It is suggested to use this version on a server with sufficient memory when sample size is less than 100k. In our paper, analyzing a 45k sample took less than 2 minutes and about 40 GB memory.
+```Estimate.py```  estimates SNP-heritability via closed form formula with single [Genetic Relatedness Matrix (GRM)](https://ibg.colorado.edu/cdrom2020/medland/tuesday1/Tuesday1.pdf) as input. It is suggested to use this version on a server with sufficient memory when sample size is less than 100k. In our paper, analyzing a 45k sample took less than 2 minutes and about 40 GB memory.
 
-Please check the input description with ```./AdjHE.py --help```.
+Please check the input description with ```./Estimate.py --help```.
 
 ## Arguments
 It is reccomended that users define a .json file containing all of the arguments for analysis. This will help both with organization and with reproducibility. This means that the **argfile would be the only argument**. Users can also define all filepaths and variable selections manually using command line flags if desired. 
@@ -88,20 +88,20 @@ PC='Example/pcas.eigenvec'
 covar='Example/covar.csv'
 out='Example/results.csv'
 
-python AdjHE.py --prefix ${prefix} --PC ${PC} --npc 10  --covar ${covar} --pheno ${pheno} --mpheno 1 --out ${out}
+python Estimate.py --prefix ${prefix} --PC ${PC} --npc 10  --covar ${covar} --pheno ${pheno} --mpheno 1 --out ${out}
 ```
 This should result in estimates for heritability stored in a .csv with the estimated heritability. For this dataset, the simulated heritability was 80%. Notice that the estimate is sensitive to the number of Prinicipal components included in the model since the data was simulated to have population stratification. The covariates don't have much of an influence on the estimates since they were not included in the simulation of this dataset. Compare your results with the [results included in the Example folder](https://github.com/coffm049/Basu_herit/blob/master/Example/results.csv.
 
 ## Running Example with argfile
 ```
-python AdjHE.py --argfile Example/Arg_file.json
+python Estimate.py --argfile Example/Arg_file.json
 ```
 **Note that this is running the same example method as the previous example, only in this case, all of the arguments are contained within the Arg_file.txt file. This helps with reproducibility and creating batch scripts.**
 
 # Creating Batch scripts (Coming soon)
 
 ### SLURM script example 
-The SLURM script contains two portions: the first request resources from the supercomputer, the second contains the code you actually want to run. In order to make sure your code runs properly, make sure you are changing to the proper working direcotry with the "cd" command. Then simply call the function you want to run. [Here](https://github.com/coffm049/Basu_herit/blob/master/Example/AdjHE.SLURM) is an example SLURM script where we are simply running the previous example utilizing the "argfile". For information on the anatomy of SLURM scripts please see information from [MSI](https://www.msi.umn.edu/content/job-submission-and-scheduling-slurm).
+The SLURM script contains two portions: the first request resources from the supercomputer, the second contains the code you actually want to run. In order to make sure your code runs properly, make sure you are changing to the proper working direcotry with the "cd" command. Then simply call the function you want to run. [Here](https://github.com/coffm049/Basu_herit/blob/master/Example/Estimate.SLURM) is an example SLURM script where we are simply running the previous example utilizing the "argfile". For information on the anatomy of SLURM scripts please see information from [MSI](https://www.msi.umn.edu/content/job-submission-and-scheduling-slurm).
 
 ????? ALSO LIST THE GENERAL RESOURCES NEEDED TO STARTUP THIS ANALYSIS FOR OTHER TyPES OF CLUSTERS????
 
@@ -122,7 +122,7 @@ sudo docker save adjhe:1.1 > AdjHE_1.1.tar
 
 module load singularity
 cd ~/tools/Basu_herit
-singularity build AdjHE.sif docker-archive://AdjHE_1.1.tar
+singularity build Estimate.sif docker-archive://AdjHE_1.1.tar
 
 ```
 

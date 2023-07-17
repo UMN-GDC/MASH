@@ -5,8 +5,8 @@ Created on Sat Mar 11 09:09:56 2023
 
 @author: christian
 """
-from AdjHE.data_input.parser import get_args, read_flags
-from AdjHE.estimation.all_estimators import Basu_estimation
+from Estimate.data_input.parser import get_args, read_flags
+from Estimate.estimation.all_estimators import Basu_estimation
 
 
 import pytest

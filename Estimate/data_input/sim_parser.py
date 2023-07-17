@@ -21,7 +21,7 @@ from functions.Data_input.types_n_valids import readable_file_or_none, readable_
 
 def get_args() :
     """
-    Collects user input from command line and returns them for running with AdjHE.
+    Collects user input from command line and returns them for running with Estimate.
 
     Returns
     -------

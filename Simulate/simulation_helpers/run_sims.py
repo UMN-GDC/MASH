@@ -14,7 +14,7 @@ import seaborn as sns
 import itertools
 from tqdm.auto import tqdm
 from Simulate.simulation_helpers.Sim_generator import pheno_simulator
-from AdjHE.estimation.all_estimators import Basu_estimation
+from Estimate.estimation.all_estimators import Basu_estimation
 
 
 

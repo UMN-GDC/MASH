@@ -9,9 +9,9 @@ import os
 import pytest
 import numpy as np
 import pandas as pd
-from AdjHE.data_input.parser import get_args, read_flags
-from AdjHE.data_input.load_data import ReadGRMBin
-from AdjHE.estimation.all_estimators import Basu_estimation
+from Estimate.data_input.parser import get_args, read_flags
+from Estimate.data_input.load_data import ReadGRMBin
+from Estimate.estimation.all_estimators import Basu_estimation
 
 
        

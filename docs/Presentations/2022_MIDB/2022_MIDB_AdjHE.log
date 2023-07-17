@@ -2,8 +2,8 @@ This is pdfTeX, Version 3.141592653-2.6-1.40.23 (TeX Live 2021) (preloaded forma
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
-**2022_MIDB_AdjHE.tex
-(./2022_MIDB_AdjHE.tex
+**2022_MIDB_Estimate.tex
+(./2022_MIDB_Estimate.tex
 LaTeX2e <2021-11-15> patch level 1
 L3 programming layer <2022-02-24>
 (/home/christian/.TinyTeX/texmf-dist/tex/latex/beamer/beamer.cls
@@ -801,8 +801,8 @@ File: l3backend-pdftex.def 2022-02-07 L3 backend support: PDF output (pdfTeX)
 \l__color_backend_stack_int=\count345
 \l__pdf_internal_box=\box77
 )
-(./2022_MIDB_AdjHE.aux)
-\openout1 = `2022_MIDB_AdjHE.aux'.
+(./2022_MIDB_Estimate.aux)
+\openout1 = `2022_MIDB_Estimate.aux'.
 
 LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 201.
 LaTeX Font Info:    ... okay on input line 201.
@@ -883,9 +883,9 @@ Package: gettitlestring 2019/12/15 v1.6 Cleanup title references (HO)
 LaTeX Info: Redefining \ref on input line 201.
 LaTeX Info: Redefining \pageref on input line 201.
 LaTeX Info: Redefining \nameref on input line 201.
- (./2022_MIDB_AdjHE.out) (./2022_MIDB_AdjHE.out)
+ (./2022_MIDB_Estimate.out) (./2022_MIDB_Estimate.out)
 \@outlinefile=\write6
-\openout6 = `2022_MIDB_AdjHE.out'.
+\openout6 = `2022_MIDB_Estimate.out'.
 
 LaTeX Font Info:    Overwriting symbol font `operators' in version `normal'
 (Font)                  OT1/lmr/m/n --> OT1/cmss/m/n on input line 201.
@@ -957,7 +957,7 @@ Dictionary: translator-numbers-dictionary, Language: English
 (/home/christian/.TinyTeX/texmf-dist/tex/latex/translator/translator-theorem-di
 ctionary-English.dict
 Dictionary: translator-theorem-dictionary, Language: English 
-) (./2022_MIDB_AdjHE.nav)
+) (./2022_MIDB_Estimate.nav)
 </home/christian/Documents/Templates/U_of_m_logos_updated_2021/Goldy Gopher/Gol
 dy-Word-ppt-PNG/color/goldyM2out-RGB.png, id=30, 216.81pt x 150.3216pt>
 File: /home/christian/Documents/Templates/U_of_m_logos_updated_2021/Goldy Gophe
@@ -975,7 +975,7 @@ Overfull \vbox (14.10898pt too high) detected at line 202
 [1{/home/christian/.TinyTeX/texmf-var/fonts/map/pdftex/updmap/pdftex.map}
 
  </home/christian/Documents/Templates/U_of_m_logos_updated_2021/Goldy Gopher/Go
-ldy-Word-ppt-PNG/color/goldyM2out-RGB.png>] (./2022_MIDB_AdjHE.toc) [2
+ldy-Word-ppt-PNG/color/goldyM2out-RGB.png>] (./2022_MIDB_Estimate.toc) [2
 
 ]
 </home/christian/Research/Stat_gen/tools/Basu_herit/docs/Presentations/Images/G
@@ -1162,27 +1162,27 @@ Package pdftex.def Info: /home/christian/Research/Stat_gen/tools/Basu_herit/doc
 s/Presentations/Images/naive_GCTA.png  used on input line 394.
 (pdftex.def)             Requested size: 150.57167pt x 150.57167pt.
 </home/christian/Research/Stat_gen/tools/Basu_herit/docs/Presentations/Images/n
-aive_AdjHE.png, id=199, 505.89pt x 505.89pt>
+aive_Estimate.png, id=199, 505.89pt x 505.89pt>
 File: /home/christian/Research/Stat_gen/tools/Basu_herit/docs/Presentations/Ima
-ges/naive_AdjHE.png Graphic file (type png)
+ges/naive_Estimate.png Graphic file (type png)
 <use /home/christian/Research/Stat_gen/tools/Basu_herit/docs/Presentations/Imag
-es/naive_AdjHE.png>
+es/naive_Estimate.png>
 Package pdftex.def Info: /home/christian/Research/Stat_gen/tools/Basu_herit/doc
-s/Presentations/Images/naive_AdjHE.png  used on input line 394.
+s/Presentations/Images/naive_Estimate.png  used on input line 394.
 (pdftex.def)             Requested size: 150.57167pt x 150.57167pt.
  [17
 
  </home/christian/Research/Stat_gen/tools/Basu_herit/docs/Presentations/Images/
 naive_GCTA.png> </home/christian/Research/Stat_gen/tools/Basu_herit/docs/Presen
-tations/Images/naive_AdjHE.png>]
+tations/Images/naive_Estimate.png>]
 </home/christian/Research/Stat_gen/tools/Basu_herit/docs/Presentations/Images/A
-seg_AdjHE.png, id=209, 563.10374pt x 421.575pt>
+seg_Estimate.png, id=209, 563.10374pt x 421.575pt>
 File: /home/christian/Research/Stat_gen/tools/Basu_herit/docs/Presentations/Ima
-ges/Aseg_AdjHE.png Graphic file (type png)
+ges/Aseg_Estimate.png Graphic file (type png)
 <use /home/christian/Research/Stat_gen/tools/Basu_herit/docs/Presentations/Imag
-es/Aseg_AdjHE.png>
+es/Aseg_Estimate.png>
 Package pdftex.def Info: /home/christian/Research/Stat_gen/tools/Basu_herit/doc
-s/Presentations/Images/Aseg_AdjHE.png  used on input line 400.
+s/Presentations/Images/Aseg_Estimate.png  used on input line 400.
 (pdftex.def)             Requested size: 307.2936pt x 230.05937pt.
 
 Overfull \vbox (21.82814pt too high) detected at line 400
@@ -1191,7 +1191,7 @@ Overfull \vbox (21.82814pt too high) detected at line 400
 [18
 
  </home/christian/Research/Stat_gen/tools/Basu_herit/docs/Presentations/Images/
-Aseg_AdjHE.png>]
+Aseg_Estimate.png>]
 </home/christian/Research/Stat_gen/tools/Basu_herit/docs/Presentations/Images/T
 opologies.png, id=219, 748.7975pt x 518.93875pt>
 File: /home/christian/Research/Stat_gen/tools/Basu_herit/docs/Presentations/Ima
@@ -1264,16 +1264,16 @@ Overfull \vbox (31.00632pt too high) detected at line 447
  </home/christian/Research/Stat_gen/tools/Basu_herit/docs/Presentations/Images/
 UKB_volume_herits.jpg>]
 \tf@nav=\write7
-\openout7 = `2022_MIDB_AdjHE.nav'.
+\openout7 = `2022_MIDB_Estimate.nav'.
 
 \tf@toc=\write8
-\openout8 = `2022_MIDB_AdjHE.toc'.
+\openout8 = `2022_MIDB_Estimate.toc'.
 
 \tf@snm=\write9
-\openout9 = `2022_MIDB_AdjHE.snm'.
+\openout9 = `2022_MIDB_Estimate.snm'.
 
- (./2022_MIDB_AdjHE.aux)
-Package rerunfilecheck Info: File `2022_MIDB_AdjHE.out' has not changed.
+ (./2022_MIDB_Estimate.aux)
+Package rerunfilecheck Info: File `2022_MIDB_Estimate.out' has not changed.
 (rerunfilecheck)             Checksum: 2C05E575CDE5DBEC1D18AB73C995D58E;745.
  ) 
 Here is how much of TeX's memory you used:
@@ -1299,7 +1299,7 @@ ist/fonts/type1/public/lm/lmsso8.pfb></home/christian/.TinyTeX/texmf-dist/fonts
 /type1/public/lm/lmsy10.pfb></home/christian/.TinyTeX/texmf-dist/fonts/type1/pu
 blic/lm/lmsy8.pfb></home/christian/.TinyTeX/texmf-dist/fonts/type1/public/amsfo
 nts/symbols/msam10.pfb>
-Output written on 2022_MIDB_AdjHE.pdf (23 pages, 1470876 bytes).
+Output written on 2022_MIDB_Estimate.pdf (23 pages, 1470876 bytes).
 PDF statistics:
  340 PDF objects out of 1000 (max. 8388607)
  225 compressed objects within 3 object streams

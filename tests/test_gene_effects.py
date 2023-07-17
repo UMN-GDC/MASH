@@ -4,7 +4,7 @@ import pytest
 import pandas as pd
 from pandas_plink import read_plink
 from Simulate.simulation_helpers.gene_effects import sim_gen_effects
-from AdjHE.estimation.all_estimators import Basu_estimation
+from Estimate.estimation.all_estimators import Basu_estimation
 
 rng = np.random.default_rng(12345)
 

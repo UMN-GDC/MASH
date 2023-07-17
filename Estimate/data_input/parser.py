@@ -15,13 +15,13 @@ Last Updated 2022-06-06
 
 import argparse
 import json 
-from AdjHE.data_input.types_n_valids import readable_file_or_none, readable_json
+from Estimate.data_input.types_n_valids import readable_file_or_none, readable_json
 
 #%%
 
 def get_args() :
     """
-    Collects user input from command line and returns them for running with AdjHE.
+    Collects user input from command line and returns them for running with Estimate.
 
     Returns
     -------

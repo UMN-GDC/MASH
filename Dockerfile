@@ -29,5 +29,5 @@ COPY functions functions
 
 #load the python script and tell docker to run that script
 #when someone tries to execute the container
-COPY AdjHE.py .
-ENTRYPOINT ["python3", "AdjHE.py"]
+COPY Estimate.py .
+ENTRYPOINT ["python3", "Estimate.py"]

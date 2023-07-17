@@ -1,6 +1,6 @@
 # make sure your working directory is MASH
-from AdjHE.estimation.GCTA_wrapper import GCTA, gcta
-from AdjHE.estimation.all_estimators import Basu_estimation
+from Estimate.estimation.GCTA_wrapper import GCTA, gcta
+from Estimate.estimation.all_estimators import Basu_estimation
 from Simulator.simulation_helpers.Sim_generator import pheno_simulator
 import numpy as np
 import pytest

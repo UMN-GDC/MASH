@@ -8,4 +8,4 @@
 
 cd ~/PATH/TO/DIR/
 module load python 
-python AdjHE.py --argfile Example/Arg_file.txt
+python Estimate.py --argfile Example/Arg_file.txt
