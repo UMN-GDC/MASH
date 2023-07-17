@@ -17,7 +17,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from tqdm.auto import tqdm
 from Estimate.data_input.load_data import load_everything
-from Estimate.estimation.AdjHE_estimator import AdjHE_estimator #, load_n_MOM
+from Estimate.estimation.AdjHE import AdjHE #, load_n_MOM
 from Estimate.estimation.PredLMM_estimator import load_n_PredLMM
 from Estimate.estimation.GCTA_wrapper import gcta, GCTA
 from Estimate.estimation.combat import neuroCombat
@@ -102,7 +102,7 @@ def load_n_estimate(df, fixed_effects, nnpc, mp, GRM, std=False, Method="AdjHE",
             temp[mp] = temp["resid"]
             nonmissing = df[df.IID.isin(temp.IID)].index
             GRM_nonmissing = GRM[nonmissing, :][:, nonmissing]
-            result = AdjHE_estimator(A = GRM_nonmissing, df=temp, mp = mp, random_groups = random_groups, npc= nnpc, std=std)
+            result = AdjHE(A = GRM_nonmissing, df=temp, mp = mp, random_groups = random_groups, npc= nnpc, std=std)
 
         elif Method == "GCTA":
             result = GCTA(df, fixed_effects, nnpc, mp, GRM, gcta=gcta, silent=False)
@@ -121,11 +121,11 @@ def load_n_estimate(df, fixed_effects, nnpc, mp, GRM, std=False, Method="AdjHE",
             nonmissing = df[df.IID.isin(temp.IID)].index
             GRM_nonmissing = GRM[nonmissing, :][:, nonmissing]
 
-            result = AdjHE_estimator(A = GRM_nonmissing, df = temp, mp = mp, random_groups = None, npc=nnpc, std=False)
+            result = AdjHE(A = GRM_nonmissing, df = temp, mp = mp, random_groups = None, npc=nnpc, std=False)
 
         elif Method in ["Combat", "Covbat"]:
             # AdjHE projects away covariates to start
-            result = AdjHE_estimator(A = GRM, df=df, mp = mp, random_groups = None, npc= nnpc, std=std)
+            result = AdjHE(A = GRM, df=df, mp = mp, random_groups = None, npc= nnpc, std=std)
 
 
         else:

@@ -20,7 +20,7 @@ import pandas as pd
 
 
 
-def AdjHE_estimator(A, df, mp, random_groups = "None", npc=0, std=False):
+def AdjHE(A, df, mp, random_groups = "None", npc=0, std=False):
     """
     Fucntion for generating heritability estimates from an Adjusted HE standpoint in closed form.
     Parameters
