@@ -71,7 +71,6 @@ def sim_pheno(rng, genotypes, df, h2Hom, h2Het, alpha = -1, phenoname = "Y0"):
             cluster_eff[:,cluster] = rng.normal(np.repeat(0, nCausal), prop, size =  nCausal)
             cluster_eff[np.isinf(cluster_eff)] = 0
             cluster_contrib[cluster_position] = np.array(np.dot(Xcausal[cluster_position, :], cluster_eff[:,cluster])).flatten()
-            print(cluster_contrib.shape)
             # rescale
             cluster_contrib[cluster_position]= cluster_contrib[cluster_position] * np.sqrt(h2Het[cluster]/ np.var(cluster_contrib[cluster_position]))
 
