@@ -26,7 +26,7 @@ from Estimate.estimators.combat import neuroCombat
 
 
 
-def load_n_estimate(df, fixed_effects, nnpc, mp, GRM, std=False, Method="AdjHE", random_groups=None, silent=False, homo=True, gcta=gcta):
+def load_n_estimate(df, fixed_effects, nnpc, mp, GRM, PC_effect = "fixed", std=False, Method="AdjHE", random_groups=None, silent=False, homo=True, gcta=gcta):
     """
     Estimates heritability, but solves a full OLS problem making it slower than the closed form solution. Takes 
     a dataframe, selects only the necessary columns (so that when we do complete cases it doesnt exclude too many samples)
@@ -73,28 +73,28 @@ def load_n_estimate(df, fixed_effects, nnpc, mp, GRM, std=False, Method="AdjHE",
     if fixed_effects == None :
         fixed_effects = []
     
-    if Method == "AdjHE" :
-        fixed_effects+= pc_cols
-    
+    # GCTA is the only method that doesn't need to specify whether npcs are fixed or mixed.
+    if Method != "GCTA" :
+        if PC_effect == "fixed" :
+            fixed_effects += pc_cols 
+            nnpc = 0
+        if PC_effect == "mixed" :
+            fixed_effects += pc_cols 
+        # Random is implicitly handled
 
-    
     # Create formula string
     if len(fixed_effects) != 0:
         RHS = " + ".join(fixed_effects)
     else : 
-        RHS = " + 1"
+        RHS = " 1"
     
     # Make formula
-    form = mp + "~ " +  RHS
-    logging.debug("Formula is " + form)
+    form = f'{mp} ~ {RHS}'
+    logging.debug("First Momment formula is " + form)
     
-    # save a temporary dataframe
-        
     # Select method of estimation
     try :
         if Method == "AdjHE":
-            if nnpc >0 :
-                form = form + "+" +  " + ".join(pc_cols)
             # AdjHE projects away covariates to start
             resid = smf.ols(formula=form, data=df, missing='drop').fit().resid
             resid.name = "resid"
@@ -109,7 +109,7 @@ def load_n_estimate(df, fixed_effects, nnpc, mp, GRM, std=False, Method="AdjHE",
             
         elif Method == "SWD":
             # SWD projects away sites then projects away covaraites
-            resid = smf.ols(formula= mp + " ~ " + random_groups, data=df, missing='drop').fit().resid
+            resid = smf.ols(formula= f'{mp} ~ {random_groups}', data=df, missing='drop').fit().resid
             resid.name = "resid"
             temp = df.merge(resid, left_index = True, right_index =True, how = "inner")
             temp[mp] = temp["resid"]
@@ -130,6 +130,8 @@ def load_n_estimate(df, fixed_effects, nnpc, mp, GRM, std=False, Method="AdjHE",
 
         else:
             logging.error("Not an accepted method of estimation: " + Method)
+            result = {}
+
         result["pheno"] = mp
         return pd.DataFrame(result, index=[0])
 
@@ -140,8 +142,6 @@ def load_n_estimate(df, fixed_effects, nnpc, mp, GRM, std=False, Method="AdjHE",
         logging.error("Muffed estimate")
         pass
         
-    
-
 
 class Basu_estimation():
     def __init__(self, prefix=None, pheno_file=None, cov_file=None, PC_file=None, k=0, ids=None):
@@ -158,7 +158,7 @@ class Basu_estimation():
                 prefix, pheno_file, cov_file, PC_file, k, ids)
             self.simulation = False
 
-    def estimate(self, npc, mpheno="all", Method="", random_groups = "None", Naive=False, fixed_effects=None, homo=True, loop_covars=False):
+    def estimate(self, npc, mpheno="all", Method="", random_groups = "None", Naive=False, fixed_effects=None, homo=True, loop_covars=False, PC_effect = "fixed"):
         
                 
         # Create list of covariate sets to regress over
@@ -244,7 +244,7 @@ class Basu_estimation():
                 if (not Naive) or (random_groups == None):
                     r = load_n_estimate(df=self.df, fixed_effects=covs, nnpc=nnpc,
                                         mp=mp, GRM=self.GRM, std=False, Method=Method,
-                                        random_groups=random_groups, homo=homo)
+                                        random_groups=random_groups, homo=homo, PC_effect = PC_effect)
 
                 else:
                     # Empty results list
@@ -274,7 +274,7 @@ class Basu_estimation():
 
                             # Estimate just on the supsample
                             sub_result = load_n_estimate(df=sub_df, fixed_effects=[],  nnpc=nnpc, mp=mp, GRM=sub_GRM, std=False, Method=Method, random_groups=None,
-                                                     silent=True, homo=homo)
+                                                     silent=True, homo=homo, PC_effect = PC_effect)
                             sub_result = pd.DataFrame({"h2": [sub_result["h2"][0]],
                                                    "Size": [sub_n]})
                             # Add to the list of estimates
@@ -287,7 +287,6 @@ class Basu_estimation():
                         sub_results["Size"] * sub_results["h2"]) / self.GRM.shape[0]
                     h2 = np.sum(sub_results["nh2"])
                     r["h2"] = h2
-                    r["ss"] = np.nan
                     r["var(h2)"] =  np.var(sub_results["h2"])
                     r = pd.DataFrame(r, index=[0])
 

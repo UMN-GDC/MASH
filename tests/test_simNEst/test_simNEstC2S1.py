@@ -13,7 +13,7 @@ def C2S1() :
     sim.sim_sites(nsites =1)
     sim.sim_pops(nclusts= 2)
     sim.sim_genos()
-    sim.sim_pheno(h2Hom = 0.2, h2Het= [0.2, 0.6], alpha = 0)
+    sim.sim_pheno(h2Hom = 0.5, h2Het= [0, 0], alpha = -1)
     est = Basu_estimation()
     est.GRM = sim.GRM
     est.df = sim.df
@@ -28,7 +28,12 @@ def test_simNGCTA(C2S1) :
 @pytest.mark.C2S1
 def test_simAdjHE(C2S1):
     est = C2S1
-    result = est.estimate(mpheno = ["Y0"], npc = [0,1,2], Method = "AdjHE", fixed_effects= ["Xc"])
+    result = est.estimate(mpheno = ["Y0"], npc = [0,1,2], Method = "AdjHE", fixed_effects= ["Xc"], PC_effect = "fixed")
+    print(result) 
+    result = est.estimate(mpheno = ["Y0"], npc = [0,1,2], Method = "AdjHE", fixed_effects= ["Xc"], PC_effect = "mixed")
+    print(result)
+    result = est.estimate(mpheno = ["Y0"], npc = [0,1,2], Method = "AdjHE", fixed_effects= ["Xc"], PC_effect = "random")
+    print(result)
     assert result["h2"][0] == pytest.approx(0.5, abs = 0.05) 
 
 #%%
