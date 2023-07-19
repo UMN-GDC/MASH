@@ -13,7 +13,7 @@ def C5S1() :
     sim.sim_sites(nsites =1)
     sim.sim_pops(nclusts= 5)
     sim.sim_genos()
-    sim.sim_pheno(h2Hom = 0.6, h2Het= [0, 0, 0, 0, 0], alpha = -1)
+    sim.sim_pheno(h2Hom = 0.6, h2Het= [0, 0, 0, 0, 0], alpha = 0)
     est = Basu_estimation()
     est.GRM = sim.GRM
     est.df = sim.df
@@ -46,5 +46,6 @@ def test_thoroughC1S1(C5S1):
         esti = Basu_estimation()
         esti.df = est.df.query("subj_ancestries=="+ str(cluster))
         esti.GRM = est.GRM[esti.df.index, :][:, esti.df.index]
-        resulti = esti.estimate(mpheno = ["Y0"], npc = [0,1,2], Method = "GCTA", fixed_effects= ["Xc"])
+        esti.df = esti.df.reset_index()
+        resulti = esti.estimate(mpheno = ["Y0"], npc = [0,1], Method = "GCTA", fixed_effects= ["Xc"], PC_effect = "fixed")
         print(resulti)

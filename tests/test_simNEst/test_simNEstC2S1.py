@@ -13,7 +13,7 @@ def C2S1() :
     sim.sim_sites(nsites =1)
     sim.sim_pops(nclusts= 2)
     sim.sim_genos()
-    sim.sim_pheno(h2Hom = 0.5, h2Het= [0, 0], alpha = -1)
+    sim.sim_pheno(h2Hom = 0.5, h2Het= [0, 0], alpha = 0)
     est = Basu_estimation()
     est.GRM = sim.GRM
     est.df = sim.df
@@ -53,5 +53,30 @@ def test_thoroughC1S1(C2S1):
     est2.GRM = G2
     est2.df = df2
 
-    result1 = est1.estimate(mpheno = ["Y0"], npc = [0,1,2], Method = "GCTA", fixed_effects= ["Xc"])
-    result2 = est2.estimate(mpheno = ["Y0"], npc = [0,1,2], Method = "GCTA", fixed_effects= ["Xc"])
+    result1 = est1.estimate(mpheno = ["Y0"], npc = [0,1], Method = "GCTA", fixed_effects= ["Xc"])
+    result2 = est2.estimate(mpheno = ["Y0"], npc = [0,1], Method = "GCTA", fixed_effects= ["Xc"])
+    result1A = est1.estimate(mpheno = ["Y0"], npc = [0,1], Method = "AdjHE", fixed_effects= ["Xc"])
+    result2A = est2.estimate(mpheno = ["Y0"], npc = [0,1], Method = "AdjHE", fixed_effects= ["Xc"])
+
+
+
+@pytest.mark.C5S1_thorough
+def test_thoroughC1S1(): 
+    for i in range(3) : 
+        rng = np.random.default_rng(i)
+        sim = pheno_simulator(rng = rng, nsubjects= 1000)
+        sim.sim_sites(nsites =1)
+        sim.sim_pops(nclusts= 2)
+        sim.sim_genos()
+        sim.sim_pheno(h2Hom = 0.5, h2Het= [0.0, 0.0], alpha = 0)
+        esti = Basu_estimation()
+        esti.GRM = sim.GRM
+        esti.df = sim.df
+        resulti = esti.estimate(mpheno = ["Y0"], npc = [0,1], Method = "AdjHE", fixed_effects= ["Xc"], PC_effect = "fixed")
+        print(resulti)
+        resulti = esti.estimate(mpheno = ["Y0"], npc = [0,1], Method = "AdjHE", fixed_effects= ["Xc"], PC_effect = "mixed")
+        print(resulti)
+        resulti = esti.estimate(mpheno = ["Y0"], npc = [0,1], Method = "AdjHE", fixed_effects= ["Xc"], PC_effect = "random")
+        print(resulti)
+
+
