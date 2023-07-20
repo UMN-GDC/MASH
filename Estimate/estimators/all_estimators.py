@@ -29,7 +29,7 @@ from Estimate.estimators.combat import neuroCombat
 def load_n_estimate(df, fixed_effects, nnpc, mp, GRM, PC_effect = "fixed", std=False, Method="AdjHE", random_groups=None, silent=False, homo=True, gcta=gcta):
     """
     Estimates heritability, but solves a full OLS problem making it slower than the closed form solution. Takes 
-    a dataframe, selects only the necessary columns (so that when we do complete cases it doesnt exclude too many samples)
+    a dataframe, selects only the nece/sary columns (so that when we do complete cases it doesnt exclude too many samples)
     residualizes the phenotype, then documents the heritability, standard error and some computer usage metrics.
 
     Parameters
@@ -298,6 +298,8 @@ class Basu_estimation():
                 
                 time = [end_est - start_est]
                 mem = [resource.getrusage(resource.RUSAGE_SELF).ru_maxrss/1000]
+                r["Covariates"] = " + ".join(fixed_effects)
+                r["PCs"] = nnpc
                 r["time"] = time
                 r["mem"] = mem
                 results = pd.concat([results, r], ignore_index=True)

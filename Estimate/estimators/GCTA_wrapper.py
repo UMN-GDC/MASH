@@ -76,14 +76,14 @@ def GCTA(df, covars, nnpc, mp, GRM, gcta, silent=False):
     # parse output for estimate
     try :
         df = pd.read_table(temp_name + ".hsq", sep="\t").query( "Source == 'V(G)/Vp'").reset_index()
-        result = {"h2": df.Variance[0], "var(h2)": df.SE[0]**2, "ss" : np.nan, "Pheno": mp, "PCs": nnpc, "Covariates": "+".join(covars), "Time for analysis(s)": np.nan,
-             "Memory Usage": np.nan}
+        result = {"h2": df.Variance[0], "var(h2)": df.SE[0]**2, "pheno": mp, "PCs": nnpc, "Covariates": "+".join(covars), "time": np.nan,
+             "mem": np.nan}
 
 
     except FileNotFoundError:
         logging.error("Estimations were not made. Usually this is due to small sample sizes for GCTA")
-        result = {"h2": np.nan, "var(h2)": np.nan, "ss" : np.nan, "Pheno": mp, "PCs": nnpc, "Covariates": "+".join(covars), "Time for analysis(s)": np.nan,
-             "Memory Usage": np.nan}
+        result = {"h2": np.nan, "var(h2)": np.nan, "pheno": mp, "PCs": nnpc, "Covariates": "+".join(covars), "time": np.nan,
+             "mem": np.nan}
 
     
     

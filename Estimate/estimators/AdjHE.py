@@ -174,7 +174,7 @@ def AdjHE(A, df, mp, random_groups = "None", npc=0, std=False):
         logging.warning("Variance estimate is negative setting as absolute value")
         var_h2 = abs(var_h2)
 
-    results = {"h2" : h2, "ss": ss, "var(h2)" : var_h2}
+    results = {"h2" : h2, "var(h2)" : var_h2}
     
     if results["h2"] < 0 :
         results["h2"] = 0
