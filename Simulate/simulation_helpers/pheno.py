@@ -9,6 +9,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import statsmodels.formula.api as smf
 
+
+
 def sim_pheno(rng, genotypes, df, h2Hom, h2Het, alpha = -1, phenoname = "Y0"):
     """
     
@@ -44,16 +46,14 @@ def sim_pheno(rng, genotypes, df, h2Hom, h2Het, alpha = -1, phenoname = "Y0"):
     """
     nsubjects, nSNPs = genotypes.shape
     prop_causal = 0.1
-    # randomly sample causals only if 
     nCausal = int(nSNPs * prop_causal)
-    # select causal snos
     causals = rng.choice(nSNPs, nCausal, replace=False, shuffle=False)
     Xcausal = np.matrix(genotypes[:, causals])
     freqs = np.asarray(np.mean(Xcausal, axis = 0)/2).flatten()
 
     # sample shared (homogeneous) effects from normal with variance proportional to some function of global allele frequency
     prop = (freqs * (1-freqs))**alpha
-    homo_eff = rng.normal(np.repeat(0, nCausal), prop, size =  nCausal)
+    homo_eff = rng.normal(np.repeat(0, nCausal), np.sqrt(h2Hom / nCausal * (2 * prop) ** alpha  * 2 ** (alpha+ 1)), size =  nCausal)
     # make sure no infinities
     homo_eff[np.isinf(homo_eff)] = 0
     homo_contrib = np.array(np.dot(Xcausal, homo_eff)).flatten()
