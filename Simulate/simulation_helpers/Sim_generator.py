@@ -77,7 +77,7 @@ class pheno_simulator():
         self.nSNPS_post_filter = self.genotypes.shape[1]
         self.df = pd.concat([self.df, pcs], axis=1)
 
-    def sim_pheno(self, h2Hom=0.5, h2Het=[0], alpha = -1, phenoname = "Y0"):
+    def sim_pheno(self, h2Hom=0.5, h2Het=[0], alpha = -1, phenobasename = "Y", nphenos = 2):
         self.h2Hom = h2Hom
         self.h2Het = h2Het
         self.alpha = alpha
@@ -87,8 +87,17 @@ class pheno_simulator():
                                                                           h2Hom = self.h2Hom,
                                                                           h2Het = self.h2Het,
                                                                           alpha = self.alpha,
-                                                                          phenoname = phenoname)
-            
+                                                                          phenoname = phenobasename + "0")
+        for i in range(1, nphenos): 
+            (temp, __1, __2, __3)  = sim_pheno(rng = self.rng,
+                                               genotypes = self.genotypes,
+                                               df = self.df,
+                                               h2Hom = self.h2Hom,
+                                               h2Het = self.h2Het,
+                                               alpha = self.alpha,
+                                               phenoname = phenobasename + str(i))
+            self.df[phenobasename + str(i)] = temp[phenobasename + str(i)]
+
     def full_sim(self, h2 = 0.5,
                  nsites=30, nclusts=5,
                  nsubjects=1000,

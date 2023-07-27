@@ -200,7 +200,11 @@ class Basu_estimation():
             
             logging.info("Method: " + Method)
             
-            FEs = ["pc_" + str(i + 1) for i in range(max(npc))] + fixed_effects
+            if PC_effect in ["fixed", "mixed"] :
+                FEs = ["pc_" + str(i + 1) for i in range(max(npc))] + fixed_effects
+            else :
+                FEs = fixed_effects
+
             no_missing = self.df[["FID", "IID"] + mpheno + FEs + [random_groups]].dropna()
             
             transformed_data = neuroCombat(dat=no_missing[mpheno].T,
