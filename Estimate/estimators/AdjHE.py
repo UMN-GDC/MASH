@@ -20,7 +20,7 @@ import pandas as pd
 
 
 
-def AdjHE(A, df, mp, random_groups = "None", npc=0, std=False):
+def AdjHE(A, df, mp, random_groups = None, npc=0, std=False):
     """
     Fucntion for generating heritability estimates from an Adjusted HE standpoint in closed form.
     Parameters
@@ -81,7 +81,7 @@ def AdjHE(A, df, mp, random_groups = "None", npc=0, std=False):
     offdiag= trA - np.sum(Sjs)
     bottomright = n- npc
     
-    if random_groups == "None" :
+    if random_groups is None :
         # Solve the regression problem
         XXinv = np.linalg.inv(np.matrix([[topleft, offdiag],
                                          [offdiag, bottomright]]))
@@ -96,7 +96,7 @@ def AdjHE(A, df, mp, random_groups = "None", npc=0, std=False):
         # var_h2 = 2 * (sigmas[1]**2 * trA2 - 2*sigmas[0]*sigmas[1] * trA  + sigmas[0] **2 * n) / (sigmas[0] + sigmas[1])
 
         
-    elif random_groups != "None" :
+    else :
         df = df.reset_index().drop("index", axis = 1)
         # Shuffle the A matrix so it matches the new order
         df = df.sort_values(random_groups).dropna(subset= [random_groups])

@@ -42,10 +42,12 @@ class pheno_simulator():
             self.rng = np.random.default_rng()
 
 
-    def sim_sites(self, nsites=1, random_BS = True):
+    def sim_sites(self, nsites=1, siteDistribution = "EQUAL", random_BS = True):
         self.nsites = nsites
+        self.siteDistribution = siteDistribution
         self.df[["abcd_site", "Site_contrib"]] = sim_sites(rng = self.rng, nsubjects = self.nsubjects, 
-                                                           nsites=nsites, random_BS = random_BS)
+                                                           nsites=nsites, siteDistribution = self.siteDistribution, 
+                                                           random_BS = random_BS)
 
     def sim_pops(self, theta_alleles = 0.5, nclusts=1, prop_causal = 0.1):
         self.theta_alleles = theta_alleles

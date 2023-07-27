@@ -10,7 +10,7 @@ import numpy as np
 import pandas as pd
 
 
-def sim_sites(rng, nsubjects = 1000, nsites=1, eq_sites=False, random_BS = True):
+def sim_sites(rng, nsubjects = 1000, nsites=1, siteDistribution="EQUAL", random_BS = True):
     """
     Simulate a site vector for the specified number of subjects and sites. Also, control wether the sites will be of equal sites or 
     sampled.
@@ -35,7 +35,7 @@ def sim_sites(rng, nsubjects = 1000, nsites=1, eq_sites=False, random_BS = True)
 
     """
     # Site assignment
-    if eq_sites:
+    if siteDistribution == "EQUAL":
         # For equal assignment (n needs to be divisible by nsites * nclusts)
         Groups = np.repeat(
             np.arange(start=1, stop=nsites + 1), int(nsubjects/nsites))
