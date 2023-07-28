@@ -11,7 +11,7 @@ import statsmodels.formula.api as smf
 
 
 
-def sim_pheno(rng, genotypes, df, h2Hom, h2Het, alpha = -1, phenoname = "Y0"):
+def sim_pheno(rng, genotypes, df, h2Hom, h2Het, alpha = -1, phenoname = "Y0", causals= None):
     """
     
 
@@ -45,9 +45,13 @@ def sim_pheno(rng, genotypes, df, h2Hom, h2Het, alpha = -1, phenoname = "Y0"):
         1-D array of SNP effects
     """
     nsubjects, nSNPs = genotypes.shape
-    prop_causal = 0.1
-    nCausal = int(nSNPs * prop_causal)
-    causals = rng.choice(nSNPs, nCausal, replace=False, shuffle=False)
+   
+    # sample causal SNPs if user didn't specify their own specific string of causal SNPs
+    if causals is None :
+        prop_causal = 0.1
+        nCausal = int(nSNPs * prop_causal)
+        causals = rng.choice(nSNPs, nCausal, replace=False, shuffle=False)
+    
     Xcausal = np.matrix(genotypes[:, causals])
     freqs = np.asarray(np.mean(Xcausal, axis = 0)/2).flatten()
 

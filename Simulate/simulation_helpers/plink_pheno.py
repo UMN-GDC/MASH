@@ -14,11 +14,42 @@ import dask as di
 rng = np.random.default_rng()
 
 
-def sim_plink_pheno(rng, bed, sigma= [0.5,0 , 0.5], prop_causal = 0.1, npcs=0) :
+def sim_plink_pheno(rng, bed, h2= 0.5, prop_causal = 0.1, npcs=0, causals = None) :
+    """
+    Simulate a phenotype from a plink files.
+
+    Parameters
+    ----------
+    rng : random number generatorng
+        numpy random number generator.
+    bed: array
+        ( x ) array of unstandardized genotypes read in from bed file.
+    h2 : float, optional
+        heritability of the phenotype. The default is 0.5.
+    causals : list, optional
+        list of causal snp positions indexed to the genotype array (i.e. it's not absolute position in the genomic sense
+        but rather the position along the bim file.
+    prop_causal : float, optional
+        if causals are unspecified, then specify the number of SNPs to randomly select as causal. The default is 0.1.
+    npcs : int, optional
+        number of PCs to subtract from the phenotype. The default is 0.
+    Returns
+    -------
+    Gene_contrib : array 
+        1-D array containing the contribution of genetics to each subjects phenotype.
+    causals : array
+        1-D array of the genotype index that was selected to be causal
+    snp_effects: array
+        1-D array of SNP effects
+    """
     nsubjects, nSNPs= bed.shape
     
-    # select causal region
-    causal_idx = rng.choice(range(nSNPs), size = int(prop_causal * nSNPs), replace=False)
+    # select causal region if not specified
+    if causals is None : 
+        causal_idx = rng.choice(range(nSNPs), size = int(prop_causal * nSNPs), replace=False)
+    else :
+        causal_idx = causals
+
     noncausal_idx = []
     for i in range(nSNPs): 
         if i not in causal_idx : 
@@ -41,10 +72,10 @@ def sim_plink_pheno(rng, bed, sigma= [0.5,0 , 0.5], prop_causal = 0.1, npcs=0) :
     y = np.array(y)    
 
     y = OLS(endog = y, exog= pcs).fit().resid
-    y = y/ np.var(y) * sigma[0]
+    y = y/ np.var(y) * h2 
     
     error = rng.normal(0,1, len(y))
-    error = error / np.var(error) *  sigma[2]
+    error = error / np.var(error) * (1-h2) 
     
     y+= error    
     
