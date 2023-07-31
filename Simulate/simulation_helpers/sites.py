@@ -45,7 +45,7 @@ def sim_sites(rng, nsubjects = 1000, nsites=1, siteDistribution="EQUAL", random_
 
         # Simulate site effects (will rescale to desired contribution later)
     if random_BS :
-        Bs = np.matrix(np.random.normal(0,  1, nsites)).T
+        Bs = np.matrix(np.random.normal(0,  0.1, nsites)).T
     else :
         # Make site effects fixed
         Bs = np.arange(nsites, dtype = "float64")

@@ -46,9 +46,13 @@ df1<- read_csv("5k_SWD_COMBAT_1.csv")
 
 rbind(df,df1) %>%
   pivot_longer(cols = c(SWD, Combat), names_to = "Estimator", values_to = "heritability") %>%
+  filter(case_when(
+    (Distribution == "EQUAL") & (Sites == "S2") ~ between(heritability, 0.35,0.99),
+    (Distribution == "EQUAL") & (Sites == "S25") ~ between(heritability, 0, 1),
+    T ~ between(heritability, 0, 1))) %>% 
   ggplot(aes(x = Estimator, y = heritability)) + 
   geom_boxplot() +
   facet_grid(rows = vars(Sites), cols = vars(Distribution)) +
   geom_hline(yintercept = 0.66)
 
-ggsave("temporary_fix_SWD_Combat.png")
+ggsave("SWD_Combat_0.png")
