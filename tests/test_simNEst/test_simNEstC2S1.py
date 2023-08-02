@@ -28,7 +28,7 @@ def test_simNGCTA(C2S1) :
 @pytest.mark.C2S1
 def test_simAdjHE(C2S1):
     est = C2S1
-    result = est.estimate(mpheno = ["Y0"], npc = [0,1,2], Method = "AdjHE", fixed_effects= ["Xc"], PC_effect = "fixed")
+    result = est.estimate(mpheno = ["Y0"], npc = [0,1,2], Method = "AdjHENew", fixed_effects= ["Xc"], PC_effect = "fixed")
     print(result) 
     result = est.estimate(mpheno = ["Y0"], npc = [0,1,2], Method = "AdjHE", fixed_effects= ["Xc"], PC_effect = "mixed")
     print(result)
@@ -42,8 +42,10 @@ def test_thoroughC1S1(C2S1):
     est= C2S1
     df1= est.df.query("subj_ancestries==0")
     G1 = est.GRM[df1.index, :][:, df1.index]
+    df1 = df1.reset_index()
     df2 = est.df.query("subj_ancestries==1")
     G2 = est.GRM[df2.index, :][:, df2.index]
+    df2= df2.reset_index()
     
     est1 = Basu_estimation()
     est1.GRM = G1

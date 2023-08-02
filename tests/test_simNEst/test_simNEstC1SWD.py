@@ -25,6 +25,12 @@ def test_simNGCTA(C1S1) :
     result = est.estimate(mpheno = ["Y0"], npc = [0,1], Method = "SWD", fixed_effects= ["Xc"], random_groups=  "abcd_site")
     assert result["h2"][0] == pytest.approx(0.5, abs = 0.05) 
 
+@pytest.mark.C1S1_combat
+def test_simNGCTA(C1S1) :
+    est = C1S1
+    result = est.estimate(mpheno = ["Y0"], npc = [0,1], Method = "Combat", fixed_effects= ["Xc"], random_groups=  "abcd_site")
+    assert result["h2"][0] == pytest.approx(0.5, abs = 0.05) 
+
 @pytest.mark.C1S1
 def test_simAdjHE(C1S1):
     est = C1S1

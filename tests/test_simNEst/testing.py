@@ -5,19 +5,20 @@ import numpy as np
 import pytest
 
 #%% Basic testing for single site and cluster
-for i in range(10) : 
-    rng = np.random.default_rng(i)
-    sim = pheno_simulator(rng = rng, nsubjects= 1000)
-    sim.sim_sites(nsites =1)
-    sim.sim_pops(nclusts= 5)
-    sim.sim_genos()
-    sim.sim_pheno(h2Hom = 0.6, h2Het= [0, 0, 0, 0, 0], alpha = 0)
+rng = np.random.default_rng(12)
+sim = pheno_simulator(rng = rng, nsubjects= 90)
+sim.sim_sites(nsites =1)
+sim.sim_pops(nclusts= 2)
+sim.sim_genos()
+npcs = list(np.linspace(0,2,3).astype(int))
+for i in range(5) : 
+    sim.sim_pheno(h2Hom = 0, h2Het= np.repeat(0.5,3), alpha = -1)
     est = Basu_estimation()
     est.GRM = sim.GRM
     est.df = sim.df
-    result = est.estimate(mpheno = ["Y0"], npc = [1,2,3], Method = "AdjHE", fixed_effects= ["Xc"], PC_effect = "fixed")
+    result = est.estimate(mpheno = ["Y0"], npc = npcs, Method = "AdjHE", fixed_effects= ["Xc"], PC_effect = "fixed")
     print(result)
-    result = est.estimate(mpheno = ["Y0"], npc = [1,2,3], Method = "AdjHE", fixed_effects= ["Xc"], PC_effect = "mixed")
+    result = est.estimate(mpheno = ["Y0"], npc = npcs, Method = "AdjHE", fixed_effects= ["Xc"], PC_effect = "mixed")
     print(result)
-    result = est.estimate(mpheno = ["Y0"], npc = [1,2,3], Method = "AdjHE", fixed_effects= ["Xc"], PC_effect = "random")
+    result = est.estimate(mpheno = ["Y0"], npc = npcs, Method = "AdjHE", fixed_effects= ["Xc"], PC_effect = "random")
     print(result)

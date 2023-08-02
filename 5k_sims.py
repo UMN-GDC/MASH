@@ -8,10 +8,10 @@ from Estimate.estimators.all_estimators import Basu_estimation
 from Simulate.simulation_helpers.Sim_generator import pheno_simulator
 
 reps = 50
-h2s = pd.DataFrame(np.zeros((2 * 2* reps, 2)), columns = ["Combat", "SWD"]) 
-h2s.index = pd.MultiIndex.from_product([["S2", "S25"], ["EQUAL", "UNEQUAL"], list(range(reps))], names= ["Sites", "Distribution", "Rep"]) 
+h2s = pd.DataFrame(np.zeros((2 * 1* reps, 2)), columns = ["Combat", "SWD"]) 
+h2s.index = pd.MultiIndex.from_product([["S2", "S25"], ["EQUAL"], list(range(reps))], names= ["Sites", "Distribution", "Rep"]) 
 rng = np.random.default_rng(1234)
-for sites, dist, rep in itertools.product([2, 25], ["EQUAL", "UNEQUAL"], list(range(reps))) : 
+for sites, dist, rep in itertools.product([2, 25], ["EQUAL"], list(range(reps))) : 
     sim = pheno_simulator(rng = rng, nsubjects= 5000)
     sim.sim_sites(nsites =sites, siteDistribution = dist)
     sim.sim_pops(nclusts= 2)
@@ -25,14 +25,14 @@ for sites, dist, rep in itertools.product([2, 25], ["EQUAL", "UNEQUAL"], list(ra
     h2s.loc[("S"+ str(sites), dist, rep), "SWD"] = est.estimate(mpheno = ["Y0", "Y1"], npc = [1],
                                                                 Method = "SWD", random_groups = "abcd_site", PC_effect = "random", fixed_effects= ["Xc"])["h2"][0]
 
-h2s.to_csv("Simulate/AdjHE_sims/5k_SWD_COMBAT_0.csv", index= True)
+h2s.to_csv("Simulate/AdjHE_sims/5k_SWD_COMBAT_0EQUAL.csv", index= True)
 
 
 reps = 50
-h2s = pd.DataFrame(np.zeros((2 * 2* reps, 2)), columns = ["Combat", "SWD"]) 
-h2s.index = pd.MultiIndex.from_product([["S2", "S25"], ["EQUAL", "UNEQUAL"], list(range(reps))], names= ["Sites", "Distribution", "Rep"]) 
+h2s = pd.DataFrame(np.zeros((2 * 1* reps, 2)), columns = ["Combat", "SWD"]) 
+h2s.index = pd.MultiIndex.from_product([["S2", "S25"], ["EQUAL"], list(range(reps))], names= ["Sites", "Distribution", "Rep"]) 
 rng = np.random.default_rng(1234)
-for sites, dist, rep in itertools.product([2, 25], ["EQUAL", "UNEQUAL"], list(range(reps))) : 
+for sites, dist, rep in itertools.product([2, 25], ["EQUAL"], list(range(reps))) : 
     sim = pheno_simulator(rng = rng, nsubjects= 5000)
     sim.sim_sites(nsites =sites, siteDistribution = dist)
     sim.sim_pops(nclusts= 2)
@@ -45,5 +45,5 @@ for sites, dist, rep in itertools.product([2, 25], ["EQUAL", "UNEQUAL"], list(ra
                                                                  Method = "Combat", random_groups = "abcd_site", PC_effect = "random", fixed_effects= ["Xc"])["h2"][0]
     h2s.loc[("S"+ str(sites), dist, rep), "SWD"] = est.estimate(mpheno = ["Y0", "Y1"], npc = [1],
                                                                 Method = "SWD", random_groups = "abcd_site", PC_effect = "random", fixed_effects= ["Xc"])["h2"][0]
-h2s.to_csv("Simulate/AdjHE_sims/5k_SWD_COMBAT_1.csv", index= True)
+h2s.to_csv("Simulate/AdjHE_sims/5k_SWD_COMBAT_1EQUAL.csv", index= True)
 

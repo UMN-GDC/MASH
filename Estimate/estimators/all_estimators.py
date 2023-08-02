@@ -17,7 +17,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from tqdm.auto import tqdm
 from Estimate.data_input.load_data import load_everything
-from Estimate.estimators.AdjHE import AdjHE #, load_n_MOM
+from Estimate.estimators.AdjHE import AdjHE
 from Estimate.estimators.PredLMM import load_n_PredLMM
 from Estimate.estimators.GCTA_wrapper import gcta, GCTA
 from Estimate.estimators.combat import neuroCombat
@@ -95,6 +95,8 @@ def load_n_estimate(df, fixed_effects, nnpc, mp, GRM, PC_effect = "fixed", std=F
     # Select method of estimation
     try :
         if Method == "AdjHE":
+            print("Method is " + Method)
+            print(Method == "AdjHE")
             # AdjHE projects away covariates to start
             resid = smf.ols(formula=form, data=df, missing='drop').fit().resid
             resid.name = "resid"
@@ -103,13 +105,13 @@ def load_n_estimate(df, fixed_effects, nnpc, mp, GRM, PC_effect = "fixed", std=F
             nonmissing = df[df.IID.isin(temp.IID)].index
             GRM_nonmissing = GRM[nonmissing, :][:, nonmissing]
             result = AdjHE(A = GRM_nonmissing, df=temp, mp = mp, random_groups = random_groups, npc= nnpc, std=std)
-
+        
         elif Method == "GCTA":
             result = GCTA(df, fixed_effects, nnpc, mp, GRM, gcta=gcta, silent=False)
             
         elif Method == "SWD":
             # SWD projects away sites then projects away covaraites
-            resid = smf.ols(formula= f'{mp} ~ {random_groups}', data=df, missing='drop').fit().resid
+            resid = smf.ols(formula= f'{mp} ~ C({random_groups})', data=df, missing='drop').fit().resid
             resid.name = "resid"
             temp = df.merge(resid, left_index = True, right_index =True, how = "inner")
             temp[mp] = temp["resid"]
@@ -160,6 +162,7 @@ class Basu_estimation():
 
     def estimate(self, npc, mpheno="all", Method="", random_groups = "None", Naive=False, fixed_effects=None, homo=True, loop_covars=False, PC_effect = "fixed"):
         
+        logging.info("Estimating with " + Method)
                 
         # Create list of covariate sets to regress over
         if (fixed_effects == None) or (fixed_effects == []):
@@ -178,7 +181,6 @@ class Basu_estimation():
             # make them lowercase
             self.mpheno = mpheno
             
-        logging.info("Estimating with " + Method)
         
         if random_groups != "None":
             logging.info("RV: " + str(random_groups))
@@ -197,8 +199,6 @@ class Basu_estimation():
             
         # Adjust data if any Combat based method is wanted
         if Method in ["Combat", "Covbat"] :
-            
-            logging.info("Method: " + Method)
             
             if PC_effect in ["fixed", "mixed"] :
                 FEs = ["pc_" + str(i + 1) for i in range(max(npc))] + fixed_effects

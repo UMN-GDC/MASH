@@ -78,7 +78,7 @@ def sim_pheno(rng, genotypes, df, h2Hom, h2Het, alpha = -1, phenoname = "Y0", ca
             # rescale
             cluster_contrib[cluster_position]= cluster_contrib[cluster_position] * np.sqrt(h2Het[cluster]/ np.var(cluster_contrib[cluster_position]))
 
-            cluster_error = rng.normal(0, 1, cluster_position.sum())
+            cluster_error = rng.normal(cluster, 1, cluster_position.sum())
             errors[cluster_position] = cluster_error * np.sqrt((1- h2Hom - h2Het[cluster]) / np.var(cluster_error))
     else :
         errors = rng.normal(0, np.sqrt(1-h2Hom), nsubjects)

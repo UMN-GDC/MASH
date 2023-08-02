@@ -56,7 +56,7 @@ def sim_sites(rng, nsubjects = 1000, nsites=1, siteDistribution="EQUAL", random_
 
     # Make a dummy matrix
     Groups_dum = np.matrix(pd.get_dummies(Groups))
-    
+    Groups = np.core.defchararray.add("Site", Groups.astype(str))
     return pd.DataFrame({"abcd_site" : Groups,
                          "Site_contrib" : np.array(Groups_dum * Bs).flatten()})
 
