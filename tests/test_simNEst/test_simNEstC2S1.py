@@ -13,7 +13,7 @@ def C2S1() :
     sim.sim_sites(nsites =1)
     sim.sim_pops(nclusts= 2)
     sim.sim_genos()
-    sim.sim_pheno(h2Hom = 0.5, h2Het= [0, 0], alpha = 0)
+    sim.sim_pheno(h2Hom = 0.5, h2Het= [0, 0])
     est = Basu_estimation()
     est.GRM = sim.GRM
     est.df = sim.df

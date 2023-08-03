@@ -18,6 +18,7 @@ import seaborn as sns
 from tqdm.auto import tqdm
 from Estimate.data_input.load_data import load_everything
 from Estimate.estimators.AdjHE import AdjHE
+from Estimate.estimators.AdjHE2 import AdjHE2
 from Estimate.estimators.PredLMM import load_n_PredLMM
 from Estimate.estimators.GCTA_wrapper import gcta, GCTA
 from Estimate.estimators.combat import neuroCombat
@@ -95,8 +96,6 @@ def load_n_estimate(df, fixed_effects, nnpc, mp, GRM, PC_effect = "fixed", std=F
     # Select method of estimation
     try :
         if Method == "AdjHE":
-            print("Method is " + Method)
-            print(Method == "AdjHE")
             # AdjHE projects away covariates to start
             resid = smf.ols(formula=form, data=df, missing='drop').fit().resid
             resid.name = "resid"
@@ -105,7 +104,19 @@ def load_n_estimate(df, fixed_effects, nnpc, mp, GRM, PC_effect = "fixed", std=F
             nonmissing = df[df.IID.isin(temp.IID)].index
             GRM_nonmissing = GRM[nonmissing, :][:, nonmissing]
             result = AdjHE(A = GRM_nonmissing, df=temp, mp = mp, random_groups = random_groups, npc= nnpc, std=std)
-        
+
+        elif Method == "AdjHE2":
+            # AdjHE projects away covariates to start
+            resid = smf.ols(formula=form, data=df, missing='drop').fit().resid
+            resid.name = "resid"
+            temp = df.merge(resid, left_index = True, right_index =True, how = "inner")
+            temp[mp] = temp["resid"]
+            nonmissing = df[df.IID.isin(temp.IID)].index
+            GRM_nonmissing = GRM[nonmissing, :][:, nonmissing]
+            result = AdjHE2(A = GRM_nonmissing, y=temp[mp].values, npc= nnpc)
+
+
+
         elif Method == "GCTA":
             result = GCTA(df, fixed_effects, nnpc, mp, GRM, gcta=gcta, silent=False)
             

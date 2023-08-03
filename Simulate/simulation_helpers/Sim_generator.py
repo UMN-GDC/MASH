@@ -77,16 +77,14 @@ class pheno_simulator():
         self.nSNPS_post_filter = self.genotypes.shape[1]
         self.df = pd.concat([self.df, pcs], axis=1)
 
-    def sim_pheno(self, h2Hom=0.5, h2Het=[0], alpha = -1, phenobasename = "Y", nphenos = 2):
+    def sim_pheno(self, h2Hom=0.5, h2Het=[0], phenobasename = "Y", nphenos = 2):
         self.h2Hom = h2Hom
         self.h2Het = h2Het
-        self.alpha = alpha
         (self.df, self.causals, self.homo_eff, self.het_eff)  = sim_pheno(rng = self.rng,
                                                                           genotypes = self.genotypes,
                                                                           df = self.df,
                                                                           h2Hom = self.h2Hom,
                                                                           h2Het = self.h2Het,
-                                                                          alpha = self.alpha,
                                                                           phenoname = phenobasename + "0")
         for i in range(1, nphenos): 
             (temp, __1, __2, __3)  = sim_pheno(rng = self.rng,
@@ -94,7 +92,6 @@ class pheno_simulator():
                                                df = self.df,
                                                h2Hom = self.h2Hom,
                                                h2Het = self.h2Het,
-                                               alpha = self.alpha,
                                                phenoname = phenobasename + str(i))
             self.df[phenobasename + str(i)] = temp[phenobasename + str(i)]
 
@@ -102,7 +99,6 @@ class pheno_simulator():
                  nsites=30, nclusts=5,
                  nsubjects=1000,
                  nnpc=0, phens = 2,
-                 alpha=-1,
                  random_BS = True, npcs = 0,  maf_filter= 0.1):
         
         # Only simulate genes if plink file not specified
@@ -115,7 +111,7 @@ class pheno_simulator():
             self.sim_covars()
             
             for i in range(phens) :
-                self.sim_pheno(h2 = h2, phenoname = "Y" + str(i), alpha = alpha)
+                self.sim_pheno(h2Hom = self.h2Hom, h2Het = self.h2Het, phenoname = "Y" + str(i))
         
         else : 
             for i in range(phens) :
