@@ -202,29 +202,6 @@ $$
 :::
 :::
 
-## GxEMM
-
-::: columns
-::: column
-$$
-Y = X\alpha + \color{red}{G\beta} + \sum \color{blue}{G Z_k\gamma_k} + \color{orange}{Z_k \delta_k} + \epsilon
-$$
-
--   Simulating phenotypes conserving hertiability for ancestries
-
--   [Shared genetic effects]{style="color: red"}
-
--   [Ancestry genetic effects]{style="color: blue"}
-
--   [Ancestry effects]{style="color: orange"}
-:::
-
-::: column
--   Assume effects proportional to frequency $\beta \sim N(0, \tau^2\frac{\sigma_{}^2}{m})$
-
--   $\tau^2_s \propto f_s(1-f_s)^{\alpha}$
-:::
-:::
 
 ## Thank you
 

@@ -8,3 +8,7 @@ df = pd.read_csv("2k_SWD_COMBAT_0.csv")
 # faceted by Sites and Distribution
 sns.boxplot(y="SWD", hue="Sites", data=df, palette="Set3")
 plt.show()
+
+
+#%
+df.query("Sites == 'S25'")

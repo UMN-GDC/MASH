@@ -5,7 +5,7 @@ library(tidyverse)
 # AdjHE 1 pcs
 
 ########################### Load data
-df <- read_csv("/home/christian/Research/Stat_gen/tools/Basu_herit/Simulations/Het_5000_pc_fixed.csv") %>%
+df <- read_csv("Results/EQUAL_HOMO_5000.csv") %>%
   rename(Estimator = variable, Estimate = value) %>%
   mutate(Estimator = factor(Estimator, levels = c("GCTA", "nGCTA", "SWD", "Combat", "nAdjHE", "AdjHE", "AdjHE_RE")),
          `Study Type` = case_when(grepl("AdjHE", Estimator) ~ 'Single',
@@ -56,3 +56,15 @@ rbind(df,df1) %>%
   geom_hline(yintercept = 0.66)
 
 ggsave("SWD_Combat_0.png")
+
+
+
+#%%
+
+df %>%
+  filter(nsites == 25, nclusts == 2) %>%
+  select(-c(nsites, nsubjects, theta_alleles, nclusts, prop_causal, nSNPs, dominance, site_dep, site_het, sg, ss, se, site_comp)) %>%
+  pivot_longer(cols = -nnpc, names_to = "Estimator", values_to = "heritability") %>%
+  ggplot(aes(x = Estimator, y = heritability)) +
+
+

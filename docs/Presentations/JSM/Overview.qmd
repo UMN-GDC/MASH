@@ -1,0 +1,200 @@
+---
+title: "Heritability of subcortical volumes in the adolescent brain"
+bibliography: references.bib
+csl: /home/christian/Templates/Citations/nature.csl
+link-citations: true
+author: "Christian Coffman"
+institute: "University of Minnesota"
+date: "08/07/2023"
+# title-slide-attributes:"M_gold.png"
+  # data-background-image:"M_gold.png"
+  # data-background-opacity: "0.5"
+format:
+  beamer:
+    echo: true
+    highlight-style: github
+    slide-number: c/t
+    width: 1600
+    height: 900
+    logo: "M_gold.png"
+    footer: "[University of Minnesota](https://umn.edu)"
+    toc: true
+    toc-depth: 1
+    slide-level: 2
+fig-align: center
+---
+
+# Subcortical heritability through lifetime
+
+## Subcortical volumes associated with psychological disorders {auto-animate="true"}
+
+-   Major depressive disorder - hippocampus, putamen, caudate nucleus @koolschijn_brain_2009
+-   Schizophrenia - anterior cingulate, hippocampus/amygdala, thalamus, insula @shepherd_systematic_2012
+-   Anxiety - amygdala, insula, anterior cingulate cortex @holzschneider_neuroimaging_2011
+
+![Subcortical regions highlighted in red](figures/Subcortical_regions.png){data-id="fig:subRegions" width="50%"}
+
+``` {style="font-size: 50%;"}
+Image generated at theanatomyoflove.com
+```
+
+## Subcortical volumes are heritable {auto-animate="true"}
+
+-   In young adults and adults @zhao_heritability_2019
+-   Heritability of head size changes through lifespan @smit_heritability_2010
+
+![Heritability across brain volumes, Red means highly heritable](figures/UKB_herit.jpeg){data-id="fig:UKBHerit" width="66%"}
+
+## Extending the trajectory
+
+-   Regional heritability varies through lifetime in adults @zhao_heritability_2019
+-   Want to extend their scale to younger years
+-   **Q: Are regional volumes heritabile in adolescents (9-10 years old)?**
+
+![Heritability of brain regions for different age groups](figures/UKB_trajectory.jpeg){data-id="fig:heritTraj" width="66%"}
+
+# Difficulties in extending timeline
+
+## Difficult to estimate since the largest dataset is multiple sites
+
+-   Adolescent Brain Cognitive Development study (ABCD)
+-   Taken over 22 sites
+-   Confounding with scanner and site effects
+
+![Map of ABCD sites](figures/ABCD_map.jpg){data-id="fig:map" width="90%"}
+
+# Variance component models to estimate heritability
+## Linear model explaining genetic influence
+\begin{align*}
+  Y= X_g\beta_g + X_d\beta_d + \epsilon
+\end{align*}
+
+- $X_d$ is demographics (i.e. age, sex, etc.)
+- $X_g$ is ($\# subjects \times \# SNPs$) genetic data ($\# SNPs >> \# subjects$)
+
+## Variance component models for heritability
+
+- Assume SNPs $\beta_g \sim N(0, \sigma_g^2(2f(1-f))^{-1}/m)$
+- Genetic relatedness matrix (GRM) is genetic correlation between individuals ($GRM = X_g^{stand}X_g^{stand,T}/\# SNPs$)
+- $PC_j$ is the jth pc of the GRM
+- Then the model reduces to 
+
+\begin{align*}
+  Y = X_d\beta_d + \sum_{i=1}^k\lambda_iPC_i + \epsilon \\
+  Var(\epsilon) \sim \sigma_g^2 GRM + \sigma_e^2 I + \sum_{i=1}^k \delta_i PC_iPC_i'
+\end{align*}
+
+- Interested in heritability $:= \frac{\sigma_g^2}{\sigma_g^2 + \sigma_e^2}$ 
+
+## AdjHE extension accounts for site effects in second moment
+
+- Estimate $\sigma_g^2, \sigma_e^2$ via Restricted Maximum Likielihood (REML) or method of moments (MOM)
+- Previously, created closed form solution to MOM (AdjHE)
+- Next, control for site effects into MOM
+- Phenotypes measured over multiple sites/scanners but same protocol assume only mean affected
+- $X_s$ site mebership matrix
+
+\begin{align*}
+  EY = X_d\beta_d + X_S\beta_S + \sum \lambda_i PC_i \\
+  Var(Y) = \sigma_g^2 GRM + \sum \delta_i PC_iPC_i' + \sigma_e^2I
+\end{align*} 
+
+## AdjHE extension accounts for site effects in second moment
+- Many sites leads to estimation of high dim $\beta_S$
+- First $k$ PCs of GRM correlate to site membership
+- Additionally assume site effect iid with variance $\sigma_S^2$
+
+
+\begin{align*}
+  EY = X_d\beta_d + \sum \lambda_iPC_i \\
+  Var(Y) = \sigma_g^2 GRM + \sigma_S^2S + \sum \delta_iPC_iPC_i' + \sigma_e^2I
+\end{align*} 
+
+- Heritability: genetic influence ($\sigma_g^2$) vs environment ($\sigma_e^2$)
+- Closed form OLS solution on 2nd moment
+
+## Outperforms existing methods adjusting for site effects
+
+::: columns
+::: {.column .column width="35%"}
+-   Other estimators necessitate site indep of genetics
+-   up to 4x faster computation (with minimal optimization)
+:::
+
+::: {.column .column width="65%"}
+![Simulated comparisons](figures/Adding_sites_n_clusts_het.png){data-id="fig:simResults" width="120%"} 
+:::
+:::
+
+# Multiple subcortical volumes highly heritable in adolescence
+
+-   Lowest heritability in oldest part of brain: brain stem
+-   Higher heritability in outer regions: hippocampus, cerrebellum
+
+![Heritability estimates visualized on the brain](figures/AdjHE_RE_brain.png){data-id="fig:BrainEsts"}
+
+## Future extensions and applications
+
+- Estimate heritability of functional networks (and their topographies)
+- Extend estimation to multivariate traits
+
+![Functional topologies as a function of age](figures/brainTopo.jpg){data-id="fig:brainTopo" width=100%}
+
+``` {style="font-size: 50%;"}
+Image credit Cao et al. 2014
+```
+# Toolbox
+
+## Simulation features
+::: columns
+::: {.column width="55%"}
+![Simulation diagram](figures/simulation_diagram.png){alt="Simulation diagram" fig-align="center"}
+:::
+
+::: {.column width="45%"}
+- Simulates phenotypes from existing or simulated GWAS data
+- Control heritability across distinct genetic clusters
+- Control shared vs nonshared SNP effects across genetic clusters
+:::
+:::
+
+## Estimation features
+- GREML (via GCTA wrapper)
+- Method of Moments estimation
+- United 8 site adjustment methods
+- Efficient internal looping for methods of moments approach
+
+
+## Thank you
+
+**Questions?**
+
+## Estimation with balanced sites
+![Simulated comparisons](figures/Adding_sites_n_clusts_homo.png){data-id="fig:simResults" width="90%"} 
+
+## All ABCD estimates
+![](figures/Full_ests.png){data-id="fig:allEsts" width="100%"}
+
+## ABCD PCs
+![](figures/PC_R2.png){data-id="fig:PCR2" width="100%"}
+
+## Site 16
+![](figures/Site16.png){data-id="fig:Site16" width="100%"}
+
+## European estimates
+![](figures/EUR.png){data-id="fig:EUR" width="100%"}
+
+## GxEMM
+
+$$
+Y = X\alpha + \color{red}{G\beta} + \sum \color{blue}{G Z_k\gamma_k} + \color{orange}{Z_k \delta_k} + \color{black}{\epsilon}
+$$
+
+- Simulating phenotypes conserving hertiability for ancestries
+- \color{red}{Shared genetic effects}
+- \color{blue}{Ancestry genetic effects}
+- \color{orange}{Ancestry effects}
+- \color{black}{Assume effects proportional to frequency $\beta \sim N(0, \tau^2\frac{\sigma^2}{m})$ $\tau^2_s \propto f_s(1-f_s)^{\alpha}$}
+
+
+## References
