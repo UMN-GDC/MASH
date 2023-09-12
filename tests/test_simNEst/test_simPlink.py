@@ -3,19 +3,19 @@ import pytest
 from Estimate.estimators.GCTA_wrapper import GCTA, gcta
 from Estimate.estimators.all_estimators import Basu_estimation
 from Simulate.simulation_helpers.Sim_generator import pheno_simulator
+from Estimate.data_input.load_data import ReadGRMBin  
 
 #%% Basic testing for single site and cluster
 
 @pytest.fixture
 def C2S1() :
     rng = np.random.default_rng(123)
-    sim = pheno_simulator(rng = rng, nsubjects= 1000)
-    sim.sim_sites(nsites =1)
-    sim.sim_pops(nclusts= 2)
-    sim.sim_genos()
-    sim.sim_pheno(h2Hom = 0.01, h2Het= [0.25, 0.25])
+    sim = pheno_simulator(rng = rng, plink_prefix = "Estimate/examples/Genotype_files/geno")
+    sim.genotypes = np.array(sim.genotypes)
+    sim.df["subj_ancestries"] = np.repeat(1, sim.df.shape[0])
+    sim.sim_pheno(h2Hom = 0.5, h2Het= [0, 0])
     est = Basu_estimation()
-    est.GRM = sim.GRM
+    (ids,  est.GRM) =  ReadGRMBin("Estimate/examples/Input_files/grm")
     est.df = sim.df
     return est 
 

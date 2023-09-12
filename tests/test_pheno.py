@@ -8,6 +8,8 @@ Created on Thu Mar 16 14:42:57 2023
 import numpy as np
 import matplotlib.pyplot as plt
 import statsmodels.formula.api as smf
+from Simulate.simulation_helpers.Sim_generator import pheno_simulator
+#%%
 
 def SNPEffectSampler(rng, genotypes, variance=0.5) :
     """
@@ -23,15 +25,21 @@ def SNPEffectSampler(rng, genotypes, variance=0.5) :
     variance : float, optional
         desired heritability. The default is 0.5.
     """
-    freqs = genotypes.mean(axis = 0)/2
-    beta = rng.normal(0, np.sqrt(variance/genotypes.shape[1] * (2*freqs* (1-freqs)) **(-1)))
-    beta[np.isinf(beta)] = 0
-    effect = np.dot(genotypes, beta)
-    sig = np.var(effect)
-    errors = rng.normal(0, np.sqrt(sig * (1- variance) / variance), effect.shape)
-    # rescale to be precisely the variance we want
-    effect = effect / np.sqrt(sig) * np.sqrt(variance)
-    errors = errors / errors.std() * np.sqrt(1-variance)
+    if variance != 0 : 
+        freqs = genotypes.mean(axis = 0)/2
+        beta = rng.normal(0, np.sqrt(variance/genotypes.shape[1] * (2*freqs* (1-freqs)) **(-1)))
+        beta[np.isinf(beta)] = 0
+        effect = np.dot(genotypes, beta)
+        sig = np.var(effect)
+        errors = rng.normal(0, np.sqrt(sig * (1- variance) / variance), effect.shape)
+        # rescale to be precisely the variance we want
+        # effect = effect / np.sqrt(sig) * np.sqrt(variance)
+        # errors = errors / errors.std() * np.sqrt(1-variance)
+    else :
+        beta = np.repeat(0, genotypes.shape[1])
+        effect = np.repeat(0, genotypes.shape[0])
+        errors = np.repeat(0, genotypes.shape[0])
+
     return beta, effect, errors
 
 
@@ -72,18 +80,16 @@ def sim_pheno(rng, genotypes, df, h2Hom, h2Het, phenoname = "Y0", causals= None)
     if causals is None :
         prop_causal = 0.1
         nCausal = int(nSNPs * prop_causal)
-        freqs = genotypes.mean(axis = 0)/2
-        goodMAF = (freqs > 0.1) & (freqs < 0.9)
-        causals = rng.choice(sum(goodMAF), nCausal, replace=False, shuffle=False)
+        causals = rng.choice(nSNPs, nCausal, replace=False, shuffle=False)
     else : 
         nCausal = len(causals)
-    homo_eff, df["homo_contrib"], errors =  SNPEffectSampler(rng, genotypes[:,goodMAF][:,causals], variance=h2Hom) 
+    homo_eff, df["homo_contrib"], errors =  SNPEffectSampler(rng, genotypes[:,causals], variance=h2Hom) 
 
     nclusts = df.subj_ancestries.nunique()
     cluster_eff = np.zeros((nCausal, nclusts))
     cluster_contrib = np.zeros(nsubjects)
     # cluster specific effects
-    if nclusts > 1 :
+    if (nclusts > 1) and (sum(h2Het) >0):
         for cluster in range(nclusts) :
             cluster_position = df.subj_ancestries == cluster 
             cluster_eff[:,cluster], cluster_contrib[cluster_position], errors[cluster_position] = SNPEffectSampler(rng,
@@ -100,3 +106,9 @@ def sim_pheno(rng, genotypes, df, h2Hom, h2Het, phenoname = "Y0", causals= None)
     df[str(phenoname)] = phen - phen.mean() 
     return df, causals, homo_eff, cluster_eff 
 
+#%%
+
+sim = pheno_simulator()
+sim.sim_sites()
+sim.sim_pops(nclusts= 2)
+sim.sim_genos()

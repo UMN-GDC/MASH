@@ -90,10 +90,9 @@ def AdjHE(A, df, mp, random_groups = None, npc=0, std=False):
         yty = np.inner(y,y)
         Ycol= np.array([yay - np.sum(Tjs * Sjs),
                         yty - np.sum(Tjs)])
-        sigmas = np.array(np.matmul(XXinv, Ycol)).flatten()
+        sigmas = abs(np.array(np.matmul(XXinv, Ycol)).flatten())
         
         h2 = sigmas[0] / (sigmas[0] + sigmas[1])
-        ss = 0
         # var_h2 = 2 * (sigmas[1]**2 * trA2 - 2*sigmas[0]*sigmas[1] * trA  + sigmas[0] **2 * n) / (sigmas[0] + sigmas[1])
 
         
@@ -157,12 +156,10 @@ def AdjHE(A, df, mp, random_groups = None, npc=0, std=False):
         trQSQY = np.trace(QSQ * youter)
         trYout =  np.trace(youter)
         # Possible that the y's will need to account for prinicpal componetns in future real data cases
-        sigmas = XtXm1.dot(np.matrix([[trAY], [trQSQY], [trYout]]))
+        sigmas = abs(XtXm1.dot(np.matrix([[trAY], [trQSQY], [trYout]])))
         
-        
-        ss = sigmas[1,0]
-        
-        h2 = sigmas[0,0] / (sigmas[0,0] + sigmas[2,0])
+         
+        h2 = sigmas[0,0] / (sigmas[0,0]  + sigmas[2,0])
         # var_h2 = 2 * (sigmas[2,0]**2 * trA2 - 2*sigmas[0,0]*sigmas[2,0] * trA  + sigmas[0,0] **2 * n) / (sigmas[0,0] + sigmas[2,0])
 
         

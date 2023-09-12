@@ -20,6 +20,8 @@ def AdjHE2(A,y,trA=None,trA2=None, npc= 0):
         c = np.dot(std_y,pc)**2 - 1
         denominator = trA2 - 2*trA + n - np.sum(b**2)
         nominator = n - trA + yay - yty - np.sum(b*c)
+    nominator = abs(nominator)
+    denominator = abs(denominator)
     h2 = nominator/denominator
     var_ge = 2/denominator
     print(h2)

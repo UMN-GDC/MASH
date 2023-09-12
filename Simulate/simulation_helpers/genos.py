@@ -55,8 +55,8 @@ def sim_genos(rng, cluster_frequencies, subject_ancestries):
     # standardize the genotpyes
     freqs = np.mean(genotypes, axis=0) / 2
     # remove snps with frequencies of 0 or 1
-    genotypes = genotypes[:, (freqs > 0.01) & (freqs < 0.99)]
-    freqs = freqs[(freqs>0.01) & (freqs< 0.99)]
+    genotypes = genotypes[:, (freqs > 0.1) & (freqs < 0.9)]
+    freqs = freqs[(freqs>0.1) & (freqs< 0.9)]
     stand_geno = np.matrix((genotypes- 2 * freqs) /
                           np.sqrt(2 * freqs * (1 - freqs)))
 
