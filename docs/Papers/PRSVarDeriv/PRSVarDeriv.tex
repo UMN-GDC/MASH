@@ -1,6 +1,8 @@
 \documentclass{article}
 \usepackage{graphicx} % Required for inserting imagesk
 \usepackage{amsmath}
+\usepackage{pgfplots}
+\pgfplotsset{compat= newest}
 
 \newcommand{\C}{\mathcal{C}}
 \newcommand{\V}{\mathcal{V}}
@@ -167,5 +169,14 @@ To get an idea of how this looks, we note $\sigma_e^2 = 1$ and we'll fix $\beta=
 \begin{align*}
   Var(h^2 )& = \frac 19(p_1- 1/4)^2
 \end{align*}
+
+\begin{tikzpicture}
+  \begin{axis}[]
+    \addplot[domain=0:1]{(1/9) * (x - 1/4)^2};
+  \end{axis}
+\end{tikzpicture}
+
+
+
 
 \end{document}
