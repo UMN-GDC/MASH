@@ -42,7 +42,7 @@ class pheno_simulator():
             self.genotypes = bed.T
             self.rng = np.random.default_rng()
             # Include subject ancestries
-            if subjAncestries None :
+            if subjAncestries is None :
                 self.df["subj_ancestries"] = 1  
             else : 
                 temp = pd.read_csv(subjAncestries)
