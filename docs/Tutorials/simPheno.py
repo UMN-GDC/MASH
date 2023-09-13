@@ -10,5 +10,13 @@ sim.sim_pops(nclusts= 2)
 sim.sim_genos()
 sim.sim_pheno(h2Hom = 0.5, h2Het= [0, 0], alpha = 0)
 
-sim.df.to_csv('simulated_pheno.csv', index=False)
+# If you want to save the simulated data, uncomment the following lines
+# sim.df.to_csv('simulated_pheno.csv', index=False)
+
+
+#%%
+est = Basu_estimation()
+est.GRM = sim.GRM
+est.df = sim.df
+result = est.estimate(mpheno = ["Y0", "Y1"], npc = [0, 1], Method = "GCTA", fixed_effects= ["Xc"])
 
