@@ -1,5 +1,5 @@
 from Estimate.estimators.GCTA_wrapper import GCTA, gcta
-from Estimate.estimators.all_estimators import Basu_estimation
+from Estimate.estimators.all_estimators import h2Estimation
 from Simulate.simulation_helpers.Sim_generator import pheno_simulator
 import numpy as np
 
@@ -15,7 +15,7 @@ sim.sim_pheno(h2Hom = 0.5, h2Het= [0, 0], alpha = 0)
 
 
 #%%
-est = Basu_estimation()
+est = h2Estimation()
 est.GRM = sim.GRM
 est.df = sim.df
 result = est.estimate(mpheno = ["Y0", "Y1"], npc = [0, 1], Method = "GCTA", fixed_effects= ["Xc"])

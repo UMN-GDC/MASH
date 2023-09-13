@@ -6,7 +6,7 @@ Created on Sat Mar 11 09:09:56 2023
 @author: christian
 """
 from Estimate.data_input.parser import get_args, read_flags
-from Estimate.estimators.all_estimators import Basu_estimation
+from Estimate.estimators.all_estimators import h2Estimation
 
 
 import pytest
@@ -20,7 +20,7 @@ def args() :
 
 @pytest.fixture
 def estimator(args) :
-    ests = Basu_estimation(prefix = args["prefix"],
+    ests = h2Estimation(prefix = args["prefix"],
                            pheno_file = args["pheno"],
                            cov_file = args["covar"],
                            PC_file = args["PC"],

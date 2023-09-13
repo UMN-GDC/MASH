@@ -143,7 +143,7 @@ def load_n_estimate(df, fixed_effects, nnpc, mp, GRM, PC_effect = "fixed", std=F
         pass
         
 
-class Basu_estimation():
+class h2Estimation():
     def __init__(self, prefix=None, pheno_file=None, cov_file=None, PC_file=None, k=0, ids=None):
         if prefix == None:
             logging.info("Enter preloaded values...")

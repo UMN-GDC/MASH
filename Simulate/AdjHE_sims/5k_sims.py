@@ -4,7 +4,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 from Estimate.estimators.GCTA_wrapper import GCTA, gcta
-from Estimate.estimators.all_estimators import Basu_estimation
+from Estimate.estimators.all_estimators import h2Estimation
 from Simulate.simulation_helpers.Sim_generator import pheno_simulator
 
 reps = 50
@@ -17,7 +17,7 @@ for sites, dist, rep in itertools.product([2, 25], ["EQUAL", "UNEQUAL"], list(ra
     sim.sim_pops(nclusts= 2)
     sim.sim_genos()
     sim.sim_pheno(h2Hom = 0.66, h2Het= [0,0], alpha = -1)
-    est = Basu_estimation()
+    est = h2Estimation()
     est.GRM = sim.GRM
     est.df = sim.df
     h2s.loc[("S"+ str(sites), dist, rep), "Combat"] = est.estimate(mpheno = ["Y0", "Y1"], npc = [1],
@@ -38,7 +38,7 @@ for sites, dist, rep in itertools.product([2, 25], ["EQUAL", "UNEQUAL"], list(ra
     sim.sim_pops(nclusts= 2)
     sim.sim_genos()
     sim.sim_pheno(h2Hom = 0.66, h2Het= [0,0], alpha = -1)
-    est = Basu_estimation()
+    est = h2Estimation()
     est.GRM = sim.GRM
     est.df = sim.df
     h2s.loc[("S"+ str(sites), dist, rep), "Combat"] = est.estimate(mpheno = ["Y0", "Y1"], npc = [1],

@@ -14,7 +14,7 @@ import seaborn as sns
 import itertools
 from tqdm.auto import tqdm
 from Simulate.simulation_helpers.Sim_generator import pheno_simulator
-from Estimate.estimators.all_estimators import Basu_estimation
+from Estimate.estimators.all_estimators import h2Estimation
 
 
 
@@ -29,7 +29,7 @@ def sim_n_est(nsubjects = 1000, h2 = 0.5, nsites = 30,
     # Run through full simulation and estimation
     sim.full_sim(nsites= nsites, h2= h2, phens = phens, nclusts = nclusts, random_BS = random_BS)
 
-    ests = Basu_estimation()
+    ests = h2Estimation()
     ests.df= sim.df
     ests.GRM = sim.GRM
     ests.mpheno = ["Y1"] 

@@ -11,7 +11,7 @@ import numpy as np
 import pandas as pd
 from Estimate.data_input.parser import get_args, read_flags
 from Estimate.data_input.load_data import ReadGRMBin
-from Estimate.estimators.all_estimators import Basu_estimation
+from Estimate.estimators.all_estimators import h2Estimation
 
 
        
@@ -44,7 +44,7 @@ def test_loading_GRMBin() :
 @pytest.mark.loading
 def test_loading_all() :
     args= read_flags({"argfile" : "AdjHE/examples/Generic.json"})
-    ests = Basu_estimation(prefix = args["prefix"],
+    ests = h2Estimation(prefix = args["prefix"],
                            pheno_file = args["pheno"], 
                            cov_file= args["covar"], 
                            PC_file= args["PC"],

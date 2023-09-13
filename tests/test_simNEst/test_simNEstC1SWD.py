@@ -1,5 +1,5 @@
 from Estimate.estimators.GCTA_wrapper import GCTA, gcta
-from Estimate.estimators.all_estimators import Basu_estimation
+from Estimate.estimators.all_estimators import h2Estimation
 from Simulate.simulation_helpers.Sim_generator import pheno_simulator
 import numpy as np
 import pytest
@@ -14,7 +14,7 @@ def C1S1() :
     sim.sim_pops(nclusts= 2)
     sim.sim_genos()
     sim.sim_pheno(h2Hom = 0.5, h2Het= [0,0], alpha = -1)
-    est = Basu_estimation()
+    est = h2Estimation()
     est.GRM = sim.GRM
     est.df = sim.df
     return est 
@@ -43,7 +43,7 @@ def test_thoroughC1S1():
         sim.sim_pops(nclusts= 2)
         sim.sim_genos()
         sim.sim_pheno(h2Hom = 0.5, h2Het= [0,0], alpha = -1)
-        est = Basu_estimation()
+        est = h2Estimation()
         est.GRM = sim.GRM
         est.df = sim.df
         h2s[i]= est.estimate(mpheno = ["Y0"], npc = [1], Method = "SWD", random_groups = "abcd_site", PC_effect = "random", fixed_effects= ["Xc"])["h2"][0]

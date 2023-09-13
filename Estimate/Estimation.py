@@ -18,7 +18,7 @@ import logging
 # os.chdir("/panfs/roc/groups/3/rando149/coffm049/tools/Basu_herit")
 from Estimate.data_input.parser import get_args, read_flags
 # from Estimate.traits_visualizer import covs_vs_cov_of_interest
-from Estimate.estimators.all_estimators import Basu_estimation
+from Estimate.estimators.all_estimators import h2Estimation
 
 def main():
     #%% Get command line arguments
@@ -33,7 +33,7 @@ def main():
     logging.info("Loading data")
     #%% Read in all data
     
-    ests = Basu_estimation(prefix = args["prefix"],
+    ests = h2Estimation(prefix = args["prefix"],
                               pheno_file = args["pheno"], 
                               cov_file= args["covar"], 
                               PC_file= args["PC"],
