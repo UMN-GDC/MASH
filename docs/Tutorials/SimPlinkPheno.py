@@ -10,7 +10,19 @@ import pytest
 
 rng = np.random.default_rng(123)
 # Instantiate a simulator If the simulation is comprised of multiple ancestries, put a filepath containing the FID, IID in the same order as the genotpes, and a column with the ancestries
-sim = pheno_simulator(rng = rng, plink_prefix="Estimate/examples/Genotype_files/geno", subjAncestries= None)
+sim = pheno_simulator(rng = rng, 
+                      plink_prefix="Estimate/examples/Genotype_files/geno", 
+                      grmPrefix = "Estimate/examples/Input_files/grm", 
+#                      covarFile = "Estimate/examples/Input_files/covar.txt",
+                      subjAncestries= None)
 # Detemrine how many sites, genetic clusters you want
-sim.full_sim(nclusts=2, nsites=2)
+sim.sim_pheno(h2Hom = 0.5, h2Het= [0, 0], alpha = 0)
+
+
+#%%
+est = Basu_estimation()
+est.GRM = sim.GRM
+est.df = sim.df
+result = est.estimate(mpheno = ["Y0", "Y1"], npc = [0, 1], Method = "GCTA", fixed_effects= ["Xc"])
+
 

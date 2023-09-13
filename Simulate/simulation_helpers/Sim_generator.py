@@ -10,6 +10,7 @@ import logging
 import numpy as np
 import pandas as pd
 from pandas_plink import read_plink
+from Estimate.data_input.load_data import ReadGRMBin
 from Simulate.simulation_helpers.sites import sim_sites
 from Simulate.simulation_helpers.clusters import sim_pop_alleles, assign_clusters
 from Simulate.simulation_helpers.genos import sim_genos
@@ -18,7 +19,7 @@ from Simulate.simulation_helpers.plink_pheno import sim_plink_pheno
 
 
 class pheno_simulator():
-    def __init__(self, rng= None, nsubjects=1000, nSNPs=1000, plink_prefix=None, subjAncestries = None):
+    def __init__(self, rng= None, nsubjects=1000, nSNPs=1000, plink_prefix=None, grmPrefix= None, covarFile=  None, subjAncestries = None):
         self.rng = np.random.default_rng(rng)
         self.plink_prefix = plink_prefix
         
@@ -32,12 +33,22 @@ class pheno_simulator():
 
 
         else :
+            if grmPrefix == None :
+                # break the function
+                logging.error("GRM prefix not specified")
+                return
+            else : 
+                self.GRM = ReadGRMBin(grmPrefix)
             self.plink_prefix= plink_prefix
             
             (bim, fam, bed) = read_plink(plink_prefix)
             (self.nSNPs, self.nsubjects) = bed.shape
             self.df = pd.DataFrame({"FID": fam.fid,
                                     "IID": fam.iid})
+
+            if covarFile is not None :
+                covars = pd.read_csv(covarFile, sep='\s+')
+                self.df = pd.merge(self.df, covars, on = ["FID", "IID"])
             # bed is (nSNPs x nsubjects) so transpose it
             self.genotypes = bed.T
             self.rng = np.random.default_rng()
