@@ -1,12 +1,20 @@
 library(tidyverse)
+library(ggsci)
 
 # GCCTA keep 3 pcs
 # SWD, Combat, RE 2 pc
 # AdjHE 1 pcs
+# HOMO
+df <- read_csv("/home/christian/Research/Stat_gen/tools/MASH/Simulate/Results/Results/EQUAL_HOMO_5000.csv") %>%
+  filter(case_when(nclusts == 2 ~ nnpc == 1,
+                  nclusts == 1 ~ nnpc == 0))%>% 
+  select(GCTA, nGCTA, nAdjHE, AdjHE, SWD, Combat, AdjHE_RE, nsites, nclusts, sg, ss, se) %>%
+  pivot_longer(-c(nclusts, nsites, sg, ss, se), names_to = "Estimator", values_to = "Estimate") 
 
+# Hetero
 ########################### Load data
-df <- read_csv("/home/christian/Research/Stat_gen/tools/Basu_herit/Simulations/Het_5000_pc_fixed.csv") %>%
-  rename(Estimator = variable, Estimate = value) %>%
+df <- read_csv("/home/christian/Research/Stat_gen/tools/MASH/Simulate/Results/Het_5000_pc_fixed.csv") %>% rename(Estimator = variable, Estimate = value) 
+df <- df %>%
   mutate(Estimator = factor(Estimator, levels = c("GCTA", "nGCTA", "SWD", "Combat", "nAdjHE", "AdjHE", "AdjHE_RE")),
          `Study Type` = case_when(grepl("AdjHE", Estimator) ~ 'Single',
                                   grepl("GCTA", Estimator) ~ 'Single',
@@ -19,12 +27,6 @@ df <- read_csv("/home/christian/Research/Stat_gen/tools/Basu_herit/Simulations/H
     unite("Group", c(nsites, Estimator, sg, ss), sep = "_", remove = F) %>%
   drop_na()
 
-
-
-
-# apply(df, MARGIN = 2, unique)
-
-
 df %>% 
   ggplot(aes(y = Estimator, x = Estimate, fill= `Study Type`)) +
   geom_boxplot() +
@@ -34,11 +36,13 @@ df %>%
   ylab("") +
   xlab(expression(paste("Heritability Estimate", (hat(h^{2}))))) +
   xlim(0,1) +
+  theme_minimal() +
+  scale_color_npg() + 
+  scale_fill_npg() +
+#  ggtitle("EQUAL subpopulations: Homoskedastic")
   ggtitle("IID subpopulations: Heteroskedastic")
 
-ggsave("Adding_sites_n_clusts_het.png", 
-       dpi= 600)
-
+ggsave("Adding_sites_n_clusts_het.png", width = 10, height = 10, units = "in", dpi= 600)
 
 
 df <- read_csv("5k_SWD_COMBAT_0.csv")

@@ -1,25 +1,22 @@
 root - INFO - Started
 root - INFO - These are the list of arguments that were input:
-root - INFO - {'PC': 'AdjHE/examples/Input_files/pcas.eigenvec', 'covar': 'AdjHE/examples/Input_files/covar.txt', 'prefix': 'AdjHE/examples/Input_files/grm', 'pheno': 'AdjHE/examples/Input_files/pheno.phen', 'out': 'AdjHE/examples/AdjHE_results2', 'npc': [3, 5], 'mpheno': ['Head_size'], 'k': 0, 'std': False, 'fixed_effects': None, 'argfile': '/home/christian/Research/Stat_gen/tools/Basu_herit/Example/Arg_file.json', 'loop_covars': False, 'covar_relates': False, 'random_groups': None, 'Naive': False, 'Method': 'AdjHE', 'ids': None}
+root - INFO - {'PC': 'Estimate/examples/Input_files/pcas.eigenvec', 'covar': 'Estimate/examples/Input_files/covar.txt', 'prefix': 'Estimate/examples/Input_files/grm', 'pheno': 'Estimate/examples/Input_files/pheno.phen', 'out': 'Estimate/examples/AdjHE_results2', 'npc': [3, 5], 'mpheno': ['Head_size'], 'k': 0, 'std': False, 'fixed_effects': ['abcd_site'], 'argfile': '/home/christian/Research/Stat_gen/tools/Basu_herit/Example/Arg_file.json', 'loop_covars': False, 'covar_relates': False, 'random_groups': None, 'Naive': False, 'Method': 'AdjHE', 'ids': None}
 root - INFO - Loading data
 root - INFO - Loading data...
 root - INFO - Estimating
 root - INFO - Estimating with AdjHE
+root - INFO - RV: None
 root - INFO - Beginning estimation
-root - DEBUG - []
-root - DEBUG - Formula is Head_size~ 1
-root - DEBUG - (5000,)
-root - DEBUG - (3, 5000, 5000)
+root - DEBUG - ['abcd_site']
+root - DEBUG - First Momment formula is Head_size ~ abcd_site + pc_1 + pc_2 + pc_3
 root - WARNING - Variance estimate is negative setting as absolute value
-root - DEBUG - Started11114.469280565
-root - DEBUG - Ended11117.97368272
-root - DEBUG - 3.504402155000207
-root - DEBUG - Formula is Head_size~ 1
-root - DEBUG - (5000,)
-root - DEBUG - (5, 5000, 5000)
+root - DEBUG - Started6273.597911846
+root - DEBUG - Ended6275.800761482
+root - DEBUG - 2.2028496359998826
+root - DEBUG - First Momment formula is Head_size ~ abcd_site + pc_1 + pc_2 + pc_3 + pc_1 + pc_2 + pc_3 + pc_4 + pc_5
 root - WARNING - Variance estimate is negative setting as absolute value
-root - DEBUG - Started11117.975032527
-root - DEBUG - Ended11121.478908494
-root - DEBUG - 3.5038759670005675
-root - INFO - Writing results to AdjHE/examples/AdjHE_results2
+root - DEBUG - Started6275.802131901
+root - DEBUG - Ended6277.969116929
+root - DEBUG - 2.1669850279995444
+root - INFO - Writing results to Estimate/examples/AdjHE_results2
 root - INFO - Finished

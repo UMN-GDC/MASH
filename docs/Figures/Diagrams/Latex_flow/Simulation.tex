@@ -47,7 +47,7 @@ draw=black]
 \node (anc_freq) [tnode, fill = red!30] {
   Ancestral frequencies
   \nodepart{second}
-  $p_{0g} \stackrel{iid}{\sim} Uni(0.1, 0.9 $) 
+  $p_{0m} \stackrel{iid}{\sim} Uni(0.1, 0.9 $) 
   \nodepart{third}
   \#SNPs
 };
@@ -56,9 +56,9 @@ draw=black]
 \node (sub_freq) [tnode, fill = red!30, below=  of anc_freq] {
   Subpopulation frequencies
   \nodepart{second}
-  for ancestry $a, p_{ag} \sim f_g(\theta, p_{0g})$
+  for ancestry $k, p_{km} \sim Beta(\theta, p_{0m})$
   \nodepart{third}
-  $\theta, f_g$ 
+  $\theta$ 
 };
 
 
@@ -66,15 +66,15 @@ draw=black]
 \node (site_comps) [tnode, fill = blue!30, right = of sub_freq] {
 	Site compositions
 	\nodepart{second}
-	for site s, $c_s \sim f_c$
+	for site l, $c_l \sim Dir(1)$
 	\nodepart{third}
-	$f_c$, \# sites
+  \# sites 
 };         
 
 \node (site_eff) [tnode, fill = blue!30, right = of site_comps] {
 	Site effects
 	\nodepart{second}
-	$\beta_{s} \sim N(0,\sigma_S^2)$
+	$\beta_{S} \sim N(0,\sigma_S^2)$
 	\nodepart{third}
 	$\sigma_S^2$
 };           
@@ -82,30 +82,30 @@ draw=black]
 \node (site_anc_assign) [tnode, fill = yellow!30, below = of site_comps] {
 	Site/Ancestral assign
 	\nodepart{second}
-	$X_{si} \sim Uni(1/n_s)$
+	$X_{si} \sim Uni(n/\# sites)$
 	\nodepart{third}
-	$X_{ai} \sim f(c_s|s=X_{si})$
+	$X_{ki} \sim f(c_s|s=X_{is})$
 };           
 
 \node (gene_assign) [dnode, fill = yellow!30, below left = of site_anc_assign] {
 	Gene assignment
 	\nodepart{second}
-	$X_{gi} \sim Ber(p_a | a = X_{ai})$
+	$X_{gi} \sim Ber(p_k | k = X_{ki})$
 	\nodepart{third}
 };        
 
 \node (gene_eff) [tnode, fill = green!30, below = of gene_assign] {
 	SNP effects
 	\nodepart{second}
-	$\beta_{G} \sim p_{causal}N(0, \sigma_G^2)$
+	$\beta_{g} \sim p_{causal}N(0, \sigma_g^2)$
 	\nodepart{third}
-	$p_{causal}, \sigma_G^2$
+	$p_{causal}, \sigma_g^2$
 };           
 
 \node (pheno) [dnode, fill = green!30, right = of gene_eff] {
 	Phenotype
 	\nodepart{second}
-	$Y_i = X_{gi}\beta_G + X_{si}\beta_S + \epsilon_i$
+	$Y_i = X_{gi}\beta_g + X_{si}\beta_S + \epsilon_i$
 };           
 
    

@@ -70,7 +70,7 @@ def load_n_estimate(df, fixed_effects, nnpc, mp, GRM, PC_effect = "fixed", std=F
         
     pc_cols = ["pc_" + str(p) for p in range(1, nnpc +1)]
 
-    if fixed_effects == None :
+    if fixed_effects is None :
         fixed_effects = []
     
     # GCTA is the only method that doesn't need to specify whether npcs are fixed or mixed.
