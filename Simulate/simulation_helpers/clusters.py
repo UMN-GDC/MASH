@@ -17,7 +17,7 @@ def sim_pop_alleles(rng, theta_alleles = [0.8, 0.2], nclusts=1, nSNPs = 1000, sh
     theta_alleles : list of floats, optional
         between 0, 1, parameter controling the similarity between genetic clusters. near 0- similar clusters, near 1- distinct clusters. 
         First value is for nonshared regions, second is for shared regions
-        The default is 0.5.
+        The default is [0.8, 0.2].
     nclusts : int, optional
         number of genetic clusters. The default is 1.
     nSNPs : int, optional
