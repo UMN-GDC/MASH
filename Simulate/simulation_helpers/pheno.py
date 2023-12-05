@@ -83,7 +83,8 @@ def sim_pheno(rng, genotypes, df, h2Hom, h2Het, alpha = -1, phenoname = "Y0", ca
     else :
         errors = rng.normal(0, np.sqrt(1-h2Hom), nsubjects)
         # multiply errors such that its variance is equal to 1-h2Hom
-
+    if h2Het[0] == 0  :
+        cluster_contrib =0
     df["cluster_contrib"] = cluster_contrib
     df["errors"] = errors
     df["Xc"] = rng.uniform(0, 1, nsubjects)

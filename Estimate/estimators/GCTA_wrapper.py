@@ -15,9 +15,18 @@ import pandas as pd
 
 
 # Find GCTA
-gcta = subprocess.run(["whereis", "gcta64"], capture_output=True
-                      ).stdout.split(
-                          )[1].decode("utf-8")
+try:
+    gcta = subprocess.run(["whereis", "gcta64"], capture_output=True
+                       ).stdout.split()[1].decode("utf-8") 
+except IndexError : 
+    try :
+        gcta = subprocess.run(["whereis", "gcta"], capture_output=True
+                              ).stdout.split()[1].decode("utf-8") 
+    except IndexError:
+        logging.error("GCTA was not found. Please install GCTA and make sure it is in your path")
+        sys.exit(1)
+
+
 
 
 #%%
