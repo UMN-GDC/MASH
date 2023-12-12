@@ -38,22 +38,24 @@ def sim_pop_alleles(rng, theta_alleles = [0.8, 0.2], nclusts=1, nSNPs = 1000, sh
     theta = theta_alleles
     # simulate ancestral frequency of each SNP, dimensions = (SNPs,)
     ancest_freqs = rng.uniform(low=0.1, high=0.9, size=nSNPs)
+     
+    sharedIdx = np.repeat(False, nSNPs)
+    sharedIdx[:int(nSNPs * shared)] = True
 
-    shared_indices = range(round(nSNPs * shared))
-    
+
     # sample shared cluster allele frequencies
-    cluster_freqs_shared = rng.beta(ancest_freqs[shared_indices] * (1- theta[1]) / theta[1],
-                                    (1-ancest_freqs[shared_indices]) *
+    cluster_freqs_shared = rng.beta(ancest_freqs[sharedIdx] * (1- theta[1]) / theta[1],
+                                    (1-ancest_freqs[sharedIdx]) *
                                     (1-theta[1])/theta[1],
-                                    size=(nclusts, len(shared_indices)))
-    cluster_freqs_nonShared = rng.beta(ancest_freqs[~np.isin(np.arange(nSNPs), shared_indices)] * (1- theta[0]) / theta[0],
-                                        (1-ancest_freqs[~np.isin(np.arange(nSNPs), shared_indices)]) *
+                                    size=(nclusts, sum(sharedIdx)))
+    cluster_freqs_nonShared = rng.beta(ancest_freqs[~sharedIdx] * (1- theta[0]) / theta[0],
+                                        (1-ancest_freqs[~sharedIdx]) *
                                         (1-theta[0])/theta[0],
-                                        size=(nclusts, nSNPs - len(shared_indices)))
+                                        size=(nclusts, nSNPs - sum(sharedIdx)))
     # Concatenate shared and nonShared so that they have same columns and add to the number of rows
     cluster_freqs = np.concatenate((cluster_freqs_shared, cluster_freqs_nonShared), axis = 1)
 
-    return ancest_freqs, cluster_freqs 
+    return ancest_freqs, cluster_freqs, sharedIdx 
 
 
 def assign_clusters(df, rng, nclusts=1, nsites = 1):

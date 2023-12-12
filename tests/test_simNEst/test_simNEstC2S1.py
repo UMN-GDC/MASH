@@ -1,6 +1,7 @@
 from Estimate.estimators.GCTA_wrapper import GCTA, gcta
 from Estimate.estimators.all_estimators import h2Estimation
 from Simulate.simulation_helpers.Sim_generator import pheno_simulator
+from Simulate.summarizers.genotype_viz import plotClusters
 import numpy as np
 import pytest
 
@@ -9,15 +10,17 @@ import pytest
 @pytest.fixture
 def C2S1() :
     rng = np.random.default_rng(123)
-    sim = pheno_simulator(rng = rng, nsubjects= 1000)
+    sim = pheno_simulator(rng = rng, nsubjects= 500)
     sim.sim_sites(nsites =1)
-    sim.sim_pops(nclusts= 2, theta_alleles = [0.95, 0.01])
+    sim.sim_pops(nclusts= 2, theta_alleles = [0.99, 0.01], shared = 0.25)
     sim.sim_genos()
-    sim.sim_pheno(h2Hom = 0.5, h2Het= [0, 0], alpha = 0)
+    sim.sim_pheno(h2Hom = 0.5, h2Het= [0, 0], alpha = 0, prop_causal =[0,0.5])
     est = h2Estimation()
     est.GRM = sim.GRM
     est.df = sim.df
     return est 
+
+plotClusters(sim)
 
 @pytest.mark.C2S1
 def test_simNGCTA(C2S1) :
