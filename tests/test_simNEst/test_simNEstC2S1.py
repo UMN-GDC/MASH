@@ -11,7 +11,7 @@ def C2S1() :
     rng = np.random.default_rng(123)
     sim = pheno_simulator(rng = rng, nsubjects= 1000)
     sim.sim_sites(nsites =1)
-    sim.sim_pops(nclusts= 2)
+    sim.sim_pops(nclusts= 2, theta_alleles = [0.95, 0.01])
     sim.sim_genos()
     sim.sim_pheno(h2Hom = 0.5, h2Het= [0, 0], alpha = 0)
     est = h2Estimation()

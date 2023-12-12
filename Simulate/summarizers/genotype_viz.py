@@ -13,9 +13,9 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 #%%
+# Shared then Non shared
 
-
-def plot_genetic_clusters(sim, output = None) :
+def plotClusters(sim, output = None) :
     """
     Plot the clusters from full GRM, shared GRM, non-shared GRM, causal GRM, and non-causal GRM
 
@@ -37,15 +37,16 @@ def plot_genetic_clusters(sim, output = None) :
     # full PCs
     GRM_pcs[["PC1_Full", "PC2_Full"]] = pca.fit_transform(sim.genotypes)
     # causal PCs
-    GRM_pcs[["PC1_Causal", "PC2_Causal"]] = pca.fit_transform(sim.genotypes[:, sim.causal_idx])
+    GRM_pcs[["PC1_Causal", "PC2_Causal"]] = pca.fit_transform(sim.genotypes[:, sim.causals])
     # noncausal PCs
-    GRM_pcs[["PC1_Noncausal", "PC2_Noncausal"]] = pca.fit_transform(sim.genotypes[:, ~sim.causal_idx])
+    GRM_pcs[["PC1_Noncausal", "PC2_Noncausal"]] = pca.fit_transform(sim.genotypes[:, ~sim.causals])
     # shared PCs
-    GRM_pcs[["PC1_Shared", "PC2_Shared"]] = pca.fit_transform(sim.genotypes[:, sim.shared_idx])
+    shared_idx = np.array(range(int(sim.nSNPs * sim.shared)))
+    GRM_pcs[["PC1_Shared", "PC2_Shared"]] = pca.fit_transform(sim.genotypes[:, shared_idx])
     # not shared PCs
-    GRM_pcs[["PC1_Nonshared", "PC2_Nonshared"]] = pca.fit_transform(sim.genotypes[:, ~sim.shared_idx])
+    GRM_pcs[["PC1_Nonshared", "PC2_Nonshared"]] = pca.fit_transform(sim.genotypes[:, ~shared_idx])
     # shared causal
-    GRM_pcs[["PC1_shared_causal", "PC2_shared_causal"]] = pca.fit_transform(sim.genotypes[:, np.intersect1d(sim.shared_idx, sim.causal_idx)])
+    GRM_pcs[["PC1_shared_causal", "PC2_shared_causal"]] = pca.fit_transform(sim.genotypes[:, np.intersect1d(shared_idx, sim.causals)])
 
 
     test = (pd.wide_to_long(GRM_pcs, stubnames = ["PC1", "PC2"], i = ["index", "subj_ancestries"], 
