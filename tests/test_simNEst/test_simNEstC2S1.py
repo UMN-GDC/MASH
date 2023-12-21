@@ -20,8 +20,6 @@ def C2S1() :
     est.df = sim.df
     return est 
 
-plotClusters(sim)
-
 @pytest.mark.C2S1
 def test_simNGCTA(C2S1) :
     est = C2S1

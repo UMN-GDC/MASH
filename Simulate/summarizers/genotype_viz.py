@@ -29,6 +29,7 @@ def plotClusters(sim, output = None) :
     None.
 
     """
+    nsubjects, nSNPs = sim.genotypes.shape
     pca= PCA(n_components=2)
     
     GRM_pcs = pd.DataFrame({"subj_ancestries" : sim.df.subj_ancestries})
@@ -36,17 +37,33 @@ def plotClusters(sim, output = None) :
     
     # full PCs
     GRM_pcs[["PC1_Full", "PC2_Full"]] = pca.fit_transform(sim.genotypes)
+    
     # causal PCs
-    GRM_pcs[["PC1_Causal", "PC2_Causal"]] = pca.fit_transform(sim.genotypes[:, sim.causals])
+    temp = np.copy(sim.genotypes)
+    temp[:,~sim.causals] = 0  
+    GRM_pcs[["PC1_Causal", "PC2_Causal"]] = pca.transform(temp)
+
     # noncausal PCs
-    GRM_pcs[["PC1_Noncausal", "PC2_Noncausal"]] = pca.fit_transform(sim.genotypes[:, ~sim.causals])
+    temp = np.copy(sim.genotypes)
+    temp[:,sim.causals] = 0  
+    GRM_pcs[["PC1_Noncausal", "PC2_Noncausal"]] = pca.transform(temp)
+
     # shared PCs
-    shared_idx = np.array(range(int(sim.nSNPs * sim.shared)))
-    GRM_pcs[["PC1_Shared", "PC2_Shared"]] = pca.fit_transform(sim.genotypes[:, shared_idx])
+    sharedIdx = np.repeat(False, nSNPs)
+    sharedIdx[0:int(nSNPs * sim.shared)] = True
+    temp = np.copy(sim.genotypes)
+    temp[:,~sharedIdx] = 0
+    GRM_pcs[["PC1_Shared", "PC2_Shared"]] = pca.transform(temp)
+
     # not shared PCs
-    GRM_pcs[["PC1_Nonshared", "PC2_Nonshared"]] = pca.fit_transform(sim.genotypes[:, ~shared_idx])
+    temp = np.copy(sim.genotypes)
+    temp[:,sharedIdx] = 0
+    GRM_pcs[["PC1_Nonshared", "PC2_Nonshared"]] = pca.transform(temp)
+
     # shared causal
-    GRM_pcs[["PC1_shared_causal", "PC2_shared_causal"]] = pca.fit_transform(sim.genotypes[:, np.intersect1d(shared_idx, sim.causals)])
+    temp = np.copy(sim.genotypes)
+    temp[:, np.logical_or(~sharedIdx, ~sim.causals)] = 0
+    GRM_pcs[["PC1_shared_causal", "PC2_shared_causal"]] = pca.transform(temp)
 
 
     test = (pd.wide_to_long(GRM_pcs, stubnames = ["PC1", "PC2"], i = ["index", "subj_ancestries"], 
