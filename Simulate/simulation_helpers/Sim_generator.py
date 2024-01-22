@@ -34,9 +34,7 @@ class pheno_simulator():
 
         else :
             if grmPrefix == None :
-                # break the function
-                logging.error("GRM prefix not specified")
-                return
+                logging.info("GRM prefix not specified, but that's OK")
             else : 
                 self.GRM = ReadGRMBin(grmPrefix)
             self.plink_prefix= plink_prefix
@@ -45,6 +43,9 @@ class pheno_simulator():
             (self.nSNPs, self.nsubjects) = bed.shape
             self.df = pd.DataFrame({"FID": fam.fid,
                                     "IID": fam.iid})
+
+            # Don't need to specify sharedIdx if genotypes prespecified
+            self.sharedIdx =[0] 
 
             if covarFile is not None :
                 covars = pd.read_csv(covarFile, sep='\s+')
