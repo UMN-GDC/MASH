@@ -12,7 +12,7 @@ rng = np.random.default_rng(123)
 # Instantiate a simulator If the simulation is comprised of multiple ancestries, put a filepath containing the FID, IID in the same order as the genotpes, and a column with the ancestries
 sim = pheno_simulator(rng = rng, 
                       plink_prefix="Estimate/examples/Genotype_files/geno", 
-                      grmPrefix = "Estimate/examples/Input_files/grm", 
+                      grmPrefix =  None, #"Estimate/examples/Input_files/grm", 
 #                      covarFile = "Estimate/examples/Input_files/covar.txt",
                       subjAncestries= None)
 # Detemrine how many sites, genetic clusters you want

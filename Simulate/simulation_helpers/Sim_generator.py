@@ -23,7 +23,7 @@ class pheno_simulator():
         self.rng = np.random.default_rng(rng)
         self.plink_prefix = plink_prefix
         
-        if plink_prefix == None :
+        if plink_prefix is None :
             self.nsubjects = nsubjects
             self.nSNPs = nSNPs
 
@@ -33,10 +33,12 @@ class pheno_simulator():
 
 
         else :
-            if grmPrefix == None :
+            if grmPrefix is None :
                 logging.info("GRM prefix not specified, but that's OK")
             else : 
                 self.GRM = ReadGRMBin(grmPrefix)
+
+
             self.plink_prefix= plink_prefix
             
             (bim, fam, bed) = read_plink(plink_prefix)
