@@ -59,7 +59,7 @@ class pheno_simulator():
             if subjAncestries is None :
                 self.df["subj_ancestries"] = 1  
             else : 
-                temp = pd.read_csv(subjAncestries)
+                temp = pd.read_csv(subjAncestries, sep='\s+')
                 self.df["subj_ancestries"]  = temp.iloc[:,2]
 
 

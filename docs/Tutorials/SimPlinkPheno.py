@@ -14,7 +14,10 @@ sim = pheno_simulator(rng = rng,
                       plink_prefix="Estimate/examples/Genotype_files/geno", 
                       grmPrefix =  None, #"Estimate/examples/Input_files/grm", 
 #                      covarFile = "Estimate/examples/Input_files/covar.txt",
-                      subjAncestries= None)
+                      subjAncestries= "Estimate/examples/Input_files/ancestries.txt")
+
+
+
 # Detemrine how many sites, genetic clusters you want
 sim.sim_pheno(h2Hom = 0.5, h2Het= [0, 0], alpha = 0)
 
@@ -25,4 +28,6 @@ est.GRM = sim.GRM
 est.df = sim.df
 result = est.estimate(mpheno = ["Y0"], npc = [0], Method = "GCTA", fixed_effects= ["Xc"])
 
+
+# Make subj_ancestries equal number of 5
 
