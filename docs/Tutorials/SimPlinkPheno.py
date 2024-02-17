@@ -19,7 +19,7 @@ sim = pheno_simulator(rng = rng,
 
 
 # Detemrine how many sites, genetic clusters you want
-sim.sim_pheno(h2Hom = 0.5, h2Het= [0, 0], alpha = 0)
+sim.sim_pheno(h2Hom = 0.5, h2Het= [0, 0, 0, 0 ,0], alpha = 0)
 
 
 #%%
