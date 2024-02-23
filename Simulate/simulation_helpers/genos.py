@@ -6,13 +6,14 @@ Created on Thu Oct 13 09:25:44 2022
 
 @author: christian
 """
+import logging
 import numpy as np
 import pandas as pd
 from sklearn.decomposition import PCA
 from Simulate.simulation_helpers.admixing import sample_admixed_genotypes
 
 
-def sim_genos(rng, cluster_frequencies, subject_ancestries):
+def sim_genos(rng, cluster_frequencies, subject_ancestries, maf = 0.01):
     """
     Simulate genotypes of the subjects given their cluster ID and the respective cluster allele frequencies
 
@@ -27,6 +28,8 @@ def sim_genos(rng, cluster_frequencies, subject_ancestries):
     clusters_differ : bool, optional
         should clusters have different means or should all the variations in the phenotype take place in non-cluster informative regions.
         The default is False.
+    maf : float, optional
+        minor allele frequency filter. The default is 0.01.
 
 
     Returns
@@ -49,23 +52,29 @@ def sim_genos(rng, cluster_frequencies, subject_ancestries):
     # simulate genotypes
     genotypes = rng.binomial(n=np.repeat(2, nSNPs * nsubjects).reshape(nsubjects, nSNPs),
                              p= cluster_frequencies[list(subject_ancestries)])
-    
     # standardize the genotpyes
     freqs = np.mean(genotypes, axis=0) / 2
-    # remove snps with frequencies of 0 or 1
-    genotypes = genotypes[:, (freqs > 0.01) & (freqs < 0.99)]
-    freqs = freqs[(freqs>0.01) & (freqs< 0.99)]
-    stand_geno = np.matrix((genotypes- 2 * freqs) /
-                          np.sqrt(2 * freqs * (1 - freqs)))
+
+    if not (maf is None):
+        # remove snps with frequencies of 0 or 1
+        genotypes = genotypes[:, (freqs > 0.01) & (freqs < 0.99)]
+
+        freqs = freqs[(freqs>maf) & (freqs< (1-maf))]
 
     # Calc standardized GRM
+    stand_geno = np.matrix((genotypes- 2 * freqs) /
+                          np.sqrt(2 * freqs * (1 - freqs)))
     GRM = np.dot(stand_geno, stand_geno.T) / nSNPs
     
-    
-    
     # project GRM onto pc space
-    pcs = pd.DataFrame(PCA(n_components = 20).fit_transform(np.asarray(GRM)))
-    pcs.columns = ["pc_" + str(col + 1) for col in pcs.columns]
+    try: 
+        pcs = pd.DataFrame(PCA(n_components = 20).fit_transform(np.asarray(GRM)))
+        pcs.columns = ["pc_" + str(col + 1) for col in pcs.columns]
+    except ValueError :
+        # if the GRM is not invertible, we will just return the GRM
+        logging.warning("GRM is not invertible, returning GRM without and PCs")
+        pcs = None
+        
     
     return genotypes, GRM, pcs
 

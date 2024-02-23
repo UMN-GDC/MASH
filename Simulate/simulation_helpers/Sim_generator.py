@@ -91,10 +91,11 @@ class pheno_simulator():
             nclusts=self.nclusts,
             nsites = self.nsites)
 
-    def sim_genos(self):
+    def sim_genos(self, maf = 0.01):
+        self.maf = maf
         (self.genotypes, self.GRM, pcs) = sim_genos(rng = self.rng,
                                                     cluster_frequencies = self.cluster_frequencies, 
-                                                    subject_ancestries = self.df["subj_ancestries"]) 
+                                                    subject_ancestries = self.df["subj_ancestries"], maf = maf) 
         # update the number of SNPs
         self.nSNPS_post_filter = self.genotypes.shape[1]
         self.df = pd.concat([self.df, pcs], axis=1)
