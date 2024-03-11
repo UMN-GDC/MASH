@@ -6,7 +6,7 @@ import seaborn as sns
 from Estimate.estimators.GCTA_wrapper import GCTA, gcta
 from Estimate.estimators.all_estimators import h2Estimation
 from Simulate.simulation_helpers.Sim_generator import pheno_simulator
-from Simulate.summarizers.genotype_viz import SNPeffectViz, plotClusters
+#from Simulate.summarizers.genotype_viz import SNPeffectViz, plotClusters
 from sklearn.decomposition import PCA
 
 #%% Basic testing for single site and cluster
@@ -46,3 +46,21 @@ plt.ylabel('PC2')
 
 # save the plot
 plt.savefig("docs/Figures/samplesNcentersOnPCs.png", dpi = 300)
+
+
+# Plot homo effects
+sns.histplot(abs(sim.homo_eff))
+plt.xlabel('SNP effect sizes')
+plt.savefig("docs/Figures/SNPeffects.png", dpi = 300)
+
+
+# Plot effects after summig homo_eff with each collumn of het_eff
+for cl in range(3) :
+    sns.histplot(abs(sim.homo_eff + sim.het_eff[:,cl]))
+plt.savefig("docs/Figures/ancSNPeffects.png", dpi = 300)
+
+# plot allele freqs
+sns.histplot(abs(sim.ancest_freqs - 0.5))
+plt.xlabel("SNP minor allele frequency (MAF)")
+plt.savefig("docs/Figures/MAF.png", dpi = 300)
+

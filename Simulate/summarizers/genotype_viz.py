@@ -15,7 +15,7 @@ import seaborn as sns
 #%%
 # Shared then Non shared
 
- plotClusters(sim, output = None) :
+def plotClusters(sim, output = None) :
     """
     Plot the clusters from full GRM, shared GRM, non-shared GRM, causal GRM, and non-causal GRM
 

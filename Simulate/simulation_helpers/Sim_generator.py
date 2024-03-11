@@ -7,9 +7,11 @@ Created on Thu Oct 13 09:25:44 2022
 @author: christian
 """
 import logging
+import subprocess
 import numpy as np
 import pandas as pd
-from pandas_plink import read_plink
+from pandas_plink import read_plink, write_plink1_bin
+from xarray import DataArray
 from Estimate.data_input.load_data import ReadGRMBin
 from Simulate.simulation_helpers.sites import sim_sites
 from Simulate.simulation_helpers.clusters import sim_pop_alleles, assign_clusters
@@ -164,3 +166,63 @@ class pheno_simulator():
         logging.info("Number of SNPs: ", self.nSNPs)
         logging.info("Number of clusters: ", self.nclusts)
         logging.info("Proportion of causal SNPs: ", self.prop_causal)
+
+    def save_plink(self, prefix = "sim_genostest"):
+        """
+        Save the simulated genotypes to a plink file
+
+        Parameters
+        ----------
+        prefix : TYPE, optional
+            DESCRIPTION. The default is "sim_genostest".
+
+        Returns
+        -------
+        None.
+
+        """
+        self.prefix = prefix
+        G = DataArray(
+            # n x nSNPs array of genotypes
+            self.genotypes.astype("float32"),
+            dims=["sample", "variant"],
+            coords = dict(
+                sample  = self.df.IID, # IID
+                fid     = ("sample", self.df.FID), #FID
+                variant = np.arange(self.genotypes.shape[1]),
+                snp     = ("variant", range(self.genotypes.shape[1])),
+                chrom   = ("variant", np.repeat(1, self.genotypes.shape[1])),
+                a0      = ("variant", np.repeat("A", self.genotypes.shape[1])),
+                a1      = ("variant", np.repeat("T", self.genotypes.shape[1])),
+            )
+        
+        )
+
+        write_plink1_bin(G, self.prefix + ".bed")
+
+        # Save phenotype separate from subj_ancestries and covariates
+        self.df.to_csv(self.prefix + ".covar", sep = "\t", index = False)
+       
+        # Save FID, ID and columns starting with Y
+        self.df[["FID", "IID"] + list(self.df.filter(regex='^Y'))].to_csv(self.prefix + ".pheno", sep = "\t", index = False)
+
+        # Save subject_ancestries
+        self.df[["FID", "IID", "subj_ancestries", "abcd_site"]].to_csv(self.prefix + ".covar", sep = "\t", index = False)
+
+        # Read the output .bim file
+        bim = pd.read_table(prefix + ".bim", sep='\s+', header = None)
+        # replace the thrid and fourth columns with integers going from 1 to nSNPs
+        bim.iloc[:,2] = np.arange(self.genotypes.shape[1])
+
+        bim.iloc[:,3] = np.arange(self.genotypes.shape[1])
+        # rewrite the table 
+        bim.to_csv(prefix + ".bim", sep = "\t", index = False, header = False)
+
+
+    def fitGWAS(self, prefix) :
+
+        command = f"plink2 --bfile {self.prefix} --glm --pheno {self.prefix}.pheno --covar {self.prefix}.covar"
+
+        process = subprocess.Popen(command.split(), stdout=subprocess.PIPE)
+
+        
