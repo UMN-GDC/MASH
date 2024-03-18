@@ -29,50 +29,61 @@ def sim_n_est(nsubjects = 1000, h2 = 0.5, nsites = 30,
     # Run through full simulation and estimation
     sim.full_sim(nsites= nsites, h2= h2, phens = phens, nclusts = nclusts, random_BS = random_BS)
 
-    ests = h2Estimation()
-    ests.df= sim.df
-    ests.GRM = sim.GRM
-    ests.mpheno = ["Y1"] 
-    
-    FE= ["Xc"]
-        
-    if nsites >1 :
-        FE += ["abcd_site"]
-    
-    logging.info(sim.df.columns.tolist())
 
-    full_results = pd.DataFrame({}, columns= ["Method", "Meta", "RV", "h2", "V(h2)", "time"])
-    # iterate over all combinations of Methods and Meta 
-    for (Met, M, rg) in itertools.product(["AdjHE", "GCTA"], [True, False], [None, "abcd_site"]):
+    if estimateHeritability is True : 
+        ests = h2Estimation()
+        ests.df= sim.df
+        ests.GRM = sim.GRM
+        ests.mpheno = ["Y1"] 
         
-        try :
-            r = ests.estimate(Method = Met, npc = [nnpc], fixed_effects= FE, mpheno =ests.mpheno[0],
-                        Naive = M, random_groups = rg)
-            result = pd.DataFrame({"Method" : Met,
-                                  "Meta" : M,
-                                  "RV" : rg,
-                                  "h2" : r["h2"][0],
-                                  "Var(h2)" : r["var(h2)"][0],
-                                   "time" : r["time"][0],
-                                  "sg" : sigma[0],
-                                  "ss" : sigma[1],
-                                  "se" : sigma[2],
-                                  "nsubjects" : nsubjects,
-                                  "nsites" : nsites,
-                                  "theta_alleles" : theta_alleles,
-                                   "nclusts" : nclusts,
-                                   "prop_causal" : prop_causal,
-                                   "nnpc" : nnpc,
-                                   "nSNPs" : nSNPs, 
-                                   "site_comp" : site_comp,
-                                   "dominance" : dominance,
-                                   "site_dep" : site_dep,
-                                   "site_het" : site_het}, index= [0])
-            full_results = pd.concat([full_results, result], ignore_index= True)
-        except TypeError :
-            pass
-        except np.linalg.LinAlgError :
-            pass
+        FE= ["Xc"]
+            
+        if nsites >1 :
+            FE += ["abcd_site"]
+        
+        logging.info(sim.df.columns.tolist())
+
+        full_results = pd.DataFrame({}, columns= ["Method", "Meta", "RV", "h2", "V(h2)", "time"])
+        # iterate over all combinations of Methods and Meta 
+        for (Met, M, rg) in itertools.product(["AdjHE", "GCTA"], [True, False], [None, "abcd_site"]):
+            
+            try :
+                r = ests.estimate(Method = Met, npc = [nnpc], fixed_effects= FE, mpheno =ests.mpheno[0],
+                            Naive = M, random_groups = rg)
+                result = pd.DataFrame({"Method" : Met,
+                                      "Meta" : M,
+                                      "RV" : rg,
+                                      "h2" : r["h2"][0],
+                                      "Var(h2)" : r["var(h2)"][0],
+                                       "time" : r["time"][0],
+                                      "sg" : sigma[0],
+                                      "ss" : sigma[1],
+                                      "se" : sigma[2],
+                                      "nsubjects" : nsubjects,
+                                      "nsites" : nsites,
+                                      "theta_alleles" : theta_alleles,
+                                       "nclusts" : nclusts,
+                                       "prop_causal" : prop_causal,
+                                       "nnpc" : nnpc,
+                                       "nSNPs" : nSNPs, 
+                                       "site_comp" : site_comp,
+                                       "dominance" : dominance,
+                                       "site_dep" : site_dep,
+                                       "site_het" : site_het}, index= [0])
+                full_results = pd.concat([full_results, result], ignore_index= True)
+            except TypeError :
+                pass
+            except np.linalg.LinAlgError :
+                pass
+    else :
+        logging.info("No variance component estimation")
+
+    if estimatePRS is True :
+
+
+        loggin.info("GWAS results are written to file.")
+    else :
+        loggin.info("No PRS estimate.")
 
         return full_results
         

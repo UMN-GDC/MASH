@@ -18,6 +18,7 @@ from Simulate.simulation_helpers.clusters import sim_pop_alleles, assign_cluster
 from Simulate.simulation_helpers.genos import sim_genos
 from Simulate.simulation_helpers.pheno import sim_pheno
 from Simulate.simulation_helpers.plink_pheno import sim_plink_pheno
+from Estimate.esimators.gwaPRS import fitPlink2GWAS
 
 
 class pheno_simulator():

@@ -97,5 +97,7 @@ def sim_pheno(rng, genotypes, df, h2Hom, h2Het, alpha = -1, phenoname = "Y0", ca
     df["Covar_contrib"] = Beta_c * df["Xc"]
     df[["Covar_contrib", "homo_contrib", "cluster_contrib", "errors"]] =df[["Covar_contrib", "homo_contrib", "cluster_contrib", "errors"]]- df[["Covar_contrib", "homo_contrib", "cluster_contrib", "errors"]].mean()  
     df[str(phenoname)] = df[["Covar_contrib", "homo_contrib", "cluster_contrib", "errors"]].sum(axis = 1)
+    df[str(phenoname)] = df[str(phenoname)] - df[str(phenoname)].mean()
+
 
     return df, causals, homo_eff, cluster_eff 
