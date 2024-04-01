@@ -7,6 +7,7 @@ Created on Thu Oct 13 09:25:44 2022
 @author: christian
 """
 import logging
+import os
 import subprocess
 import numpy as np
 import pandas as pd
@@ -18,7 +19,7 @@ from Simulate.simulation_helpers.clusters import sim_pop_alleles, assign_cluster
 from Simulate.simulation_helpers.genos import sim_genos
 from Simulate.simulation_helpers.pheno import sim_pheno
 from Simulate.simulation_helpers.plink_pheno import sim_plink_pheno
-from Estimate.esimators.gwaPRS import fitPlink2GWAS
+from Estimate.estimators.gwaPRS import fitPlink2GWAS
 
 
 class pheno_simulator():
@@ -168,7 +169,7 @@ class pheno_simulator():
         logging.info("Number of clusters: ", self.nclusts)
         logging.info("Proportion of causal SNPs: ", self.prop_causal)
 
-    def save_plink(self, prefix = "sim_genostest"):
+    def save_plink(self, prefix = "temp/simulation"):
         """
         Save the simulated genotypes to a plink file
 
@@ -182,6 +183,9 @@ class pheno_simulator():
         None.
 
         """
+        # make directory if doesn't exist
+        os.makedirs(prefix, exist_ok = True)  
+        
         self.prefix = prefix
         G = DataArray(
             # n x nSNPs array of genotypes
@@ -190,8 +194,8 @@ class pheno_simulator():
             coords = dict(
                 sample  = self.df.IID, # IID
                 fid     = ("sample", self.df.FID), #FID
-                variant = np.arange(self.genotypes.shape[1]),
-                snp     = ("variant", range(self.genotypes.shape[1])),
+                variant = np.arange(1, self.genotypes.shape[1] + 1),
+                snp     = ("variant", range(1, self.genotypes.shape[1] + 1)),
                 chrom   = ("variant", np.repeat(1, self.genotypes.shape[1])),
                 a0      = ("variant", np.repeat("A", self.genotypes.shape[1])),
                 a1      = ("variant", np.repeat("T", self.genotypes.shape[1])),
@@ -199,31 +203,36 @@ class pheno_simulator():
         
         )
 
-        write_plink1_bin(G, self.prefix + ".bed")
+        write_plink1_bin(G, f"{prefix}.bed")
 
         # Save phenotype separate from subj_ancestries and covariates
-        self.df.to_csv(self.prefix + ".covar", sep = "\t", index = False)
+        self.df.to_csv(f"{prefix}.covar", sep = "\t", index = False)
        
         # Save FID, ID and columns starting with Y
-        self.df[["FID", "IID"] + list(self.df.filter(regex='^Y'))].to_csv(self.prefix + ".pheno", sep = "\t", index = False)
+        self.df["P1"] = 0
+        self.df["P2"] = 0
+        self.df["sex"] = 0
+        self.df[["FID", "IID", "P1", "P2", "sex"] + list(self.df.filter(regex='^Y'))].to_csv(f"{prefix}.fam", sep = "\t", index = False, header=False)
 
         # Save subject_ancestries
-        self.df[["FID", "IID", "subj_ancestries", "abcd_site"]].to_csv(self.prefix + ".covar", sep = "\t", index = False)
+        self.df[["FID", "IID", "subj_ancestries", "abcd_site"]].to_csv(f"{prefix}.covar", sep = "\t", index = False)
 
         # Read the output .bim file
-        bim = pd.read_table(prefix + ".bim", sep='\s+', header = None)
+        bim = pd.read_table(f"{prefix}.bim", sep='\s+', header = None)
         # replace the thrid and fourth columns with integers going from 1 to nSNPs
         bim.iloc[:,2] = np.arange(self.genotypes.shape[1])
 
         bim.iloc[:,3] = np.arange(self.genotypes.shape[1])
         # rewrite the table 
-        bim.to_csv(prefix + ".bim", sep = "\t", index = False, header = False)
-
-
-    def fitGWAS(self, prefix) :
-
-        command = f"plink2 --bfile {self.prefix} --glm --pheno {self.prefix}.pheno --covar {self.prefix}.covar"
-
-        process = subprocess.Popen(command.split(), stdout=subprocess.PIPE)
-
+        bim.to_csv(f"{prefix}.bim", sep = "\t", index = False, header = False)
         
+       # command = f"plink --bfile {prefix} --r2 --no-parents --out {prefix}"
+       # process = subprocess.Popen(command.split(), stdout=subprocess.PIPE)
+       # 
+       # # Fit PRS
+       # command = f"plink2 --bfile {prefix} --glm --covar {prefix}.covar --out {prefix}"
+       # process = subprocess.Popen(command.split(), stdout=subprocess.PIPE)
+        
+        
+        
+    
