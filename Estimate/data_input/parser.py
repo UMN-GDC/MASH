@@ -178,7 +178,6 @@ def read_flags(raw_args):
         except:
             # Convert a single integer value to a list
             raw_args['npc'] = list(raw_args['npc'])
-            
         
             
         ## Do the same for specified covariates
@@ -190,6 +189,9 @@ def read_flags(raw_args):
             raw_args["covars"] = raw_args["covars"]
     
     return(raw_args)
+
+
+
 
 
 

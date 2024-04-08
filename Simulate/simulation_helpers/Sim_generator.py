@@ -129,6 +129,8 @@ class pheno_simulator():
                                                sharedIdx = self.sharedIdx,
                                                phenoname = phenobasename + str(i))
             self.df[phenobasename + str(i)] = temp[phenobasename + str(i)]
+            
+        self.df["riskGroups"] = np.repeat([0,1], self.df.shape[0]/ 2)
 
     def full_sim(self, h2 = 0.5,
                  nsites=30, nclusts=5,
@@ -171,7 +173,7 @@ class pheno_simulator():
 
     def save_plink(self, prefix = "temp/simulation"):
         """
-        Save the simulated genotypes to a plink file
+        Save the simulated genotypes to a plink file. By default this is a temp folder in MASH
 
         Parameters
         ----------
@@ -215,7 +217,7 @@ class pheno_simulator():
         self.df[["FID", "IID", "P1", "P2", "sex"] + list(self.df.filter(regex='^Y'))].to_csv(f"{prefix}.fam", sep = "\t", index = False, header=False)
 
         # Save subject_ancestries
-        self.df[["FID", "IID", "subj_ancestries", "abcd_site"]].to_csv(f"{prefix}.covar", sep = "\t", index = False)
+        self.df[["FID", "IID", "subj_ancestries", "abcd_site", "riskGroups"]].to_csv(f"{prefix}.covar", sep = "\t", index = False)
 
         # Read the output .bim file
         bim = pd.read_table(f"{prefix}.bim", sep='\s+', header = None)

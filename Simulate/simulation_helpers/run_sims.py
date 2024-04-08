@@ -24,11 +24,33 @@ rng = np.random.default_rng()
 def sim_n_est(nsubjects = 1000, h2 = 0.5, nsites = 30,
               nclusts =1, nnpc = 1,
               nSNPs=20, phens = 2,
-              random_BS=True) :
+              random_BS=True, savePlink = False,
+              estimateHeritability = False) :
+    """_summary_
+
+    Args:
+        nsubjects (int, optional): _description_. Defaults to 1000.
+        h2 (float, optional): _description_. Defaults to 0.5.
+        nsites (int, optional): _description_. Defaults to 30.
+        nclusts (int, optional): _description_. Defaults to 1.
+        nnpc (int, optional): _description_. Defaults to 1.
+        nSNPs (int, optional): _description_. Defaults to 20.
+        phens (int, optional): _description_. Defaults to 2.
+        random_BS (bool, optional): _description_. Defaults to True.
+        savePlink (bool, optional): save plink binary, . Defaults to False.
+        estimateHeritability (bool, optional): also skips hertiability estimation. Defaults to False.
+        
+
+    Returns:
+        _type_: _description_
+    """    
     sim = pheno_simulator(nsubjects= nsubjects, nSNPs = nSNPs)
     # Run through full simulation and estimation
     sim.full_sim(nsites= nsites, h2= h2, phens = phens, nclusts = nclusts, random_BS = random_BS)
 
+    if savePlink :
+        logging.info("Saving simulated file to plink")
+        sim.save_plink()
 
     if estimateHeritability is True : 
         ests = h2Estimation()
@@ -90,7 +112,7 @@ def sim_n_est(nsubjects = 1000, h2 = 0.5, nsites = 30,
 def sim_experiment(nsubjectss = [1000], sigmas = [[0.5,0.25, 0.25]], site_comps = ["IID"], nsites = [25],
               theta_alleless = [0.9], nclustss = [5], dominances= [3], prop_causals= [0.05], site_deps= [False], nnpcs = [1],
               nSNPss= [200], phenss= [2], reps = 10, site_het = False, clusters_differ = False, cov_effect = True,
-              ortho_cov = True, random_BS = True) :
+              ortho_cov = True, random_BS = True, ) :
     # Seed empty dataframe
     sim_results = pd.DataFrame()
     

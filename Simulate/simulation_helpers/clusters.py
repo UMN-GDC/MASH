@@ -7,7 +7,11 @@ Created on Thu Mar 16 13:08:24 2023
 """
 import numpy as np
 
-def sim_pop_alleles(rng, theta_alleles = [0.8, 0.2], nclusts=1, nSNPs = 1000, shared = 0.5) :
+def sim_pop_alleles(rng : np.random.Generator, 
+                    theta_alleles : list[float] = [0.8, 0.2],
+                    nclusts : int =1,
+                    nSNPs : int = 1000,
+                    shared : float = 0.5) :
     """
     Simulate the allele frequencies for a common ancestor and for all genetic clusters taking into account if the causal snps are shared or not.
 
@@ -32,16 +36,15 @@ def sim_pop_alleles(rng, theta_alleles = [0.8, 0.2], nclusts=1, nSNPs = 1000, sh
     incides of causal snps
 
     """
-
-
+ 
     rng = np.random.default_rng(rng)
     theta = theta_alleles
     # simulate ancestral frequency of each SNP, dimensions = (SNPs,)
     ancest_freqs = rng.uniform(low=0.1, high=0.9, size=nSNPs)
-     
+    print(ancest_freqs.shape)
+ 
     sharedIdx = np.repeat(False, nSNPs)
     sharedIdx[:int(nSNPs * shared)] = True
-
 
     # sample shared cluster allele frequencies
     cluster_freqs_shared = rng.beta(ancest_freqs[sharedIdx] * (1- theta[1]) / theta[1],

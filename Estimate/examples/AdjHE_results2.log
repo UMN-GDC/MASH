@@ -1,6 +1,6 @@
 root - INFO - Started
 root - INFO - These are the list of arguments that were input:
-root - INFO - {'PC': 'Estimate/examples/Input_files/pcas.eigenvec', 'covar': 'Estimate/examples/Input_files/covar.txt', 'prefix': 'Estimate/examples/Input_files/grm', 'pheno': 'Estimate/examples/Input_files/pheno.phen', 'out': 'Estimate/examples/AdjHE_results2', 'npc': [3, 5], 'mpheno': ['Head_size'], 'k': 0, 'std': False, 'fixed_effects': ['abcd_site'], 'argfile': '/home/christian/Research/Stat_gen/tools/Basu_herit/Example/Arg_file.json', 'loop_covars': False, 'covar_relates': False, 'random_groups': None, 'Naive': False, 'Method': 'AdjHE', 'ids': None}
+root - INFO - {'nsubjects': 500, 'nSNPs': 1000, 'nclusts': 2, 'nphenos': 1, 'shared': 0.5, 'prop_causal': [0.25, 0.25], 'theta_alleles': [0.95, 0.25], 'h2Hom': 0.8, 'h2Het': [0.1, 0.1], 'savePlink': True, 'estimateHeritability': False, 'PC': 'Estimate/examples/Input_files/pcas.eigenvec', 'covar': 'Estimate/examples/Input_files/covar.txt', 'prefix': 'Estimate/examples/Input_files/grm', 'pheno': 'Estimate/examples/Input_files/pheno.phen', 'out': 'Estimate/examples/AdjHE_results2', 'npc': [3, 5], 'mpheno': ['Head_size'], 'k': 0, 'std': False, 'fixed_effects': ['abcd_site'], 'argfile': None, 'loop_covars': False, 'covar_relates': False, 'random_groups': None, 'Naive': False, 'Method': 'AdjHE', 'ids': None}
 root - INFO - Loading data
 root - INFO - Loading data...
 root - INFO - Estimating
@@ -10,13 +10,7 @@ root - INFO - Beginning estimation
 root - DEBUG - ['abcd_site']
 root - DEBUG - First Momment formula is Head_size ~ abcd_site + pc_1 + pc_2 + pc_3
 root - WARNING - Variance estimate is negative setting as absolute value
-root - DEBUG - Started6273.597911846
-root - DEBUG - Ended6275.800761482
-root - DEBUG - 2.2028496359998826
+root - DEBUG - Started28336.031450413
+root - DEBUG - Ended28338.690088037
+root - DEBUG - 2.6586376240011305
 root - DEBUG - First Momment formula is Head_size ~ abcd_site + pc_1 + pc_2 + pc_3 + pc_1 + pc_2 + pc_3 + pc_4 + pc_5
-root - WARNING - Variance estimate is negative setting as absolute value
-root - DEBUG - Started6275.802131901
-root - DEBUG - Ended6277.969116929
-root - DEBUG - 2.1669850279995444
-root - INFO - Writing results to Estimate/examples/AdjHE_results2
-root - INFO - Finished
