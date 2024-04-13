@@ -2,7 +2,7 @@
   "nsubjects" : 500,
   "nSNPs" : 1000,
   "nclusts" : 2,
-  "nphenos" : 2,
+  "nphenos" : 5,
   "shared" : 0.5,
   "prop_causal" : [0.25, 0.25],
   "theta_alleles" : [0.95, 0.25],
@@ -12,5 +12,6 @@
   "estimateHeritability" : false,
   "out" : "Simulate/examples/sim1",
   "argfile" : "Simulate/test.json",
-  "riskGroups" : true
+  "riskGroups" : true,
+  "confoundee" : null
 }

@@ -214,10 +214,14 @@ class pheno_simulator():
         self.df["P1"] = 0
         self.df["P2"] = 0
         self.df["sex"] = 0
-        self.df[["FID", "IID", "P1", "P2", "sex"] + list(self.df.filter(regex='^Y'))].to_csv(f"{prefix}.fam", sep = "\t", index = False, header=False)
+        self.df[["FID", "IID", "P1", "P2", "sex", "sex"]].to_csv(f"{prefix}.fam", sep = "\t", index = False, header=False)
+        self.df[["FID", "IID"] + list(self.df.filter(regex='^Y'))].to_csv(f"{prefix}.pheno", index = False, header=True, sep = "\t")
 
         # Save subject_ancestries
-        self.df[["FID", "IID", "subj_ancestries", "abcd_site", "riskGroups"]].to_csv(f"{prefix}.covar", sep = "\t", index = False)
+        try : 
+            self.df[["FID", "IID", "subj_ancestries", "abcd_site", "riskGroups", "confound"]].to_csv(f"{prefix}.covar", sep = "\t", index = False)
+        except :
+            self.df[["FID", "IID", "subj_ancestries", "abcd_site", "riskGroups"]].to_csv(f"{prefix}.covar", sep = "\t", index = False)
 
         # Read the output .bim file
         bim = pd.read_table(f"{prefix}.bim", sep='\s+', header = None)

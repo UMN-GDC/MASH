@@ -1,0 +1,12 @@
+PLINK v1.90b7 64-bit (16 Jan 2023)
+Options in effect:
+  --hep
+
+Hostname: christian-laptop
+Working directory: /home/christian/Research/Stat_gen/tools/MASH
+Start time: Mon Apr  8 16:34:45 2024
+
+Error: Unrecognized flag ('--hep').
+For more information, try "plink --help <flag name>" or "plink --help | more".
+
+End time: Mon Apr  8 16:34:45 2024
