@@ -11,7 +11,8 @@ import statsmodels.formula.api as smf
 
 
 # Need to add shared here then select causal from shared and nonshared 
-def sim_pheno(rng, genotypes, df, h2Hom, h2Het, alpha = -1, phenoname = "Y0", causals= None, prop_causal= [0.1, 0.1], sharedIdx = None):
+def sim_pheno(rng, genotypes, df, h2Hom, h2Het, alpha = -1, phenoname = "Y0", causals= None, prop_causal= [0.1, 0.1], sharedIdx = None, 
+              outcome = True, beta = None):
     """
     
 
@@ -95,9 +96,17 @@ def sim_pheno(rng, genotypes, df, h2Hom, h2Het, alpha = -1, phenoname = "Y0", ca
     df["Xc"] = rng.uniform(0, 1, nsubjects)
     Beta_c = 0.5
     df["Covar_contrib"] = Beta_c * df["Xc"]
-    df[["Covar_contrib", "homo_contrib", "cluster_contrib", "errors"]] =df[["Covar_contrib", "homo_contrib", "cluster_contrib", "errors"]]- df[["Covar_contrib", "homo_contrib", "cluster_contrib", "errors"]].mean()  
-    df[str(phenoname)] = df[["Covar_contrib", "homo_contrib", "cluster_contrib", "errors"]].sum(axis = 1)
+    
+    # if Site_contrib isn't a column, make it a column of zeros
+    if "Site_contrib" not in df.columns:
+        df["Site_contrib"] = 0 
+    
+    df[str(phenoname)] = df[["Covar_contrib", "homo_contrib", "cluster_contrib", "errors", "Site_contrib"]].sum(axis = 1)
+    df[f"{phenoname}_no_site"] = df[["Covar_contrib", "homo_contrib", "cluster_contrib", "errors"]].sum(axis = 1)
+    
     df[str(phenoname)] = df[str(phenoname)] - df[str(phenoname)].mean()
+    df[f"{phenoname}_no_site"] = df[f"{phenoname}_no_site"] - df[f"{phenoname}_no_site"].mean()
+    
 
 
     return df, causals, homo_eff, cluster_eff 

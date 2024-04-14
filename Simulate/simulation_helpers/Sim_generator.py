@@ -131,6 +131,8 @@ class pheno_simulator():
             self.df[phenobasename + str(i)] = temp[phenobasename + str(i)]
             
         self.df["riskGroups"] = np.repeat([0,1], self.df.shape[0]/ 2)
+    
+    def sim_outcome(self, beta):
 
     def full_sim(self, h2 = 0.5,
                  nsites=30, nclusts=5,
