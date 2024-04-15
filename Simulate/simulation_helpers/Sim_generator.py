@@ -67,12 +67,14 @@ class pheno_simulator():
                 self.df["subj_ancestries"]  = temp.iloc[:,2]
 
 
-    def sim_sites(self, nsites=1, siteDistribution = "EQUAL", random_BS = True):
+    def sim_sites(self, nsites=1, siteDistribution = "EQUAL", random_BS = True, nphenos = 1):
         self.nsites = nsites
         self.siteDistribution = siteDistribution
-        self.df[["abcd_site", "Site_contrib"]] = sim_sites(rng = self.rng, nsubjects = self.nsubjects, 
+        self.nphenos = nphenos
+        print(self.nphenos)
+        self.df[["abcd_site"] + [f"Site_contrib{i}" for i in range(self.nphenos)]] = sim_sites(rng = self.rng, nsubjects = self.nsubjects, 
                                                            nsites=nsites, siteDistribution = self.siteDistribution, 
-                                                           random_BS = random_BS)
+                                                           random_BS = random_BS, nphenos = self.nphenos)
 
     def sim_pops(self, theta_alleles = 0.5, nclusts=1, shared = 0.5):
         self.theta_alleles = theta_alleles
@@ -104,59 +106,48 @@ class pheno_simulator():
         self.nSNPS_post_filter = self.genotypes.shape[1]
         self.df = pd.concat([self.df, pcs], axis=1)
 
-    def sim_pheno(self, h2Hom=0.5, h2Het=[0], alpha = -1, phenobasename = "Y", nphenos = 2, prop_causal = [0.1, 0.1]):
+    def sim_pheno(self, h2Hom=0.5, h2Het=[0], alpha = -1, phenobasename = "Y", prop_causal = [0.1, 0.1], linearCombo = False,
+                  siteEffects = False, riskGroups = False):
         self.h2Hom = h2Hom
         self.h2Het = h2Het
         self.alpha = alpha
         self.prop_causal = prop_causal
-        (self.df, self.causals, self.homo_eff, self.het_eff)  = sim_pheno(rng = self.rng,
-                                                                          genotypes = self.genotypes,
-                                                                          df = self.df,
-                                                                          h2Hom = self.h2Hom,
-                                                                          h2Het = self.h2Het,
-                                                                          alpha = self.alpha,
-                                                                          prop_causal = prop_causal,
-                                                                          sharedIdx = self.sharedIdx,
-                                                                          phenoname = phenobasename + "0")
-        for i in range(1, nphenos): 
-            (temp, __1, __2, __3)  = sim_pheno(rng = self.rng,
-                                               genotypes = self.genotypes,
-                                               df = self.df,
-                                               h2Hom = self.h2Hom,
-                                               h2Het = self.h2Het,
-                                               alpha = self.alpha,
-                                               prop_causal = [0.1, 0.1],
-                                               sharedIdx = self.sharedIdx,
-                                               phenoname = phenobasename + str(i))
+        (self.df, self.causals)  = sim_pheno(rng = self.rng,
+                                             genotypes = self.genotypes,
+                                             df = self.df,
+                                             h2Hom = self.h2Hom,
+                                             h2Het = self.h2Het,
+                                             alpha = self.alpha,
+                                             prop_causal = prop_causal,
+                                             sharedIdx = self.sharedIdx,
+                                             phenoname = phenobasename + "0")
+        for i in range(1, self.nphenos): 
+            (temp, __1)  = sim_pheno(rng = self.rng,
+                                     genotypes = self.genotypes,
+                                     df = self.df,
+                                     h2Hom = self.h2Hom,
+                                     h2Het = self.h2Het,
+                                     alpha = self.alpha,
+                                     prop_causal = [0.1, 0.1],
+                                     sharedIdx = self.sharedIdx,
+                                     phenoname = phenobasename + str(i))
             self.df[phenobasename + str(i)] = temp[phenobasename + str(i)]
             
-        self.df["riskGroups"] = np.repeat([0,1], self.df.shape[0]/ 2)
-    
-    def sim_outcome(self, beta):
+        
+        if linearCombo : 
+            # alternate 1 and -1 for the nphenos but without rounding to the nearest even number
+            betas = np.array([(-1)**i for i in range(self.nphenos)])
+            self.df["Z"] = np.dot(self.df.filter(regex='^Y').values, betas)
+        
+        if riskGroups : 
+            self.df["riskGroups"] = np.repeat([0,1], self.df.shape[0]/ 2)
+            self.df["Z"] += self.df["riskGroups"] * 2
+            
+        # Site measurement effects 
+        if siteEffects :
+            for i in range(self.nphenos) :
+                self.df[f"{phenobasename}{i}"] += self.df[f"Site_contrib{i}"] 
 
-    def full_sim(self, h2 = 0.5,
-                 nsites=30, nclusts=5,
-                 nsubjects=1000,
-                 nnpc=0, phens = 2,
-                 alpha=-1,
-                 random_BS = True, npcs = 0,  maf_filter= 0.1):
-        
-        # Only simulate genes if plink file not specified
-        if self.plink_prefix == None: 
-  
-            # Run through full simulation and estimation
-            self.sim_sites(nsites= nsites, random_BS = random_BS)
-            
-            self.sim_pops(nclusts=nclusts)
-            self.sim_covars()
-            
-            for i in range(phens) :
-                self.sim_pheno(h2 = h2, phenoname = "Y" + str(i), alpha = alpha)
-        
-        else : 
-            for i in range(phens) :
-                phenoname = "Y" + str(i)
-                self.df[phenoname] = sim_plink_pheno(rng = self.rng, bed = self.genotypes, h2= h2, npcs=npcs)
 
     def summary(self) :
         """

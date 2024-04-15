@@ -10,7 +10,7 @@ import numpy as np
 import pandas as pd
 
 
-def sim_sites(rng, nsubjects = 1000, nsites=1, siteDistribution="EQUAL", random_BS = True):
+def sim_sites(rng, nsubjects = 1000, nsites=1, siteDistribution="EQUAL", random_BS = True, nphenos = 1):
     """
     Simulate a site vector for the specified number of subjects and sites. Also, control wether the sites will be of equal sites or 
     sampled.
@@ -45,18 +45,27 @@ def sim_sites(rng, nsubjects = 1000, nsites=1, siteDistribution="EQUAL", random_
 
         # Simulate site effects (will rescale to desired contribution later)
     if random_BS :
-        Bs = np.matrix(np.random.normal(0,  1, nsites)).T
+        Bs = np.matrix(np.random.normal(0,  1, (nsites, nphenos)))
     else :
-        # Make site effects fixed
-        Bs = np.arange(nsites, dtype = "float64")
+        # make site effects evenly spaced in a nsites x nphenos matrix 
+        Bs = np.arange(nsites * nphenos, dtype = "float64")
         Bs -= Bs.mean()
-        Bs=  np.reshape(Bs, (nsites, 1))
+        Bs=  np.reshape(Bs, (nsites, nphenos))
     if nsites == 1:
         Bs = np.array([0])
 
     # Make a dummy matrix
     Groups_dum = np.matrix(pd.get_dummies(Groups))
     
-    return pd.DataFrame({"abcd_site" : Groups,
-                         "Site_contrib" : np.array(Groups_dum * Bs).flatten()})
+    # dot product between Groups_dum and Bs save them as a dataframe with columns 
+    # Site_contrib followed by the number of the site
+    site_contribs = np.dot(Groups_dum, Bs)
+    site_contribs = pd.DataFrame(site_contribs, columns = [f"Site_contrib{i}" for i in range(nphenos)])
+    
+    # Add the groups as a column to site_contribs dataframe
+    site_contribs["abcd_site"] = Groups
+    # make abcd_site the first column
+    site_contribs = site_contribs[["abcd_site"] + [col for col in site_contribs.columns if col != "abcd_site"]]
+    print(nphenos) 
+    return site_contribs 
 

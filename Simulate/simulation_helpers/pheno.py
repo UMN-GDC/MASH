@@ -11,8 +11,7 @@ import statsmodels.formula.api as smf
 
 
 # Need to add shared here then select causal from shared and nonshared 
-def sim_pheno(rng, genotypes, df, h2Hom, h2Het, alpha = -1, phenoname = "Y0", causals= None, prop_causal= [0.1, 0.1], sharedIdx = None, 
-              outcome = True, beta = None):
+def sim_pheno(rng, genotypes, df, h2Hom, h2Het, alpha = -1, phenoname = "Y0", causals= None, prop_causal= [0.1, 0.1], sharedIdx = None):
     """
     
 
@@ -67,7 +66,7 @@ def sim_pheno(rng, genotypes, df, h2Hom, h2Het, alpha = -1, phenoname = "Y0", ca
     # make sure no infinities
     homo_eff[np.isinf(homo_eff)] = 0
     homo_contrib = np.array(np.dot(Xcausal, homo_eff)).flatten()
-    df["homo_contrib"] = homo_contrib * np.sqrt(h2Hom / np.var(homo_contrib))
+    df[f"homo_contrib{phenoname}"] = homo_contrib * np.sqrt(h2Hom / np.var(homo_contrib))
     nclusts = df.subj_ancestries.nunique()
     cluster_eff = np.zeros((nCausal, nclusts))
     cluster_contrib = np.zeros(nsubjects)
@@ -91,22 +90,16 @@ def sim_pheno(rng, genotypes, df, h2Hom, h2Het, alpha = -1, phenoname = "Y0", ca
         # multiply errors such that its variance is equal to 1-h2Hom
     if h2Het[0] == 0  :
         cluster_contrib =0
-    df["cluster_contrib"] = cluster_contrib
-    df["errors"] = errors
+    df[f"cluster_contrib{phenoname}"] = cluster_contrib
+    df[f"errors{phenoname}"] = errors
     df["Xc"] = rng.uniform(0, 1, nsubjects)
     Beta_c = 0.5
-    df["Covar_contrib"] = Beta_c * df["Xc"]
+    df[f"Covar_contrib{phenoname}"] = Beta_c * df["Xc"]
     
-    # if Site_contrib isn't a column, make it a column of zeros
-    if "Site_contrib" not in df.columns:
-        df["Site_contrib"] = 0 
+    # sum across all columns with phenoname at the end of the column name using regex
+    df[str(phenoname)] = df.filter(regex = f"{phenoname}").sum(axis = 1)
     
-    df[str(phenoname)] = df[["Covar_contrib", "homo_contrib", "cluster_contrib", "errors", "Site_contrib"]].sum(axis = 1)
-    df[f"{phenoname}_no_site"] = df[["Covar_contrib", "homo_contrib", "cluster_contrib", "errors"]].sum(axis = 1)
-    
-    df[str(phenoname)] = df[str(phenoname)] - df[str(phenoname)].mean()
-    df[f"{phenoname}_no_site"] = df[f"{phenoname}_no_site"] - df[f"{phenoname}_no_site"].mean()
+    df[str(phenoname)] -= df[str(phenoname)].mean()
     
 
-
-    return df, causals, homo_eff, cluster_eff 
+    return df, causals
