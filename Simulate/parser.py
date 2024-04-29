@@ -42,7 +42,9 @@ def get_args() :
     parser.add_argument('--h2Hom', type=float, default=0.8, help='Homogeneity')
     parser.add_argument('--h2Het', nargs=2, type=float, default=[0.1, 0.1], help='Heterogeneity')
     parser.add_argument('--savePlink', action='store_true', help='Save plink binary')
-    parser.add_argument('--estimateHeritability', action='store_true', help='Estimate heritability') 
+    parser.add_argument('--estimateHeritability', action='store_true', help='Estimate heritability')
+    parser.add_argument('--prefix', type=str, help='Filepath to save data to')
+    
     args = vars(parser.parse_args())
     print(args)
     return(args)

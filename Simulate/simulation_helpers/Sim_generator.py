@@ -208,7 +208,7 @@ class pheno_simulator():
         self.df["P2"] = 0
         self.df["sex"] = 0
         self.df[["FID", "IID", "P1", "P2", "sex", "sex"]].to_csv(f"{prefix}.fam", sep = "\t", index = False, header=False)
-        self.df[["FID", "IID"] + list(self.df.filter(regex='^Y'))].to_csv(f"{prefix}.pheno", index = False, header=True, sep = "\t")
+        self.df[["FID", "IID"] + list(self.df.filter(regex='^Y|^Z'))].to_csv(f"{prefix}.pheno", index = False, header=True, sep = "\t")
 
         # Save subject_ancestries
         try : 

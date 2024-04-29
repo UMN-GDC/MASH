@@ -92,9 +92,6 @@ def sim_pheno(rng, genotypes, df, h2Hom, h2Het, alpha = -1, phenoname = "Y0", ca
         cluster_contrib =0
     df[f"cluster_contrib{phenoname}"] = cluster_contrib
     df[f"errors{phenoname}"] = errors
-    df["Xc"] = rng.uniform(0, 1, nsubjects)
-    Beta_c = 0.5
-    df[f"Covar_contrib{phenoname}"] = Beta_c * df["Xc"]
     
     # sum across all columns with phenoname at the end of the column name using regex
     df[str(phenoname)] = df.filter(regex = f"{phenoname}").sum(axis = 1)

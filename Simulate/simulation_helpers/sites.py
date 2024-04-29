@@ -48,24 +48,24 @@ def sim_sites(rng, nsubjects = 1000, nsites=1, siteDistribution="EQUAL", random_
         Bs = np.matrix(np.random.normal(0,  1, (nsites, nphenos)))
     else :
         # make site effects evenly spaced in a nsites x nphenos matrix 
-        Bs = np.arange(nsites * nphenos, dtype = "float64")
+        Bs = np.arange(nsites * nphenos, dtype = "float64", like = np.zeros(nsites, nphenos) )
         Bs -= Bs.mean()
         Bs=  np.reshape(Bs, (nsites, nphenos))
     if nsites == 1:
         Bs = np.array([0])
-
-    # Make a dummy matrix
-    Groups_dum = np.matrix(pd.get_dummies(Groups))
+        site_contribs = 0
+    else : 
+        # Make a dummy matrix
+        Groups_dum = np.matrix(pd.get_dummies(Groups))
     
-    # dot product between Groups_dum and Bs save them as a dataframe with columns 
-    # Site_contrib followed by the number of the site
-    site_contribs = np.dot(Groups_dum, Bs)
-    site_contribs = pd.DataFrame(site_contribs, columns = [f"Site_contrib{i}" for i in range(nphenos)])
+        # dot product between Groups_dum and Bs save them as a dataframe with columns 
+        # Site_contrib followed by the number of the site
+        site_contribs = np.dot(Groups_dum, Bs)
+        site_contribs = pd.DataFrame(site_contribs, columns = [f"Site_contrib{i}" for i in range(nphenos)])
     
-    # Add the groups as a column to site_contribs dataframe
-    site_contribs["abcd_site"] = Groups
-    # make abcd_site the first column
-    site_contribs = site_contribs[["abcd_site"] + [col for col in site_contribs.columns if col != "abcd_site"]]
-    print(nphenos) 
+        # Add the groups as a column to site_contribs dataframe
+        site_contribs["abcd_site"] = Groups
+        # make abcd_site the first column
+        site_contribs = site_contribs[["abcd_site"] + [col for col in site_contribs.columns if col != "abcd_site"]]
     return site_contribs 
 

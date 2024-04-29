@@ -11,6 +11,9 @@ conda activate datasci
 
 python -m Simulate --argfile Simulate/test.json
 
+# calculate fist 10 PCs using plink2
+plink2 --bfile temp/simulation --pca 10 --out temp/simulation
+
 plink2 --bfile temp/simulation --glm --out temp/simulation --covar temp/simulation.covar --pheno temp/simulation.pheno --pheno-name Y0,Y1,Y2,Y3,Y4 
 
 for i in $(seq 0 4) ; 
