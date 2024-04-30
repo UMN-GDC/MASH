@@ -200,8 +200,6 @@ class pheno_simulator():
 
         write_plink1_bin(G, f"{prefix}.bed")
 
-        # Save phenotype separate from subj_ancestries and covariates
-        self.df.to_csv(f"{prefix}.covar", sep = "\t", index = False)
        
         # Save FID, ID and columns starting with Y
         self.df["P1"] = 0
@@ -212,9 +210,9 @@ class pheno_simulator():
 
         # Save subject_ancestries
         try : 
-            self.df[["FID", "IID", "subj_ancestries", "abcd_site", "riskGroups", "confound"]].to_csv(f"{prefix}.covar", sep = "\t", index = False)
+            self.df[["FID", "IID", "subj_ancestries", "abcd_site", "riskGroups", "Confound", "Xc"]].to_csv(f"{prefix}.covar", sep = "\t", index = False)
         except :
-            self.df[["FID", "IID", "subj_ancestries", "abcd_site", "riskGroups"]].to_csv(f"{prefix}.covar", sep = "\t", index = False)
+            self.df[["FID", "IID", "subj_ancestries", "abcd_site", "riskGroups", "Xc"]].to_csv(f"{prefix}.covar", sep = "\t", index = False)
 
         # Read the output .bim file
         bim = pd.read_table(f"{prefix}.bim", sep='\s+', header = None)

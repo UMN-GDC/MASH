@@ -12,8 +12,16 @@ Last Updated 2022-06-06
 ##############################################################
 import os
 import numpy as np
-from Simulate.parser import get_args, read_flags
-from Simulate.simulation_helpers.Sim_generator import pheno_simulator
+
+try:
+    # store current working directory   
+    cwd = os.getcwd()
+    os.chdir("/home/christian/Research/Stat_gen/tools/MASH")
+    from Simulate.parser import get_args, read_flags
+    from Simulate.simulation_helpers.Sim_generator import pheno_simulator
+    os.chdir(cwd)
+except (ImportError, ModuleNotFoundError):
+    print("They must be already loaded") 
 
 rng = np.random.default_rng()
 
@@ -41,7 +49,7 @@ def simulate_data(nSNPs=1000, nsubjects=500, nclusts=1, nphenos=2, nsites = 2, s
     if Covariate : 
         sim.df["Z"] = sim.df["Z"] + np.var(sim.df.Z) * sim.df["Xc"]
    
-   sim.save_plink(prefix = prefix)
+    sim.save_plink(prefix = prefix)
    
 
 def main():
