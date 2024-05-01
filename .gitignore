@@ -8,6 +8,7 @@
 *phenotypes*
 temp*
 slurm*
+mashEnv
 
 !Example/
 !Genes_n_sims/

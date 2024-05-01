@@ -12,16 +12,8 @@ Last Updated 2022-06-06
 ##############################################################
 import os
 import numpy as np
-
-try:
-    # store current working directory   
-    cwd = os.getcwd()
-    os.chdir("/home/christian/Research/Stat_gen/tools/MASH")
-    from Simulate.parser import get_args, read_flags
-    from Simulate.simulation_helpers.Sim_generator import pheno_simulator
-    os.chdir(cwd)
-except (ImportError, ModuleNotFoundError):
-    print("They must be already loaded") 
+from Simulate.parser import get_args, read_flags
+from Simulate.simulation_helpers.Sim_generator import pheno_simulator
 
 rng = np.random.default_rng()
 
