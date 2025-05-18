@@ -25,7 +25,6 @@ from Estimate.estimators.combat import neuroCombat
 
 
 
-
 def load_n_estimate(df, fixed_effects, nnpc, mp, GRM, PC_effect = "fixed", std=False, Method="AdjHE", random_groups=None, silent=False, homo=True, gcta="~/software/bin/gcta64"):
     """
     Estimates heritability, but solves a full OLS problem making it slower than the closed form solution. Takes 
@@ -145,9 +144,6 @@ def load_n_estimate(df, fixed_effects, nnpc, mp, GRM, PC_effect = "fixed", std=F
     except TypeError :
         logging.error("Muffed estimate")
         pass
-    except Exception as e:
-        logging.error(e)
-        pass
 
 class h2Estimation():
     def __init__(self, args= None,  k=0, ids=None):
@@ -162,9 +158,10 @@ class h2Estimation():
         else:
             logging.info("Loading data...")
             self.args = args
-            self.df, self.GRM, self.phenotypes = load_everything(
+            self.df, self.GRM, self.phenotypes, self.ids = load_everything(
                 args= self.args, k= k)
             self.simulation = False
+            #self.df = pd.merge(self.ids, self.df, on = ["FID", "IID"], how = "left")
 
     def estimate(self, PC_effect = "fixed"):
         args = self.args
@@ -244,7 +241,7 @@ class h2Estimation():
 
                 
                 try: 
-                    C = "+".join(fixed_combos)
+                    C = "+".join(covs)
                 except TypeError :
                     C = "None"
                     
@@ -311,7 +308,6 @@ class h2Estimation():
                 
                 time = [end_est - start_est]
                 mem = [resource.getrusage(resource.RUSAGE_SELF).ru_maxrss/1000]
-                #r["Covariates"] = " + ".join(covs)
                 r["PCs"] = nnpc
                 r["time"] = time
                 r["mem"] = mem

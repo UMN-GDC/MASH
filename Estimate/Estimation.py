@@ -40,6 +40,7 @@ def main():
     
     #%%
     logging.info("Estimating")
+    ests.df = pd.merge(ests.ids, ests.df, on = ["FID", "IID"], how = "left")
     ests.estimate()
     # %%
     logging.info(f"Writing results to {args['out']}")
