@@ -19,7 +19,6 @@ mashEnv
 !Simulations/*
 !docs/Tutorials/Simulating_phenotypes.ipynb
 docs/Figures/Introduction/GenesxEnvironment.png
-Dockerfile
 test.json
 *.ipynb
 *.swp
