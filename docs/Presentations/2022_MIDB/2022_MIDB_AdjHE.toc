@@ -1,0 +1,4 @@
+\beamer@sectionintoc {1}{General trait influencers}{3}{0}{1}
+\beamer@sectionintoc {2}{Methods for detecting role of genetics}{4}{0}{2}
+\beamer@sectionintoc {3}{Simulations}{13}{0}{3}
+\beamer@sectionintoc {4}{Estimation on brain region volumes}{17}{0}{4}

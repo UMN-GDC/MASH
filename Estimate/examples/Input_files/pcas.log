@@ -1,0 +1,28 @@
+*******************************************************************
+* Genome-wide Complex Trait Analysis (GCTA)
+* version 1.93.2 beta Linux
+* (C) 2010-present, Jian Yang, The University of Queensland
+* Please report bugs to Jian Yang <jian.yang.qt@gmail.com>
+*******************************************************************
+Analysis started at 09:33:04 CST on Wed Jan 05 2022.
+Hostname: christian-laptop
+
+Accepted options:
+--grm-bin grm
+--pca 10
+--out pcas
+--thread-num 20
+
+Note: the program will be running on 20 threads.
+
+Reading IDs of the GRM from [grm.grm.id].
+5000 IDs read from [grm.grm.id].
+Reading the GRM from [grm.grm.bin].
+GRM for 5000 individuals are included from [grm.grm.bin].
+
+Performing principal component analysis ...
+Eigenvalues of 5000 individuals have been saved in [pcas.eigenval].
+The first 10 eigenvectors of 5000 individuals have been saved in [pcas.eigenvec].
+
+Analysis finished at 09:33:49 CST on Wed Jan 05 2022
+Overall computational time: 45.41 sec.

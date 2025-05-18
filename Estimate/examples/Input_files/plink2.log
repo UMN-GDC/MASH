@@ -1,0 +1,14 @@
+PLINK v2.00a3 64-bit (17 Feb 2020)
+Options in effect:
+  --bfile geno
+  --keep keep_small
+  --make-bed small_test
+
+Hostname: christian-laptop
+Working directory: /home/christian/Research/Stat_gen/tools/Basu_herit/Example
+Start time: Mon Apr 11 20:00:42 2022
+
+Error: Invalid --make-bed argument 'small_test'. (Did you forget '--out'?)
+For more info, try "plink2 --help <flag name>" or "plink2 --help | more".
+
+End time: Mon Apr 11 20:00:42 2022
