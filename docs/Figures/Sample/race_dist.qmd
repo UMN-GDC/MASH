@@ -1,0 +1,38 @@
+---
+title: "Race distribtution"
+author: "Christian"
+---
+
+
+```{r}
+#| include : false
+library(tidyverse)
+df <- read_csv("site_characteristics.csv") %>%
+  pivot_longer(cols = c(Asian, Black, Hispanic, White), names_to = "Race", values_to = "Count") %>%
+  select(Site, Race, Count) %>%
+  group_by(Site) %>%
+  mutate(freq = Count/ sum(Count)) %>%
+  pivot_wider(names_from = Race, values_from = freq, id_cols = Site) %>%
+  arrange(desc(White), desc(Black), desc(Hispanic), desc(Asian)) %>%
+  pivot_longer(cols = c(White, Black, Hispanic, Asian), names_to = "Race", values_to="Proportion")
+```
+
+```{r}
+G <- df %>%
+  mutate(Site = factor(Site, levels = unique(.$Site))) %>% 
+  ungroup() %>%
+  ggplot(aes(x = Site, y = Proportion, fill = Race)) +
+  geom_bar(stat = "identity", position = "fill") +
+  ylab("Proportion") +
+  theme_minimal() +
+  # Remove grid lines
+  theme(panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        axis.text.x = element_blank(),
+        axis.ticks.x = element_blank()) +
+  # Change fill color theme
+  scale_fill_brewer(palette = "Set2") 
+  # Site ggsave appropriate for poster
+ggsave("Race_vs_site.png", G, width = 8, height = 6, units = "in", dpi = 300)
+```
+

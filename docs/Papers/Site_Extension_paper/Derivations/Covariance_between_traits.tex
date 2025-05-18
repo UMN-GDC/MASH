@@ -1,0 +1,129 @@
+\documentclass[10pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\author{Christian Coffman}
+\begin{document}
+
+Consider P traits ($Y_1, \dots, Y_P$), where number of observations of each trait $Y_i= N$. When stacked, $Y$ is a $NP \times 1$ vector. We won't consider covariates other than sites since we assume they're orthogonal and can just project them away. We consider the site covariates $X_{n \times \# sites}$ and site effects for each phenotype $\gamma_j$ which are each $P\times 1$ vectors. Lastly the error $(\epsilon \sim N(0, \sigma^2)$ is scaled for each site-phenotype combination, where each $\delta_j$ is an $\#nsites$ vector that scales the error variancee
+   
+\section{The Model}
+\begin{align*}
+	Y & = (Y_1, \dots , Y_P) \\
+	Y & = X_g\beta + X_s \gamma + \epsilon\\
+	vec(Y) & = (\beta_g' \otimes I_n)vec(X_G)  + (\gamma_s'\otimes I_n)vec(X_s) + vec(\epsilon) \\
+	var(vec(\epsilon)) & = \Sigma_e \otimes I_n \\
+& \text{Both methods will be GRM based so} \\
+	var(vec(X_g\beta)) & = \Sigma_g\otimes A = \begin{bmatrix}
+	\sigma_{g1}^2 A & \dots & \rho_{g,1P}A\\
+	\vdots & \ddots & \vdots \\
+	\rho_{g,P1}A & \dots & \sigma_{gP}^2 A
+	\end{bmatrix}
+\end{align*}
+
+
+
+
+\begin{align*}
+	Var(Y) & = \begin{bmatrix}
+	Var(Y_1) & \dots & \Sigma_{1P} \\ 
+	\vdots & \ddots & \vdots \\
+	\Sigma_{P1} & \dots & Var(Y_P)
+	\end{bmatrix}
+\end{align*}
+
+Considering just two phenotypes we have
+
+\begin{align*}
+	\begin{bmatrix}
+	Y_1\\
+	Y_2 
+	\end{bmatrix}\sim N(\begin{bmatrix}
+	X_s\gamma_1 \\
+	X_s\gamma_2
+	\end{bmatrix}
+	,
+	\begin{bmatrix}
+	\sigma_{g_1}^2A + \sigma_{e_1}^2I & \rho_gA + \rho_e I\\
+	\rho_gA + \rho_eI & \sigma_{g_2}^2A  + \sigma_{e_2}^2I
+	\end{bmatrix}) \\
+\end{align*}
+
+\section{AdjHE RE method}
+
+Treating site effects as random, and then no covariance between site, genetic, or error we get
+\begin{align*}
+	\begin{bmatrix}
+	Y_1\\
+	Y_2 
+	\end{bmatrix}\sim N(0,
+	\begin{bmatrix}
+	\sigma_{g_1}^2A + \sigma_{s_1}^2S + \sigma_{e_1}^2I & \rho_gA + \rho_sS + \rho_e I\\
+	\rho_gA + \rho_sS + \rho_eI & \sigma_{g_2}^2A + \sigma_{s_2}^2S + \sigma_{e_2}^2I
+	\end{bmatrix}) \\
+\end{align*}
+
+This means
+\begin{align*}
+	Cov(Y_1, Y_2) = \rho_gA + \rho_sS + \rho_eI
+\end{align*}
+
+So the covariance between different traits has parts based in the similarities in the genetics, site, and expeirmental error.
+
+
+\section{ComBat}
+Long story short, CovBat technique only addresses the covariance due to the sites. 
+
+First they use Combat to residualize by subtracting the emprical Bayes estimators of the site mean ($\gamma_S^*$) and variance ($\delta_s^*$). And we know that they emprical bayes estimators are consistent $(\gamma_S^* \stackrel{p}{\to} \gamma_S, \delta_S^* \stackrel{p}{\to} \delta_S$). Looking at the combat adjustment
+
+\begin{align*}
+	Y^{combat} & = (Y- X_s\gamma^*)\delta^{*-1} \\
+\end{align*} 
+
+We have 
+
+\begin{align*}
+	X_s\beta_s^* & \stackrel{p}{\to} X_s\beta_s \\
+\end{align*}
+
+Therefore a projection defined by the site means we have
+
+\begin{align*}
+	Q_s^* & \stackrel{p}{\to} Q_s = X_s(X_s'X_s)^{-1}X_s'
+\end{align*}
+
+However, since $X \not \perp PC$ we run into the problem that 
+
+\begin{align*}
+	Q_sY & = Q_sX_g\beta + \epsilon
+\end{align*}
+
+Assuming that we have a perfectly balanced stduy s.t. $PC\perp X$ Then we'd have 
+
+\begin{align*}
+	Q_sY & = X_g\beta +s \epsilon \sim N(0, \sigma_g^2 A + \sigma_e^2)
+\end{align*}
+
+\begin{align*}
+	\delta^* & \stackrel{p}{\to} \delta \stackrel{CMT}{\therefore} \delta^{*-1} = diag(1/\delta_j^*) \stackrel{p}{\to} \delta^{-1} \\
+\end{align*}
+
+By Slutsky's theorem and CMT and assuming no differences ($\delta = I$)\\
+
+\begin{align*}
+	Y^{combat} & \stackrel{d}{\to} \epsilon \sim N(0, \sigma_g^2A + \sigma_e^2I)
+\end{align*}
+
+
+\section{Covbat} 
+Taking the residuals from Combat $Y^{combat}$ (which have mean 0)  we denote the covariance matrices of each residualized phenotype as $var(Y^{combat}_j) = \Sigma_j$. They take a PCA decomposition of the residualized phenotypes to get the covariance matrix 
+
+\begin{align*}
+	\Sigma & = \sum_{k=1}^p \lambda_k \phi_k\phi_k^T
+\end{align*}
+
+the residualzied phenotypes are expressed using the coordinates ($\eta$) along each of the first  p eigenvectors. However, because part of the covariance contains the GRM, this would affect the heritability estimate.
+
+\end{document}

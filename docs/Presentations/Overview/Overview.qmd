@@ -1,0 +1,233 @@
+---
+title: "Heritability of subcortical volumes in the adolescent brain"
+bibliography: references.bib
+csl: /home/christian/Templates/Citations/nature.csl
+link-citations: true
+author: "Christian Coffman"
+institute: "University of Minnesota"
+date: "03-30-2023"
+# title-slide-attributes: # this is if you want a background image on the title screen. Use the right path to the image you want
+  # data-background-image: # if want background to all slides
+  # data-background-opacity: "0.5"
+format:
+  UMN-revealjs:
+    echo: true
+    highlight-style: github
+    slide-number: c/t
+    width: 1600
+    height: 900
+    logo: "M_gold.png"
+    footer: "[University of Minnesota](https://umn.edu)"
+    toc: true
+    toc-depth: 1
+---
+
+# Subcortical heritability through lifetime
+
+## Subcortical volumes associated with psychological disorders {auto-animate="true"}
+
+-   Major depressive disorder - hippocampus, putamen, caudate nucleus @koolschijn_brain_2009
+
+-   Schizophrenia - anterior cingulate, hippocampus/amygdala, thalamus, insula @shepherd_systematic_2012
+
+-   Anxiety - amygdala, insula, anterior cingulate cortex @holzschneider_neuroimaging_2011
+
+![Subcortical regions highlighted in red](figures/Subcortical_regions.png){alt="Subcortical regions highlighted in red data-id" fig-align="center"}
+
+``` {style="font-size: 50%;"}
+Image generated at theanatomyoflove.com
+```
+
+## Subcortical volumes are heritable {auto-animate="true"}
+
+-   In young adults and adults @zhao_heritability_2019
+
+-   Head heritability changes through lifespan @smit_heritability_2010
+
+![Heritability across brain including subcortical](figures/UKB_herit.jpeg){alt="Heritability across brain including subcortical data-id" fig-align="center"}
+
+## Extending the trajectory
+
+-   Regional heritability varies through lifetime in adults @zhao_heritability_2019
+
+-   Want to extend their scale to younger years
+
+-   **Q: Are regional volumes heritabile in adolescents (9-10 years old)?**
+
+![Heritability of brain regions for different age groups](figures/UKB_trajectory.jpeg){fig-align="center"}
+
+# Difficulties in extending timeline
+
+## Difficult to estimate since the largest dataset is multiple sites
+
+-   Adolescent Brain Cognitive Development study (ABCD)
+
+-   Taken over 22 sites
+
+-   Confounding with scanner and site effects
+
+![](figures/ABCD_map.jpg){data-id="" fig-align="center"}
+
+## AdjHE extension accounts for site effects
+
+-   Adjusted Haseman-Elston (AdjHE) estimator is variance component estimator
+
+$$
+EY = X\beta_d \\
+Var(Y) = \sigma_G^2 GRM + \sigma_S^2S + \sigma_E^2I
+$$
+
+-   Treat site as a random effect ($\sigma_S^2$)
+
+-   OLS solution on 2nd moment
+
+-   Heritability: genetic influence ($\sigma_G^2$) vs environment ($\sigma_E^2$)
+
+-   Expands unbiased estimation to imbalanced sites
+
+## Outperforms existing methods adjusting for site effects
+
+::: columns
+::: {.column .column width="45%"}
+-   Other estimators necessitate site indep of genetics
+
+-   up to 4x faster computation (with minimal optimization)
+:::
+
+::: {.column .column width="55%"}
+![](figures/Adding_sites_n_clusts_homo.png){alt="Simulation comparisons" fig-align="center"}
+:::
+:::
+
+# Multiple subcortical volumes highly heritable in adolescence
+
+-   Lowest heritability in oldest part of brain: brain stem
+
+-   Higher heritability in outer regions: hippocampus, cerrebellum
+
+![Heritability estimates visualized on the brain](figures/AdjHE_RE_brain.png){fig-align="center"}
+
+# Future extensions
+
+## Multivariate {auto-animate="true" auto-animate-easing="ease-in-out"}
+
+::: r-hstack
+::: {.absolute data-id="pheno1" auto-animate-delay="0" style="background: #2780e3; width: 40px; height: 350px;" bottom="300" left="700"}
+:::
+
+::: {.absolute data-id="pheno2" auto-animate-delay="0" style="background: #3fb618; width: 40px; height: 350px;" bottom="300" left="800"}
+:::
+
+::: {.absolute data-id="pheno3" auto-animate-delay="0" style="background: #e83e8c; width: 40px; height: 350px;" bottom="300" left="900"}
+:::
+:::
+
+-   Phenotypes have share information
+
+## Multivariate {auto-animate="true" auto-animate-easing="ease-in-out"}
+
+::: r-hstack
+::: {.absolute data-id="pheno1" style="background: #2780e3; width: 350px; height: 350px; border-radius: 200px;" bottom="300" left="800"}
+:::
+
+::: {.absolute data-id="pheno2" style="background: #3fb618; width: 250px; height: 250px; border-radius: 200px;" bottom="300" left="800"}
+:::
+
+::: {.absolute data-id="pheno3" style="background: #e83e8c; width: 150px; height: 150px; border-radius: 200px;" bottom="300" left="800"}
+:::
+:::
+
+-   Utilize shared information between phenotypes
+    -   Multivariate regression
+    -   Heirarchical
+
+## Multivariate {auto-animate="true" auto-animate-easing="ease-in-out"}
+
+::: r-stack
+::: {data-id="pheno1" style="background: #2780e3; width: 350px; height: 350px; border-radius: 200px;"}
+:::
+
+::: {data-id="pheno2" style="background: #3fb618; width: 250px; height: 250px; border-radius: 200px;"}
+:::
+
+::: {data-id="pheno3" style="background: #e83e8c; width: 150px; height: 150px; border-radius: 200px;"}
+:::
+:::
+
+-   Utilize shared information between phenotypes
+    -   Multivariate regression
+    -   Heirarchical
+
+## Longitudinal {auto-animate="true" auto-animate-easing="ease-in-out"}
+
+::: r-hstack
+::: {.absolute data-id="pheno1" auto-animate-delay="0" style="background: #2780e3; width: 40px; height: 350px;" bottom="300" left="700"}
+:::
+
+::: {.absolute data-id="pheno2" auto-animate-delay="0" style="background: #3fb618; width: 40px; height: 350px;" bottom="300" left="800"}
+:::
+
+::: {.absolute data-id="pheno3" auto-animate-delay="0" style="background: #e83e8c; width: 40px; height: 350px;" bottom="300" left="900"}
+:::
+:::
+
+-   Phenotypes vary over time
+
+## Longitudinal {auto-animate="true" auto-animate-easing="ease-in-out" auto-animate-duration="5"}
+
+::: r-hstack
+::: {data-id="pheno1" auto-animate-delay="0" style="background: #2780e3; width: 50px; height: 50px; margin: 10px;"}
+:::
+
+::: {data-id="pheno2" auto-animate-delay="0" style="background: #3fb618; width: 10px; height: 250px; margin: 10px;"}
+:::
+
+::: {data-id="pheno3" auto-animate-delay="0" style="background: #f93e8c; width: 70px; height: 350px; margin: 10px;"}
+:::
+:::
+
+-   Utilize time varying information
+
+# Toolbox
+
+::: columns
+::: {.column width="55%"}
+![Simulation diagram](figures/simulation_diagram.png){alt="Simulation diagram" fig-align="center"}
+:::
+
+::: {.column width="45%"}
+-   United 8 site adjustment methods
+
+-   Simulates phenotypes from existing or simulated GWAS data
+:::
+:::
+
+## GxEMM
+
+::: columns
+::: column
+$$
+Y = X\alpha + \color{red}{G\beta} + \sum \color{blue}{G Z_k\gamma_k} + \color{orange}{Z_k \delta_k} + \epsilon
+$$
+
+-   Simulating phenotypes conserving hertiability for ancestries
+
+-   [Shared genetic effects]{style="color: red"}
+
+-   [Ancestry genetic effects]{style="color: blue"}
+
+-   [Ancestry effects]{style="color: orange"}
+:::
+
+::: column
+-   Assume effects proportional to frequency $\beta \sim N(0, \tau^2\frac{\sigma_{}^2}{m})$
+
+-   $\tau^2_s \propto f_s(1-f_s)^{\alpha}$
+:::
+:::
+
+## Thank you
+
+**Questions?**
+
+## References

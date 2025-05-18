@@ -1,0 +1,61 @@
+---
+title: "Simulation vizualization"
+date: today
+---
+
+
+# Simulation set up 
+- sample size = 500
+- nSNPs = 1000
+- 2 ancestries
+- 2 risk groups (high/low) shifted by intercept
+- confounding variable with half effect size of risk group
+    - if low risk 25\% chance if high risk 75\% chance
+- All groups were equally split up and represented
+
+# Analysis comparisons
+- GWAS using Plink
+- PRS pruning/clumping thresholding in PRSice
+- Used best PRSice PRS 
+- Compared two methods
+    - Y vs PC + PRS + confounder
+    - Y vs PC + PRS after projection
+- Compared on labeling efficiency of 4 groups ($G^*$) (high/low risk, which ancestry)
+- Group labels are $G$
+
+
+$$
+    RMSE = \sqrt{\sum_{g \in G} (n_{g} - 125)^2}
+$$
+
+
+
+# Results
+```{r}
+#| echo: False
+#| message: False
+#| warning: False
+
+library(tidyverse)
+
+df <- read_table("../temp/simu.out")
+
+df %>%
+    pivot_longer(everything(), names_to = "Method", values_to = "Stat") %>%
+    mutate(Stat = sqrt(Stat),
+    Method = ifelse(Method == "full", "Full PPMx", "Proj. + PPMx")) %>%
+    ggplot(aes(x = Stat, y = ..density.., group = Method, fill = Method), alpha = 0.5) +
+    geom_histogram() +
+    xlab("RMSE")
+
+    # add legend
+
+
+
+
+```
+
+Include images
+![Full PPMx](../temp/m1.png)
+
+![Projection + PPMx](../temp/m2.png)
