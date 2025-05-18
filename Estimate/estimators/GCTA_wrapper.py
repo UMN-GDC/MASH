@@ -16,12 +16,10 @@ import pandas as pd
 
 # Find GCTA
 try:
-    gcta = subprocess.run(["whereis", "gcta64"], capture_output=True
-                       ).stdout.split()[1].decode("utf-8") 
+    gcta = os.path.expanduser(subprocess.run(["which", "gcta64"], capture_output=True).stdout.split()[0])
 except IndexError : 
     try :
-        gcta = subprocess.run(["whereis", "gcta"], capture_output=True
-                              ).stdout.split()[1].decode("utf-8") 
+        gcta = os.path.expanduser(subprocess.run(["which", "gcta"], capture_output=True).stdout.split()[0])
     except IndexError:
         logging.error("GCTA was not found. Please install GCTA and make sure it is in your path")
         sys.exit(1)
@@ -30,7 +28,7 @@ except IndexError :
 
 
 #%%
-def GCTA(df, covars, nnpc, mp, GRM, gcta, silent=False):
+def GCTA(df, covars, nnpc, mp, GRM, gcta=gcta, silent=False):
     # Store random integer to save to temp file name
     rng = np.random.default_rng()    
     numb = rng.integers(10000)

@@ -23,6 +23,7 @@ from Estimate.estimators.all_estimators import h2Estimation
 def main():
     #%% Get command line arguments
     # Get CL arguments and convert them to usable Python objects in a dictionary
+    # args = read_flags({"argfile" : "../GCTA.json"})
     args = read_flags(get_args())
     
     logging.basicConfig(filename=f'{args["out"]}.log', filemode='w', format='%(name)s - %(levelname)s - %(message)s',
