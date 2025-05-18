@@ -31,6 +31,7 @@ def ReadGRMBin(prefix, sub_ids = None):
 
     # Read IDs
     ids = pd.read_table(prefix + ".grm.id", names = ["FID", "IID"], dtype = str)
+    ids["missing"] = ids["FID"].isna() | ids["IID"].isna()
     n = ids.shape[0]
 
     ## Read GRM from binary 
@@ -42,6 +43,11 @@ def ReadGRMBin(prefix, sub_ids = None):
     GRM[l] = grm
     # Make the rest of the symmetric matrix
     GRM = GRM + GRM.T - np.diag(np.diag(GRM))
+
+    # drop missing
+    GRM = GRM[np.invert(ids["missing"]),:][:,np.invert(ids["missing"])]
+    ids = ids.dropna()[["FID", "IID"]]
+    ids.FID = ids.FID.astype(int)
     
     if sub_ids != None :
         ids2 = pd.read_table(sub_ids, names= ["FID", "IID"], dtype = str)
@@ -74,13 +80,12 @@ def load_tables(ids= None, args = None) :
         pheno=pd.read_parquet(args["pheno"]).reset_index(names="IID")
         pheno.IID = pheno.IID.astype(str)
         pheno['IID'] = pheno['IID'].apply(insert_underscore)               
-        ids = pd.merge(ids, pheno, on = ["IID"], how = "left")
     else :
         pheno=pd.read_table(args["pheno"], sep = "\s+")
 
     for dframe in ["covDF", "pcDF", "pheno"] :
         if dframe in locals() :
-            ids = pd.merge(ids, eval(dframe), on = ["FID", "IID"], how = "outer")
+            ids = pd.merge(ids, eval(dframe), on = ["FID", "IID"], how = "left")
 
     return ids
 
@@ -128,5 +133,7 @@ def load_everything(args, k=0):
         phenotypes.remove("FID")
         phenotypes.remove("IID")
     print(df.shape)
-    return df, GRM, phenotypes 
+    ids = ids.dropna()
+    ids["FID"] = ids.FID.astype(int)
+    return df, GRM, phenotypes, ids
 
