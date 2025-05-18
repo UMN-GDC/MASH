@@ -7,7 +7,7 @@
 *.err
 *__pycache__*
 *_files*
-*_extensions*
+*_extensions/*
 *.npy
 *phenotypes*
 temp*
