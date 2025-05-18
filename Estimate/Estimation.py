@@ -14,6 +14,7 @@ Last Updated 2022-06-06
 # args = read_flags({"argfile": "/panfs/jay/groups/31/rando149/coffm049/ABCD/Workflow/03_Herit_ests/Asegs/full/New/Covbat.json"})
 import os
 import logging
+import pandas as pd
 #os.chdir("/home/christian/Research/Stat_gen/tools/Basu_herit")
 # os.chdir("/panfs/roc/groups/3/rando149/coffm049/tools/Basu_herit")
 from Estimate.data_input.parser import get_args, read_flags

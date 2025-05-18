@@ -97,7 +97,7 @@ def GCTA(df, covars, nnpc, mp, GRM, gcta, method = "GCTA", silent=False):
         if method == "GCTA" :
             df = pd.read_table(temp_name + ".hsq", sep="\t")
             result = {"h2": df.Variance[3], "var(h2)": df.SE[3]**2, "G" : df.Variance[0], "E" : df.Variance[1], "pval" :df.SE[8], "pheno": mp, "PCs": nnpc, "Covariates": "+".join(covars), "time": np.nan,
-                 "mem": np.nan}
+                      "mem": np.nan, "n" : df.Variance[9]}
         if method == "HEreg" :
             df = pd.read_table(temp_name + ".HEreg", nrows=2, skiprows=1, sep="\s+")
             result = {"h2": df.Estimate[1], "var(h2)": df.SE_OLS[1]**2, "G" : np.nan, "E" : np.nan, "pval" :df.P_OLS[1], "pheno": mp, "PCs": nnpc, "Covariates": "+".join(covars), "time": np.nan,
