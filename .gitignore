@@ -29,4 +29,5 @@ test.json
 test.csv.log
 Estimate/examples/AdjHE.SLURM
 *.pyc
+.venv/
 tests/test_estimators.py
