@@ -66,8 +66,6 @@ def load_tables(ids= None, args = None) :
     # load the rest of the data
     if args["covar"] != None :
         covDF = pd.read_table(args["covar"], sep = "\s+")
-    if "ids" in locals() :
-        ids = covDF[["FID", "IID"]] 
     if args["PC"] != None :
         pcDF = pd.read_table(args["PC"], sep = "\s+", header= None)
         pcDF.columns = ["FID", "IID"] + ["pc_" + str(s) for s in range(1, pcDF.shape[1]-1)]
@@ -79,7 +77,8 @@ def load_tables(ids= None, args = None) :
 
         pheno=pd.read_parquet(args["pheno"]).reset_index(names="IID")
         pheno.IID = pheno.IID.astype(str)
-        pheno['IID'] = pheno['IID'].apply(insert_underscore)               
+        pheno['IID'] = pheno['IID'].apply(insert_underscore)
+        pheno = pd.merge(ids, pheno, on = "IID", how = "left")
     else :
         pheno=pd.read_table(args["pheno"], sep = "\s+")
 
@@ -126,7 +125,7 @@ def load_everything(args, k=0):
     # Get the phenotype names
     if os.path.splitext(args["pheno"])[1] == ".parquet":
 
-        phenotypes=pd.read_parquet(args["pheno"]).T.rename(columns=lambda x: 'o' + str(x)).reset_index(names="IID").columns.tolist()
+        phenotypes=pd.read_parquet(args["pheno"]).reset_index(names="IID").columns.tolist()
         phenotypes.remove("IID")
     else: 
         phenotypes = pd.read_table(args["pheno"], sep = "\s+", header = 0, nrows= 0).columns.tolist()

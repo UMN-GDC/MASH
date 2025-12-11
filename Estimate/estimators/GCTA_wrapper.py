@@ -81,7 +81,7 @@ def GCTA(df, covars, nnpc, mp, GRM, gcta, method = "GCTA", silent=False):
         covs += " --covar " + temp_name + "_Discrete.txt "
     
     if method == "GCTA":
-        estimator = " --reml --reml-maxit 500 --reml-priors 0.1 0.9"
+        estimator = " --reml --reml-priors 0.05 0.95"
     else :
         estimator = " --HEreg" 
     
