@@ -45,8 +45,8 @@ dependencies = [
 # 5. CONSOLE SCRIPTS (Optional but Recommended)
 # This allows users to type 'estimate' instead of 'python -m Estimate'
 [project.scripts]
-Estimate = "Estimate.__main__:main"
-Simulate = "Simulate.__main__:main"
+MASH = "Estimate.__main__:main"
+SimulateMASH = "Simulate.__main__:main"
 
 # 6. SETUPTOOLS CONFIGURATION
 # This tells setuptools to look inside the 'src' folder for your package.
