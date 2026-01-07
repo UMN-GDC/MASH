@@ -1,0 +1,27 @@
+# Comparison of methods for two different data sets
+
+# dataset 1 provided with PredLMM (n=1000)
+
+
+
+
+
+# Datset 2 simulated from 1kg
+# extensive QC, but at a novice level since this was my first time going through a QC
+# ended up with 540 subjects and 19243 causal loci
+
+
+
+
+
+Dataset, Method, Heritibility,  SE,     time(s)
+1kg,     known,  0.2,               ,
+1kg,     GCTA,   0.312,         0.17,   0.40
+1kg,     PredLMM,0.262,         0.16,   1.98
+1kg,     AdjHE,  0.59,          0.03,   0.15
+Pred,    known,  0.8,               ,
+Pred,    GCTA,   0.807392,      0.02,   67
+Pred,    PredLMM,0.779,         0.06,   19.6
+Pred,    AdjHE,  0.565,         0.02,   1.7
+
+
