@@ -136,41 +136,11 @@ python Estimate.py --argfile Example/Arg_file.json
 ### SLURM script example 
 The SLURM script contains two portions: the first request resources from the supercomputer, the second contains the code you actually want to run. In order to make sure your code runs properly, make sure you are changing to the proper working direcotry with the "cd" command. Then simply call the function you want to run. [Here](https://github.com/coffm049/Basu_herit/blob/master/Example/Estimate.SLURM) is an example SLURM script where we are simply running the previous example utilizing the "argfile". For information on the anatomy of SLURM scripts please see information from [MSI](https://www.msi.umn.edu/content/job-submission-and-scheduling-slurm).
 
-????? ALSO LIST THE GENERAL RESOURCES NEEDED TO STARTUP THIS ANALYSIS FOR OTHER TyPES OF CLUSTERS????
-
-# UNDER CONSTRUCTION
-
-
-## Adjusted-HE with regression version (Still being tested)
-
-For large sample size (e.g. biobank size), it is suggested to use ```AdjHE_reg_s1.py``` and ```AdjHE_reg_s2.py``` to perform linear regression to get the heritability estimation. In our estimation of the UKB data, we partitioned the whole data set (n = 305,639) into 200 parts and allocated 15GB memory to each job. And the maximum running time for 200 jobs was less than 10 minutes (not include construcing GRM and computing PCs).
-
-
-
-
-# Building Image  
-```
-sudo docker build -f Dockerfile -t adjhe:1.1 .
-sudo docker save adjhe:1.1 > AdjHE_1.1.tar
-
-module load singularity
-cd ~/tools/Basu_herit
-singularity build Estimate.sif docker-archive://AdjHE_1.1.tar
-
-```
-
-
-Start an interactive job on mesabi that you will use to build the container. The size of the /tmp directory allocated with the –tmp flag will be dependent on the size of the container you are trying to build. A rule of thumb that has seemed to work okay is to request at least twice the size of the container you are trying to build. 
-
-```
-srun -N 1 --ntasks-per-node=1  --tmp=100g --mem-per-cpu=30g -t 3:00:00 -p interactive --pty bash
-```
-
-
 
 # FAQ's
 ## Sensitivity to number of PC's
 See simulation 2 in Section 3 "Results" in [the paper](https://doi.org/10.1101/2020.08.05.236901). the efficiency of this method of estimation allows for users to do some amount of model selection nicluding with the number of PC's which could drastically impact heritability estimates.
 
-![Alt](https://repobeats.axiom.co/api/embed/11759d6c6f5bb629dd90af840be633628d5d6add.svg "Repobeats analytics image")
+<!--![Alt](https://repobeats.axiom.co/api/embed/11759d6c6f5bb629dd90af840be633628d5d6add.svg "Repobeats analytics image")
+-->
 
