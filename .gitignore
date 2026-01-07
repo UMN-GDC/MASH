@@ -1,1 +1,43 @@
+# ========================
+# Python Specific Files
+# ========================
+# Virtual environments
+venv/
+.venv/
+.buildEnv/
+env/
+.env/
+
+# Bytecode and compiled files
 __pycache__/
+*.pyc
+*.pyd
+*.so
+
+# Build artifacts
+dist/
+build/
+*.egg-info/
+
+# Testing and Coverage
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Logs and Data
+*.log
+*.sqlite3
+
+# ========================
+# OS & Editor Files
+# ========================
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+
+# IDE/Editor
+.vscode/
+.idea/
+*~

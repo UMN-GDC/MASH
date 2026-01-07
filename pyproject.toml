@@ -26,20 +26,16 @@ classifiers = [
 # List any pip libraries your code imports (e.g. pandas, numpy).
 # Do NOT list the external command line tool here.
 dependencies = [
-    "os",
-    "sys",
-    "argparse",
-    "logging",
-    "subprocess",
     "numpy",
     "pandas",
     "scipy",
-    "json",
-    "re",
     "nibabel",
-    "timeit",
-    "copy",
-    "resource"
+    "statsmodels",
+    "scikit-learn",
+    "matplotlib",
+    "seaborn",
+    "pandas_plink",
+    "tqdm"
 ]
 
 [project.urls]
