@@ -16,7 +16,7 @@ From: python:3.11-slim
     mkdir -p /opt/gcta
     
     cd /opt/plink
-    curl -L -o plink.zip "https://zzz.bwh.harvard.edu/plink/dist/plink-1.08-x86_64.zip"
+    curl -L -o plink.zip "https://s3.amazonaws.com/plink1-assets/plink_linux_x86_64_20250819.zip"
     unzip plink.zip
     rm plink.zip
     chmod +x plink
@@ -25,11 +25,11 @@ From: python:3.11-slim
     curl -L -o gcta.zip "https://cnsgenomics.com/software/gcta/bin/gcta_1.93.2beta.zip"
     unzip gcta.zip
     rm gcta.zip
-    chmod +x gcta
+    chmod +x gcta_1.93.2beta/gcta64
     
     # Symlink the binary to a standard bin directory so it is always on PATH
     ln -s /opt/plink/plink /usr/local/bin/plink
-    ln -s /opt/gcta/gcta /usr/local/bin/gcta
+    ln -s /opt/gcta/gcta_1.93.2beta/gcta64 /usr/local/bin/gcta
 
     # 3. INSTALL YOUR PYTHON PACKAGE
     pip install git+https://github.com/UMN-GDC/MASH.git

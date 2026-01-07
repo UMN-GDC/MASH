@@ -17,6 +17,12 @@ In desired virtual environment install as
 pip install git+https://github.com/UMN-GDC/MASH.git
 ```
 
+If you prefer to have an image so the dependent technologies are handeled for you you can install it with apptainer (singularity) as follows 
+
+```bash
+apptainer build MASH.sif 
+```
+
 ## Adjusted-HE with closed form
 
 ```Estimate.py```  estimates SNP-heritability via closed form formula with single [Genetic Relatedness Matrix (GRM)](https://ibg.colorado.edu/cdrom2020/medland/tuesday1/Tuesday1.pdf) as input. It is suggested to use this version on a server with sufficient memory when sample size is less than 100k. In our paper, analyzing a 45k sample took less than 2 minutes and about 40 GB memory.
