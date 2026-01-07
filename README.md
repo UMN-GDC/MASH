@@ -17,10 +17,24 @@ In desired virtual environment install as
 pip install git+https://github.com/UMN-GDC/MASH.git
 ```
 
+which is then loadable within Python as `import gdcMASH` or callable from command line as 
+
+```bash
+MASH --argfile <path to argfile>
+```
+
 If you prefer to have an image so the dependent technologies are handeled for you you can install it with apptainer (singularity) as follows 
 
 ```bash
-apptainer build MASH.sif 
+curl -o container.def https://raw.githubusercontent.com/UMN-GDC/MASH/refs/heads/master/container.def
+apptainer build MASH.sif container.def
+```
+
+which is then callable with
+
+
+```bash
+apptainer run MASH.sif MASH --argfile <path to argfile>
 ```
 
 ## Adjusted-HE with closed form
