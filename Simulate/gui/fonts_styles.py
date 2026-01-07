@@ -1,2 +1,0 @@
-LARGEFONT =("Verdana", 35)
-
