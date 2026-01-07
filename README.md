@@ -4,11 +4,18 @@
 ![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white)
 
 
+
 # adjustedHE
 
 Adj-HE (Adjusted HE) is a computationally efficient method to estimate [Single Nucleotide Polymorphism (SNP)](https://www.cancer.gov/publications/dictionaries/genetics-dictionary/def/single-nucleotide-polymorphism)-heritability in presence of population substructure for biobank-scale data. It is a simplification of the [Haseman- Elston regression (HE)](https://pubmed.ncbi.nlm.nih.gov/4157472/). For details of this statistical method, please refer/cite:
  
 Lin, Z., Seal, S., & Basu, S. (2020). Estimating SNP heritability in presence of population substructure in large biobank-scale data. bioRxiv. https://doi.org/10.1101/2020.08.05.236901
+
+# Installation
+In desired virtual environment install as
+```bash
+pip install git+https://github.com/UMN-GDC/MASH.git
+```
 
 ## Adjusted-HE with closed form
 
