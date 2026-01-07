@@ -1,0 +1,58 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+# 1. THE BASICS
+name = "gdcMASH"
+version = "0.0.1"
+description = "SNP heritability estimation in multi ancestry settings" 
+readme = "docs/README.md"
+requires-python = ">=3.8"     # <--- ACTION REQUIRED: Adjust depending on your code compatibility
+
+# 2. AUTHORS
+authors = [
+  { name="Christian Coffman", email="coffm049@umn.edu" },
+]
+
+# 3. METADATA & TAGS
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+
+# 4. DEPENDENCIES (PYTHON LIBRARIES ONLY)
+# List any pip libraries your code imports (e.g. pandas, numpy).
+# Do NOT list the external command line tool here.
+dependencies = [
+    "os",
+    "sys",
+    "argparse",
+    "logging",
+    "subprocess",
+    "numpy",
+    "pandas",
+    "scipy",
+    "json",
+    "re",
+    "nibabel",
+    "timeit",
+    "copy",
+    "resource"
+]
+
+[project.urls]
+"Homepage" = "https://github.com/UMN-GDC/MASH"
+"Bug Tracker" = "https://github.com/UMN-GDC/MASH/issues"
+
+# 5. CONSOLE SCRIPTS (Optional but Recommended)
+# This allows users to type 'estimate' instead of 'python -m Estimate'
+[project.scripts]
+Estimate = "Estimate.__main__:main"
+Simulate = "Simulate.__main__:main"
+
+# 6. SETUPTOOLS CONFIGURATION
+# This tells setuptools to look inside the 'src' folder for your package.
+[tool.setuptools.packages.find]
+where = ["src"]
