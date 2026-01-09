@@ -1,43 +1,17 @@
-Bootstrap: docker
-From: python:3.11-slim
+Bootstrap: localimage
+From: /scratch.global/coffm049/baseImage/base.sif
 
 %post
-    # 1. INSTALL SYSTEM DEPENDENCIES
-    # We need curl and unzip for the tool, and git to clone your repo.
-    apt-get update && apt-get install -y \
-        curl \
-        unzip \
-        git \
-        && rm -rf /var/lib/apt/lists/*
-
-    # 2. INSTALL THE EXTERNAL TOOLS
-    # Create a clean directory for the tool
-    mkdir -p /opt/plink
-    mkdir -p /opt/gcta
-    
-    cd /opt/plink
-    curl -L -o plink.zip "https://s3.amazonaws.com/plink1-assets/plink_linux_x86_64_20250819.zip"
-    unzip plink.zip
-    rm plink.zip
-    chmod +x plink
-
-    cd /opt/gcta
-    curl -L -o gcta.zip "https://cnsgenomics.com/software/gcta/bin/gcta_1.93.2beta.zip"
-    unzip gcta.zip
-    rm gcta.zip
-    chmod +x gcta_1.93.2beta/gcta64
-    
-    # Symlink the binary to a standard bin directory so it is always on PATH
-    ln -s /opt/plink/plink /usr/local/bin/plink
-    ln -s /opt/gcta/gcta_1.93.2beta/gcta64 /usr/local/bin/gcta
-
-    # 3. INSTALL YOUR PYTHON PACKAGE
-    pip install git+https://github.com/UMN-GDC/MASH.git
+    micromamba shell reinit
+    micromamba create -n MASH python pip -y -c conda-forge
+    micromamba clean --all
+    /opt/conda/envs/MASH/bin/pip --root-user-action install git+https://github.com/UMN-GDC/MASH.git
 
 %environment
     # Ensure the locale is set correctly (prevents Python unicode errors)
     export LC_ALL=C.UTF-8
     export LANG=C.UTF-8
+    export PATH="/bin:/opt/conda/bin:/opt/conda/envs/MASH/bin:/usr/bin:$PATH"
 
 %runscript
     # This runs when you execute the container file directly
