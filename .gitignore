@@ -13,6 +13,7 @@ __pycache__/
 *.pyc
 *.pyd
 *.so
+*.sif
 
 # Build artifacts
 dist/
