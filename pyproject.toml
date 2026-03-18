@@ -29,11 +29,8 @@ dependencies = [
     "numpy",
     "pandas",
     "scipy",
-    "nibabel",
     "statsmodels",
     "scikit-learn",
-    "matplotlib",
-    "seaborn",
     "pandas_plink",
     "tqdm"
 ]
