@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 #%%
 
 
-def ReadGRMBin(prefix, sub_ids = None):
+def ReadGRMBin(prefix, sub_ids = None, args = None):
     """
     Read GCTA style binary GRM file sets into memory.
 
@@ -27,17 +27,22 @@ def ReadGRMBin(prefix, sub_ids = None):
         GRM as an (nxn) array.
 
     """
+    iid_col = args.get("iid_col", "IID") if args else "IID"
+    fid_col = args.get("fid_col", "FID") if args else "FID"
+
     print("Reading GRM: ", prefix)
-    
+
     # Specify information about binary GRM format
     dt = np.dtype('f4') # Relatedness is stored as a float of size 4 in the binary file
 
-    # Read IDs
-    ids = pd.read_table(prefix + ".grm.id", names = ["FID", "IID"], dtype = str)
+    # Read IDs - handle custom column names
+    ids = pd.read_table(prefix + ".grm.id", header=None, dtype = str)
+    ids.columns = ids.columns.map({0: fid_col, 1: iid_col})
+    ids = rename_id_cols(ids, args) if args else ids
     ids["missing"] = ids["FID"].isna() | ids["IID"].isna()
     n = ids.shape[0]
 
-    ## Read GRM from binary 
+    ## Read GRM from binary
     grm = np.fromfile(prefix + ".grm.bin", dtype = dt)
     # seed empty grm
     GRM = np.zeros((n, n), dtype = dt)
@@ -50,18 +55,44 @@ def ReadGRMBin(prefix, sub_ids = None):
     # drop missing
     GRM = GRM[np.invert(ids["missing"]),:][:,np.invert(ids["missing"])]
     ids = ids.dropna()[["FID", "IID"]]
-    
+
     if sub_ids != None :
-        ids2 = pd.read_table(sub_ids, names= ["FID", "IID"], dtype = str)
+        sub_fid_col = args.get("fid_col", "FID") if args else "FID"
+        sub_iid_col = args.get("iid_col", "IID") if args else "IID"
+        ids2 = pd.read_table(sub_ids, header=None, dtype = str)
+        ids2.columns = ids2.columns.map({0: sub_fid_col, 1: sub_iid_col})
+        ids2 = rename_id_cols(ids2, args) if args else ids2
         # keep the ids that overlap with the additionally specified ids
         ids = ids.reset_index().merge(ids2, on = ["FID", "IID"]).set_index("index")
         # Subset the GRM too
-        GRM = GRM[ids.index, :][:, ids.index]        
+        GRM = GRM[ids.index, :][:, ids.index]
 
     return ids, GRM
 
 def insert_underscore(s):
     return s[:4] + '_' + s[4:]
+
+
+def find_col(header, col_name, desc=""):
+    idx = [i for i, c in enumerate(header) if str(c).upper() == str(col_name).upper()]
+    if len(idx) == 0:
+        raise ValueError(f"Column '{col_name}' not found in {desc}. Available: {header}")
+    return idx[0]
+
+
+def rename_id_cols(df, args):
+    """Rename FID/IID columns to canonical names based on args."""
+    if df is None:
+        return df
+    fid_col = args.get("fid_col", "FID")
+    iid_col = args.get("iid_col", "IID")
+    renames = {}
+    for old, new in [(fid_col, "FID"), (iid_col, "IID")]:
+        if old != new and old in df.columns:
+            renames[old] = new
+    if renames:
+        df = df.rename(columns=renames)
+    return df
 
 
 def validate_input_files(args):
@@ -201,15 +232,17 @@ def validate_column_types(df, filepath, file_type):
     return df
 
 
-def _read_delimited_file(filepath, has_header=True, default_cols=None):
+def _read_delimited_file(filepath, has_header=True, default_cols=None, args=None):
     """
     Read a file with unambiguous delimiter based on extension.
-    
+
     Returns DataFrame with FID, IID columns.
     """
     import os
+    fid_col = args.get("fid_col", "FID") if args else "FID"
+    iid_col = args.get("iid_col", "IID") if args else "IID"
     ext = os.path.splitext(filepath)[1].lower()
-    
+
     # Determine separator based on extension
     if ext in ['.tsv', '.tab']:
         sep = '\t'
@@ -220,7 +253,7 @@ def _read_delimited_file(filepath, has_header=True, default_cols=None):
     else:
         # Default: try whitespace (plink format)
         sep = None
-    
+
     # Try to read with header
     df = pd.read_table(filepath, sep=sep, header=None if not has_header else 0)
 
@@ -228,33 +261,39 @@ def _read_delimited_file(filepath, has_header=True, default_cols=None):
     if has_header:
         df.columns = df.columns.str.strip()
 
-    # Check if FID/IID columns exist (header case)
-    if has_header and 'FID' in df.columns and 'IID' in df.columns:
+    # Check if FID/IID columns exist with custom names (case-insensitive match)
+    def has_col(name):
+        return any(str(c).upper() == str(name).upper() for c in df.columns)
+
+    if has_col(fid_col) and has_col(iid_col):
         # Ensure FID and IID are string type for consistent merging
-        df['FID'] = df['FID'].astype(str)
-        df['IID'] = df['IID'].astype(str)
+        df[fid_col] = df[fid_col].astype(str)
+        df[iid_col] = df[iid_col].astype(str)
+        df = rename_id_cols(df, args)
         return df
-    
+
     # Handle alternative column names: participant_id -> IID (for files without FID)
     # Keep session_id as a separate column if present
-    if has_header and 'participant_id' in df.columns and 'FID' not in df.columns:
-        col_rename = {'participant_id': 'IID'}
+    if has_col('participant_id') and not has_col(fid_col):
+        col_rename = {'participant_id': iid_col}
         df = df.rename(columns=col_rename)
-        df['FID'] = df['IID'].astype(str)
-        df['IID'] = df['IID'].astype(str)
+        df[fid_col] = df[iid_col].astype(str)
+        df[iid_col] = df[iid_col].astype(str)
+        df = rename_id_cols(df, args)
         return df
-    
+
     # Handle subjectkey -> IID (common in some phenotype files)
-    if has_header and 'subjectkey' in df.columns and 'FID' not in df.columns:
-        col_rename = {'subjectkey': 'IID'}
+    if has_col('subjectkey') and not has_col(fid_col):
+        col_rename = {'subjectkey': iid_col}
         df = df.rename(columns=col_rename)
-        df['FID'] = df['IID'].astype(str)
-        df['IID'] = df['IID'].astype(str)
+        df[fid_col] = df[iid_col].astype(str)
+        df[iid_col] = df[iid_col].astype(str)
+        df = rename_id_cols(df, args)
         return df
-    
+
     # FID/IID were not found or no header provided - column names were inferred
     logger.info(f"File {filepath}: FID/IID columns not found, inferring from first two columns")
-    
+
     # No header or doesn't have FID/IID - assign columns
     n_cols = df.shape[1]
     if default_cols is not None and len(default_cols) > 0:
@@ -283,13 +322,13 @@ def _read_delimited_file(filepath, has_header=True, default_cols=None):
     else:
         col_names = ["FID", "IID"] + [f"col_{i}" for i in range(n_cols - 2)]
     df.columns = col_names
-    
+
     # Ensure FID and IID are string type for consistent merging
     if 'FID' in df.columns:
         df['FID'] = df['FID'].astype(str)
     if 'IID' in df.columns:
         df['IID'] = df['IID'].astype(str)
-    
+
     return df
 
 
@@ -375,6 +414,8 @@ def _apply_filter(df, filter_expr):
 
 def load_tables(ids= None, args = None) :
     # load the rest of the data
+    fid_col = args.get("fid_col", "FID") if args else "FID"
+    iid_col = args.get("iid_col", "IID") if args else "IID"
     
     # Handle multiple covariate files (list or comma-separated string)
     if args.get("covar") is not None:
@@ -389,7 +430,7 @@ def load_tables(ids= None, args = None) :
         covDFs = []
         for cov_file in covar_files:
             try:
-                cov_df = _read_delimited_file(cov_file, default_cols=["FID", "IID", "cov_1"])
+                cov_df = _read_delimited_file(cov_file, default_cols=["FID", "IID", "cov_1"], args=args)
                 # Apply covariate filter to each file BEFORE merging to avoid duplicates
                 # Only apply if the filter column exists in this file
                 if args.get("covar_filter"):
@@ -423,7 +464,7 @@ def load_tables(ids= None, args = None) :
     # Note: covar_filter already applied above per-file to avoid duplicates
     
     if args.get("PC") != None :
-        pcDF = _read_delimited_file(args["PC"], default_cols=["FID", "IID", "PC1", "PC2"], has_header=False)
+        pcDF = _read_delimited_file(args["PC"], default_cols=["FID", "IID", "PC1", "PC2"], has_header=False, args=args)
         if pcDF.columns[0].startswith('#'):
             pcDF = pcDF.rename(columns={'#FID': 'FID'})
         # Check if first column contains space-separated values (no header case)
@@ -469,7 +510,7 @@ def load_tables(ids= None, args = None) :
             pheno = pd.merge(ids, pheno, on = "IID", how = "left")
         else:
             # Use unambiguous format detection
-            pheno = _read_delimited_file(pheno_file, default_cols=["FID", "IID"])
+            pheno = _read_delimited_file(pheno_file, default_cols=["FID", "IID"], args=args)
             print(f"Phenotype file columns: {pheno.columns.tolist()[:10]}")
             # Don't set FID = IID for phenotype files - this breaks merging when
             # GRM has numeric FID but phenotype has participant_id style IDs
@@ -549,7 +590,7 @@ def load_everything(args, k=0):
     start_read = timeit.default_timer()
     
     # Read in grm
-    ids, GRM = ReadGRMBin(args["prefix"], args.get("ids"))
+    ids, GRM = ReadGRMBin(args["prefix"], args.get("ids"), args=args)
     df = load_tables(ids, args)
 
     end_read = timeit.default_timer()
@@ -567,7 +608,7 @@ def load_everything(args, k=0):
             phenotypes = pd.read_parquet(pheno_file).reset_index(names="IID").columns.tolist()
             phenotypes.remove("IID")
         else:
-            pheno_df = _read_delimited_file(pheno_file, default_cols=["FID", "IID"])
+            pheno_df = _read_delimited_file(pheno_file, default_cols=["FID", "IID"], args=args)
             phenotypes = [c for c in pheno_df.columns if c not in ["FID", "IID"]]
     
     print(df.shape)

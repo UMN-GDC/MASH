@@ -151,7 +151,19 @@ def get_args() :
                         metavar= "COVAR_FILTER",
                         help='Filter by covariate values (e.g., "sex==1", "age>=18"). '
                         'Supports: ==, !=, >, <, >=, <= and column names from covariate file.')
-    
+
+    parser.add_argument('--iid-col',
+                        type=str,
+                        default='IID',
+                        metavar= "IID_COLUMN",
+                        help='Name of the IID column in phenotype/covariate files. Default: IID')
+
+    parser.add_argument('--fid-col',
+                        type=str,
+                        default='FID',
+                        metavar= "FID_COLUMN",
+                        help='Name of the FID column in phenotype/covariate files. Default: FID')
+
     # Set defaults
     parser.set_defaults(PC="None", fast = False, npc=None,
                         covar="None", mpheno=1, k=0,
@@ -159,7 +171,8 @@ def get_args() :
                         PredLMM = False, RV = None, covar_relates = True,
                         loop_covs=False, argfile = None, covars =1,
                         std= False, qcovar=None, covar_discrete=None,
-                        pheno_filter=None, covar_filter=None)
+                        pheno_filter=None, covar_filter=None,
+                        iid_col='IID', fid_col='FID')
     
     
     # return the arguments as a dictionary
