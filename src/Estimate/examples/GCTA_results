@@ -1,0 +1,13 @@
+h2,SE,Pheno,PCs,Covariates,Time for analysis(s),Memory Usage
+0.807232,0.01927,head_size,5, + +-+-+q+c+o+v+a+r+ +t+e+m+p+_+C+o+n+t+.+t+x+t+ ,0,0
+0.807232,0.01927,head_size,10, + +-+-+q+c+o+v+a+r+ +t+e+m+p+_+C+o+n+t+.+t+x+t+ ,0,0
+0.807232,0.01927,liver_size,5, + +-+-+q+c+o+v+a+r+ +t+e+m+p+_+C+o+n+t+.+t+x+t+ ,0,0
+0.807232,0.01927,liver_size,10, + +-+-+q+c+o+v+a+r+ +t+e+m+p+_+C+o+n+t+.+t+x+t+ ,0,0
+0.807232,0.01927,o2_level,5, + +-+-+q+c+o+v+a+r+ +t+e+m+p+_+C+o+n+t+.+t+x+t+ ,0,0
+0.807232,0.01927,o2_level,10, + +-+-+q+c+o+v+a+r+ +t+e+m+p+_+C+o+n+t+.+t+x+t+ ,0,0
+0.807232,0.01927,first100,5, + +-+-+q+c+o+v+a+r+ +t+e+m+p+_+C+o+n+t+.+t+x+t+ ,0,0
+0.807232,0.01927,first100,10, + +-+-+q+c+o+v+a+r+ +t+e+m+p+_+C+o+n+t+.+t+x+t+ ,0,0
+0.807232,0.01927,first1000,5, + +-+-+q+c+o+v+a+r+ +t+e+m+p+_+C+o+n+t+.+t+x+t+ ,0,0
+0.807232,0.01927,first1000,10, + +-+-+q+c+o+v+a+r+ +t+e+m+p+_+C+o+n+t+.+t+x+t+ ,0,0
+0.807232,0.01927,first3000,5, + +-+-+q+c+o+v+a+r+ +t+e+m+p+_+C+o+n+t+.+t+x+t+ ,0,0
+0.807232,0.01927,first3000,10, + +-+-+q+c+o+v+a+r+ +t+e+m+p+_+C+o+n+t+.+t+x+t+ ,0,0

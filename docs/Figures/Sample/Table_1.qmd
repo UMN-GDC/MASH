@@ -1,0 +1,36 @@
+---
+title: "Makin table 1"
+---
+
+```{r loading_n_simulating}
+#| include : false
+library(tidyverse)
+library(gt)
+library(gtExtras)
+library(gtsummary)
+
+df <- data.frame("Household Income" = c(rep("<50k", 3224), 
+					rep(">=50k&<100k", 3071),
+					rep("100k+", 4565),
+					rep("Unknown", 1018)),
+		 "Female"= c(rep(T, 5862), rep(F, 11878- 5862)),
+		 "Race" = c(rep("White", 6182), rep("Black", 1784), 
+			    rep("Hispanic", 2411),
+			    rep("Asian", 252),
+			    rep("Other", 1247),
+			    rep("Unknown", 2)))
+```
+
+```{r}
+t1 <- df %>%
+  tbl_summary(include= c("Household.Income", "Female")) %>%
+  as_gt()
+
+t2 <- df %>%
+  tbl_summary(include = "Race") %>%
+  as_gt()
+```
+
+```{r}
+gt_two_column_layout(tables = list(t1, t2), output = "save", filename = "Table_1.png", vwidth = 500) 
+```

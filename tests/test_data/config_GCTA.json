@@ -1,0 +1,21 @@
+{
+  "PC": "tests/test_data/EUR2.2.eigenvec",
+  "covar": ["tests/test_data/EUR_covariates.cov", "tests/test_data/EUR_sites.covar"],
+  "prefix": "tests/test_data/EUR2",
+  "pheno": "tests/test_data/EUR_simulation2.pheno",
+  "out": "/users/4/coffm049/software/MASH/tests/results/EUR_GCTA_results",
+  "npc": [2],
+  "mpheno": ["pheno_1", "pheno_2", "pheno_3", "pheno_4", "pheno_5",
+    "pheno_6", "pheno_7", "pheno_8", "pheno_9", "pheno_10"],
+  "k": 0,
+  "std": false,
+  "argfile": null,
+  "loop_covars": false,
+  "covar_relates": false,
+  "random_groups": null,
+  "Naive": false,
+  "Method": "GCTA",
+  "ids": null,
+  "qcovar": ["age"],
+  "covar_discrete": ["sex"]
+}

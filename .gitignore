@@ -1,0 +1,71 @@
+# ========================
+# Python Specific Files
+# ========================
+# Virtual environments
+venv/
+.venv/
+.buildEnv/
+env/
+.env/
+AGENTS.md
+init/
+login
+
+# Bytecode and compiled files
+__pycache__/
+*.pyc
+*.pyd
+*.so
+*.sif
+*.pdf
+*.lua
+
+# Build artifacts
+dist/
+build/
+*.egg-info/
+
+# Testing and Coverage
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Logs and Data
+*.log
+*.sqlite3
+
+# ========================
+# OS & Editor Files
+# ========================
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+
+# opencode
+init/
+login/
+
+# Development
+testData/
+
+# IDE/Editor
+.vscode/
+.idea/
+*~
+.sif
+
+# ========================
+# Quarto/Docs Build Artifacts
+# ========================
+# Build output directories
+docs/**/*_files/
+docs/**/_extensions/
+docs/**/__MACOSX/
+docs/**/*.html
+docs/**/*.css
+docs/**/*.js
+
+# Quarto cache
+.quarto/

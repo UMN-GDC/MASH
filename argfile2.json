@@ -1,0 +1,35 @@
+{
+  "PC": "/projects/standard/rando149/coffm049/ABCD/Results/01_Gene_QC/filters/filter1/Eigens/no_rels.eigenvec",
+  "prefix": "/projects/standard/rando149/coffm049/ABCD/Results/01_Gene_QC/filters/filter1/GRMs/no_rels/no_rels",
+  "pheno": "/projects/regulated/cdni-nih-bdc/shared/data/ABCD/6.0_ABCD_tabulated_data/Physical-Health/ph_y_anthr.tsv",
+  "covar": [
+    "/projects/regulated/cdni-nih-bdc/shared/data/ABCD/6.0_ABCD_tabulated_data/ABCD_general/ab_g_stc.tsv",
+    "/projects/regulated/cdni-nih-bdc/shared/data/ABCD/6.0_ABCD_tabulated_data/ABCD_general/ab_g_dyn.tsv"
+  ],
+  "out": "/users/4/coffm049/papers/MASH/reanalysis/anthroHeritAdjHE",
+  "npc": [2, 10],
+  "mpheno": [
+    "ph_y_anthr__height__r01_001",
+    "ph_y_anthr__height__r02_001",
+    "ph_y_anthr__height__r03_001",
+    "ph_y_anthr__height_mean",
+    "ph_y_anthr__weight__r01_001",
+    "ph_y_anthr__weight__r02_001",
+    "ph_y_anthr__weight__r03_001",
+    "ph_y_anthr__weight_mean"
+  ],
+  "k": 0,
+  "std": false,
+  "fixed_effects": null,
+  "loop_covars": false,
+  "covar_relates": false,
+  "random_groups": null,
+  "Naive": false,
+  "Method": "AdjHE",
+  "ids": null,
+  "qcovar": ["ab_g_dyn__visit_age"],
+  "pheno_filter": "session_id==ses-00A",
+  "covar_filter": null,
+  "covar_discrete": ["ab_g_stc__cohort_sex"]
+}
+
