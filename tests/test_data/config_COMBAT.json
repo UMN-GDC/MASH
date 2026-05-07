@@ -17,5 +17,7 @@
   "Method": "Covbat",
   "ids": null,
   "qcovar": ["age"],
-  "covar_discrete": ["sex"]
+  "covar_discrete": ["sex"],
+  "iid_col": "IID",
+  "fid_col": "FID"
 }

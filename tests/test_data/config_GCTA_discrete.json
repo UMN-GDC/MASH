@@ -16,5 +16,7 @@
   "Method": "GCTA",
   "ids": null,
   "qcovar": null,
-  "covar_discrete": ["site"]
+  "covar_discrete": ["site"],
+  "iid_col": "IID",
+  "fid_col": "FID"
 }

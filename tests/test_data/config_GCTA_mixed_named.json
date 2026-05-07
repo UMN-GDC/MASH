@@ -17,5 +17,7 @@
   "Method": "GCTA",
   "ids": null,
   "qcovar": null,
-  "covar_discrete": null
+  "covar_discrete": null,
+  "iid_col": "IID",
+  "fid_col": "FID"
 }
