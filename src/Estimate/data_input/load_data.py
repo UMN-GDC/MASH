@@ -464,37 +464,63 @@ def load_tables(ids= None, args = None) :
     # Note: covar_filter already applied above per-file to avoid duplicates
     
     if args.get("PC") != None :
-        pcDF = _read_delimited_file(args["PC"], default_cols=["FID", "IID", "PC1", "PC2"], has_header=False, args=args)
-        if pcDF.columns[0].startswith('#'):
-            pcDF = pcDF.rename(columns={'#FID': 'FID'})
-        # Check if first column contains space-separated values (no header case)
-        # If so, split them properly
-        if 'FID' not in pcDF.columns or isinstance(pcDF.columns[0], int):
-            # Need to split the first column into multiple columns
-            # Format: FID IID PC1 PC2 ... PCn
-            first_col = pcDF.iloc[:, 0].astype(str)
-            # Split by whitespace
-            split_data = first_col.str.split(expand=True)
-            pcDF = pd.concat([split_data.iloc[:, 0:2], split_data.iloc[:, 2:]], axis=1)
-            pcDF.columns = ['FID', 'IID'] + [f'pc{i}' for i in range(1, pcDF.shape[1]-1)]
-        pcDF = pcDF.dropna()
-        # Normalize PC column names - handle both "PC1" style and numeric column names
-        # Rename numeric columns (3, 4, 5, ...) to pc1, pc2, pc3, ...
-        new_cols = {}
-        pc_count = 0
-        for col in pcDF.columns:
-            if col not in ['FID', 'IID'] and not col.lower().startswith('pc'):
-                pc_count += 1
-                new_cols[col] = f'pc{pc_count}'
-        if new_cols:
-            pcDF = pcDF.rename(columns=new_cols)
-            logger.info(f"Renamed PC columns: {new_cols}")
-        # Also lowercase any existing PC columns
-        col_mapping = {c: c.lower() for c in pcDF.columns if c.lower().startswith("pc") and c != c.lower()}
-        if col_mapping:
-            pcDF = pcDF.rename(columns=col_mapping)
-            logger.info(f"Normalized PC column names: {col_mapping}")
-        logger.debug(f"PC dataframe columns after processing: {pcDF.columns.tolist()}")
+        # Auto-detect if the PC file has a header by checking the first line
+        try:
+            with open(args["PC"], 'r') as f:
+                first_line = f.readline().strip()
+            first_tokens = first_line.split()
+            # Heuristic: has a header if first two tokens are FID/IID-like and
+            # at least one later token starts with PC
+            has_pc_header = (
+                len(first_tokens) >= 3 and
+                first_tokens[0].upper() in ['FID', '#FID', 'FAM', '#FAM'] and
+                first_tokens[1].upper() in ['IID', '#IID', 'ID', '#ID'] and
+                any(t.upper().startswith('PC') for t in first_tokens[2:])
+            )
+        except Exception:
+            has_pc_header = False
+
+        if has_pc_header:
+            # File has a proper header — read normally and lowercase PC columns
+            pcDF = _read_delimited_file(args["PC"], args=args)
+            col_mapping = {c: c.lower() for c in pcDF.columns if c.upper().startswith('PC') and c not in ['FID', 'IID']}
+            if col_mapping:
+                pcDF = pcDF.rename(columns=col_mapping)
+                logger.info(f"Normalized PC column names: {col_mapping}")
+            pcDF = pcDF.dropna()
+        else:
+            # No header — use the existing fallback logic
+            pcDF = _read_delimited_file(args["PC"], default_cols=["FID", "IID", "PC1", "PC2"], has_header=False, args=args)
+            if pcDF.columns[0].startswith('#'):
+                pcDF = pcDF.rename(columns={'#FID': 'FID'})
+            # Check if first column contains space-separated values (no header case)
+            # If so, split them properly
+            if 'FID' not in pcDF.columns or isinstance(pcDF.columns[0], int):
+                # Need to split the first column into multiple columns
+                # Format: FID IID PC1 PC2 ... PCn
+                first_col = pcDF.iloc[:, 0].astype(str)
+                # Split by whitespace
+                split_data = first_col.str.split(expand=True)
+                pcDF = pd.concat([split_data.iloc[:, 0:2], split_data.iloc[:, 2:]], axis=1)
+                pcDF.columns = ['FID', 'IID'] + [f'pc{i}' for i in range(1, pcDF.shape[1]-1)]
+            pcDF = pcDF.dropna()
+            # Normalize PC column names - handle both "PC1" style and numeric column names
+            # Rename numeric columns (3, 4, 5, ...) to pc1, pc2, pc3, ...
+            new_cols = {}
+            pc_count = 0
+            for col in pcDF.columns:
+                if col not in ['FID', 'IID'] and not col.lower().startswith('pc'):
+                    pc_count += 1
+                    new_cols[col] = f'pc{pc_count}'
+            if new_cols:
+                pcDF = pcDF.rename(columns=new_cols)
+                logger.info(f"Renamed PC columns: {new_cols}")
+            # Also lowercase any existing PC columns
+            col_mapping = {c: c.lower() for c in pcDF.columns if c.lower().startswith("pc") and c != c.lower()}
+            if col_mapping:
+                pcDF = pcDF.rename(columns=col_mapping)
+                logger.info(f"Normalized PC column names: {col_mapping}")
+            logger.debug(f"PC dataframe columns after processing: {pcDF.columns.tolist()}")
         # Validate PC columns are numeric
         pcDF = validate_column_types(pcDF, args["PC"], "PC")
     
