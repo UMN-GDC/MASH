@@ -483,6 +483,10 @@ def load_tables(ids= None, args = None) :
         if has_pc_header:
             # File has a proper header — read normally and lowercase PC columns
             pcDF = _read_delimited_file(args["PC"], args=args)
+            # Handle #FID prefix if present
+            if pcDF.columns[0].startswith('#'):
+                pcDF = pcDF.rename(columns={'#FID': 'FID'})
+            # Lowercase PC column names
             col_mapping = {c: c.lower() for c in pcDF.columns if c.upper().startswith('PC') and c not in ['FID', 'IID']}
             if col_mapping:
                 pcDF = pcDF.rename(columns=col_mapping)
