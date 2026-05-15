@@ -1,0 +1,227 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Tests for data loading functionality, specifically PC/eigenvec file handling.
+"""
+
+import pytest
+import pandas as pd
+import numpy as np
+import tempfile
+import os
+
+from Estimate.data_input.load_data import load_tables
+from Estimate.data_input.parser import read_flags
+
+
+def test_loading_eigenvec_hash_fid_uppercase_pcs():
+    """Test loading eigenvec file with #FID header and uppercase PC columns."""
+    # Create test eigenvec file with #FID and uppercase PC columns
+    eigenvec_content = """#FID	IID	PC1	PC2	PC3	PC4	PC5	PC6	PC7	PC8	PC9	PC10
+0	SAMPLE1	0.1	0.2	0.3	0.4	0.5	0.6	0.7	0.8	0.9	1.0
+1	SAMPLE2	0.11	0.12	0.13	0.14	0.15	0.16	0.17	0.18	0.19	0.20
+2	SAMPLE3	0.21	0.22	0.23	0.24	0.25	0.26	0.27	0.28	0.29	0.30
+"""
+    
+    with tempfile.NamedTemporaryFile(mode='w', suffix='.eigenvec', delete=False) as f:
+        f.write(eigenvec_content)
+        eigenvec_file = f.name
+    
+    try:
+        # Create minimal args for loading
+        args = {
+            "PC": eigenvec_file,
+            "pheno": None,
+            "covar": None,
+            "fid_col": "FID",
+            "iid_col": "IID"
+        }
+        
+        # Create dummy IDs dataframe (normally comes from GRM file)
+        ids = pd.DataFrame({
+            "FID": ["0", "0", "0"],
+            "IID": ["SAMPLE1", "SAMPLE2", "SAMPLE3"]
+        })
+        ids["FID"] = ids["FID"].astype(str)
+        ids["IID"] = ids["IID"].astype(str)
+        
+        # Load tables
+        df = load_tables(ids, args)
+        
+        # Check that FID and IID are present
+        assert "FID" in df.columns
+        assert "IID" in df.columns
+        
+        # Check that PC columns were lowercased
+        expected_pc_cols = [f"pc{i}" for i in range(1, 11)]
+        for pc_col in expected_pc_cols:
+            assert pc_col in df.columns, f"Missing column {pc_col}"
+            
+        # Check that original uppercase PC columns are not present (should be lowercased)
+        for i in range(1, 11):
+            assert f"PC{i}" not in df.columns, f"Uppercase column PC{i} should have been lowercased"
+            
+        # Check values are correct
+        assert df.loc[df["IID"] == "SAMPLE1", "pc1"].iloc[0] == 0.1
+        assert df.loc[df["IID"] == "SAMPLE2", "pc5"].iloc[0] == 0.15
+        assert df.loc[df["IID"] == "SAMPLE3", "pc10"].iloc[0] == 0.30
+        
+    finally:
+        os.unlink(eigenvec_file)
+
+
+def test_loading_eigenvec_hash_fid_with_n_a():
+    """Test loading eigenvec file with #FID header and 'n/a' values treated as NA."""
+    # Create test eigenvec file with n/a values
+    eigenvec_content = """#FID	IID	PC1	PC2	PC3
+0	SAMPLE1	0.1	n/a	0.3
+1	SAMPLE2	n/a	0.2	0.4
+2	SAMPLE3	0.3	0.4	n/a
+"""
+    
+    with tempfile.NamedTemporaryFile(mode='w', suffix='.eigenvec', delete=False) as f:
+        f.write(eigenvec_content)
+        eigenvec_file = f.name
+    
+    try:
+        args = {
+            "PC": eigenvec_file,
+            "pheno": None,
+            "covar": None,
+            "fid_col": "FID",
+            "iid_col": "IID"
+        }
+        
+        ids = pd.DataFrame({
+            "FID": ["0", "0", "0"],
+            "IID": ["SAMPLE1", "SAMPLE2", "SAMPLE3"]
+        })
+        ids["FID"] = ids["FID"].astype(str)
+        ids["IID"] = ids["IID"].astype(str)
+        
+        df = load_tables(ids, args)
+        
+        # Check that n/a values were converted to NaN
+        assert pd.isna(df.loc[df["IID"] == "SAMPLE1", "pc2"].iloc[0])
+        assert pd.isna(df.loc[df["IID"] == "SAMPLE2", "pc1"].iloc[0])
+        assert pd.isna(df.loc[df["IID"] == "SAMPLE3", "pc3"].iloc[0])
+        
+        # Check that valid values are preserved
+        assert df.loc[df["IID"] == "SAMPLE1", "pc1"].iloc[0] == 0.1
+        assert df.loc[df["IID"] == "SAMPLE2", "pc2"].iloc[0] == 0.2
+        assert df.loc[df["IID"] == "SAMPLE3", "pc1"].iloc[0] == 0.3
+        
+    finally:
+        os.unlink(eigenvec_file)
+
+
+def test_loading_eigenvec_participant_id_custom_iid():
+    """Test loading eigenvec file with participant_id column and custom iid_col."""
+    # Create test eigenvec file with participant_id instead of IID
+    eigenvec_content = """#FID	participant_id	PC1	PC2	PC3
+0	SAMPLE1	0.1	0.2	0.3
+1	SAMPLE2	0.4	0.5	0.6
+2	SAMPLE3	0.7	0.8	0.9
+"""
+    
+    with tempfile.NamedTemporaryFile(mode='w', suffix='.eigenvec', delete=False) as f:
+        f.write(eigenvec_content)
+        eigenvec_file = f.name
+    
+    try:
+        args = {
+            "PC": eigenvec_file,
+            "pheno": None,
+            "covar": None,
+            "fid_col": "FID",
+            "iid_col": "IID",  # We want IID as the standard column name
+        }
+        
+        ids = pd.DataFrame({
+            "FID": ["0", "0", "0"],
+            "IID": ["SAMPLE1", "SAMPLE2", "SAMPLE3"]
+        })
+        ids["FID"] = ids["FID"].astype(str)
+        ids["IID"] = ids["IID"].astype(str)
+        
+        df = load_tables(ids, args)
+        
+        # Check that participant_id was used to populate IID column
+        assert "IID" in df.columns
+        assert set(df["IID"].tolist()) == {"SAMPLE1", "SAMPLE2", "SAMPLE3"}
+        
+        # Check PC columns were lowercased
+        assert "pc1" in df.columns
+        assert "pc2" in df.columns
+        assert "pc3" in df.columns
+        
+        # Check values are correct
+        assert df.loc[df["IID"] == "SAMPLE1", "pc1"].iloc[0] == 0.1
+        assert df.loc[df["IID"] == "SAMPLE2", "pc3"].iloc[0] == 0.6
+        assert df.loc[df["IID"] == "SAMPLE3", "pc2"].iloc[0] == 0.8
+        
+    finally:
+        os.unlink(eigenvec_file)
+
+
+def test_loading_eigenvec_no_header_fallback():
+    """Test that files without proper headers fall back to the original logic."""
+    # Create test file WITHOUT header (just data)
+    eigenvec_content = """0	SAMPLE1	0.1	0.2	0.3
+1	SAMPLE2	0.4	0.5	0.6
+2	SAMPLE3	0.7	0.8	0.9
+"""
+    
+    with tempfile.NamedTemporaryFile(mode='w', suffix='.eigenvec', delete=False) as f:
+        f.write(eigenvec_content)
+        eigenvec_file = f.name
+    
+    try:
+        args = {
+            "PC": eigenvec_file,
+            "pheno": None,
+            "covar": None,
+            "fid_col": "FID",
+            "iid_col": "IID"
+        }
+        
+        ids = pd.DataFrame({
+            "FID": ["0", "0", "0"],
+            "IID": ["SAMPLE1", "SAMPLE2", "SAMPLE3"]
+        })
+        ids["FID"] = ids["FID"].astype(str)
+        ids["IID"] = ids["IID"].astype(str)
+        
+        df = load_tables(ids, args)
+        
+        # Should have FID, IID, and PC columns (pc1, pc2, pc3)
+        assert "FID" in df.columns
+        assert "IID" in df.columns
+        assert "pc1" in df.columns
+        assert "pc2" in df.columns
+        assert "pc3" in df.columns
+        
+        # Check values - first data row should be used as data, not header
+        assert df.loc[df["IID"] == "SAMPLE1", "pc1"].iloc[0] == 0.1
+        assert df.loc[df["IID"] == "SAMPLE2", "pc2"].iloc[0] == 0.5
+        assert df.loc[df["IID"] == "SAMPLE3", "pc3"].iloc[0] == 0.9
+        
+    finally:
+        os.unlink(eigenvec_file)
+
+
+if __name__ == "__main__":
+    # Run tests manually if executed directly
+    test_loading_eigenvec_hash_fid_uppercase_pcs()
+    print("✓ test_loading_eigenvec_hash_fid_uppercase_pcs passed")
+    
+    test_loading_eigenvec_hash_fid_with_n_a()
+    print("✓ test_loading_eigenvec_hash_fid_with_n_a passed")
+    
+    test_loading_eigenvec_participant_id_custom_iid()
+    print("✓ test_loading_eigenvec_participant_id_custom_iid passed")
+    
+    test_loading_eigenvec_no_header_fallback()
+    print("✓ test_loading_eigenvec_no_header_fallback passed")
+    
+    print("\nAll tests passed!")

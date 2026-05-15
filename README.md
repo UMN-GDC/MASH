@@ -2,7 +2,7 @@
 ![R](https://img.shields.io/badge/r-%23276DC3.svg?style=for-the-badge&logo=r&logoColor=white)
 ![Shell Script](https://img.shields.io/badge/shell_script-%23121011.svg?style=for-the-badge&logo=gnu-bash&logoColor=white)
 ![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white)
-![Tests](https://img.shields.io/badge/tests-13%20passing-brightgreen?style=for-the-badge)
+![Tests](https://img.shields.io/badge/tests-14%20passing-brightgreen?style=for-the-badge)
 
 
 
@@ -44,7 +44,7 @@ apptainer run MASH.sif MASH --argfile <path to argfile>
 
 ## Testing
 
-MASH includes a test suite that validates configuration and estimation methods. All 13 tests currently pass.
+MASH includes a test suite that validates configuration and estimation methods. All 14 tests currently pass.
 
 ### Running Tests
 Activate the MASH conda environment first, then run:
@@ -84,15 +84,16 @@ It is reccomended that users define a `.json` file containing all of the argumen
 |:-------|-------------------|
 | --argfile ARGFILE.json | COND REQUIRED. ARGFILE.json, *string*, is the filename to be passed containing all information for PC's, covariates, phenotypes, and GRM. This takes priority over all other arguments. [See the example arfile included under the Example directory.](https://github.com/UMN-GDC/MASH/blob/master/Example/Argfile.json) |
 | --prefix PREFIX|  REQUIRED. *string* PREFIX is the prefix of GRM file with GCTA binary GRM format. (`PREFIX.grm.bin`, `PREFIX.grm.N.bin` and `PREFIX.grm.id`)|
-| --pheno PHENO |  REQUIRED. PHENO, *string*, is the name of phenotype file. Supports multiple formats based on extension: `.parquet` (parquet), `.csv` (comma-separated), `.tsv`/`.tab` (tab-separated), or whitespace-delimited (PLINK format). First two columns must be FID and IID, followed by phenotype columns. Column headers are recommended but not required. |
+| --pheno PHENO |  REQUIRED. PHENO, *string or array*, is the phenotype file. Supports a single file path, a comma-separated string, or an array of multiple files (e.g., `["file1.tsv", "file2.tsv"]`). Multiple files are merged by FID/IID. Supports `.parquet`, `.csv`, `.tsv`/`.tab`, or whitespace-delimited formats. First two columns must be FID and IID, followed by phenotype columns. |
 | --mpheno m| OPTIONAL. *list of integers or integer*, Default=1. If you have multiple phenotypes in the file, you can specify by `--mpheno m`. Otherwise, the first phenotype will be used. Note that 1 refers to the third column of the file since we skip over the FID and IID columns. If passed a list, estimates will be computed for every phenotype specified. |
-| --PC PC | OPTIONAL. PC, *string*, is the name of PCs file. Supports header (with FID/IID columns) or no-header (PLINK format). Column names can be `PC1, PC2` or `pc_1, pc_2`. |
+| --PC PC | OPTIONAL. PC, *string*, is the name of PCs file. Supports header (with FID/IID columns, including `#FID` notation) or no-header (PLINK format). Column names can be `PC1, PC2` or `pc_1, pc_2`. |
 | --npc n | OPTIONAL. *integer*, Default = all PCs in the PC file will be used. You can specify top n PCs to be adjusted by `--npc n`.|
-| --covar COVAR | OPTIONAL. COVAR, *string*, is the name of covariate file(s). Supports multiple files as comma-separated string or list. Supports `.csv` (comma), `.tsv`/`.tab` (tab), `.covar`, or whitespace-delimited. Column headers are preserved (e.g., `site, age, sex`). Multiple files are merged on FID/IID. For GCTA, if no explicit qcovar or covar_discrete specified, columns will be auto-classified as discrete (<35 unique values) or quantitative. |
+| --covar COVAR | OPTIONAL. COVAR, *string or array*, is the name of covariate file(s). Supports multiple files as comma-separated string or array of paths. Multiple files are merged on FID/IID. For GCTA, if no explicit qcovar or covar_discrete specified, columns will be auto-classified as discrete (<35 unique values) or quantitative. |
 | --qcovar QCOVARS | OPTIONAL (GCTA only). Space-separated list of quantitative covariate column names for GCTA (e.g., `--qcovar PC1 PC2 age`). If not specified and `--covar` is provided, columns will be auto-detected as quantitative or discrete based on number of unique values. |
 | --covar_discrete DISCRETE_COVARS | OPTIONAL (GCTA only). Space-separated list of discrete/categorical covariate column names for GCTA (e.g., `--covar_discrete sex site`). |
 | --Method METHOD | OPTIONAL. Specify estimation method: `AdjHE` (default), `GCTA`, `PredLMM`, `SWD`, `Combat`, or `Covbat`. |
 | --RV RANDOM_VAR | OPTIONAL. Specify a column name to use as a random effect (for methods that support it, e.g., AdjHE with site effects). |
+| --iid_col COL | OPTIONAL. Name of the IID column in input files. Default: `"IID"`. Supports custom names like `"participant_id"`. When `participant_id` is found without a separate FID column, FID is set equal to IID automatically. |
 | --k k| OPTIONAL. *integer*. You can specify the number of rows in restoring the GCTA GRM binary file into matrix each time. If not provide, it will process the whole GRM at one time. When you have a relative large sample size, specifying `--k k` can speed up the computation and save the memory. |
 | --std | OPTIONAL. Run SAdj-HE by specifying `--std`. Otherwise, UAdj-HE will be computed.  (There are potential bugs with the standardized version, so it is recommended to use unstandardized for now).|
 | --loop_covs| OPTIONAL: Default= False. If True, loop over the ORDERED set of covariates including all previous covariates in each iteration. **Note: The order in which the covariates are controlled for is based upon the researcher's best judgements.**|
@@ -111,6 +112,12 @@ MASH supports multiple file formats with automatic format detection based on fil
 | `.txt`, `.phe`, `.phen`, `.covar` | whitespace | not required | PLINK format (default) |
 
 All files should have the first two columns as FID (Family ID) and IID (Individual ID). Column headers are recommended and will be preserved for use in `qcovar`, `covar_discrete`, and `npc`. PC column names are normalized to lowercase (`PC1` → `pc1`) for consistency.
+
+**#FID support:** PC files can use `#FID` (hashed FID) as the first column header instead of `FID`. This is automatically detected and normalized. Files with `#FID` and `IID` as first two columns followed by capital `PC1, PC2, ...` columns are supported.
+
+**Custom IID column names:** Use `"iid_col"` to specify a custom IID column name (e.g., `"participant_id"`). When `participant_id` is found without a separate FID column, FID is automatically set equal to IID. This is common in neuroimaging datasets.
+
+**session_id handling:** If any covariate or phenotype file contains a `session_id` column, it is automatically dropped during loading to prevent duplicate column conflicts when merging multiple files.
 
 ### Data Filtering
 You can filter your phenotype or covariate data at load time using `--pheno_filter` and `--covar_filter`:
@@ -225,6 +232,26 @@ FID	IID	site	age	sex
   "covar_filter": "site==1"
 }
 ```
+
+**AdjHE with multiple phenotype files and custom IID column:**
+```json
+{
+  "PC": "data/eigen.eigenvec",
+  "covar": ["data/age.tsv", "data/sex.tsv"],
+  "prefix": "data/my_GRM",
+  "pheno": ["data/nihtb_phenotypes.tsv", "data/mri_phenotypes.tsv"],
+  "out": "results/complex_results",
+  "npc": [2],
+  "mpheno": ["phenotype_1", "phenotype_2", "phenotype_3",
+    "phenotype_4", "phenotype_5", "phenotype_6"],
+  "Method": "AdjHE",
+  "qcovar": ["age"],
+  "covar_discrete": ["sex"],
+  "iid_col": "participant_id",
+  "fid_col": "FID"
+}
+```
+*Multiple phenotype files are merged by FID/IID. The `iid_col` parameter tells MASH to look for `participant_id` instead of `IID`. Files can use `#FID` as the first column header. The `session_id` column is automatically handled.*
 
 ### Example of computing GRM and eigenvectors from .bed files
 In your own data analysis, you may need to computed the grm and eigenvectors yourself so here are the steps to do that so that you will just be able to run the above examples afterward. Great resrources are [here](https://yanglab.westlake.edu.cn/software/gcta/#PCA) and [here](https://ibg.colorado.edu/cdrom2021/Day04-yengo/Day4_practical_Boulder2021_v4.pdf).

@@ -8,6 +8,8 @@ We test that >50% of estimates fall within a reasonable range (0.2 to 0.8).
 """
 
 import pytest
+import pandas as pd
+import numpy as np
 from Estimate.data_input.parser import read_flags
 from Estimate.estimators.all_estimators import h2Estimation
 
@@ -48,6 +50,23 @@ def run_config(config_file, config_dir="tests/test_data"):
     return results
 
 
+def check_results_numeric(results, config_name):
+    """Check that h2 estimates are valid numeric values (no NaN)."""
+    total = len(results)
+    if total == 0:
+        pytest.fail(f"{config_name}: No results produced")
+    
+    valid = sum(1 for _, row in results.iterrows()
+                if not pd.isna(row["h2"]) and not np.isinf(row["h2"]))
+    
+    print(f"\n{config_name}: {valid}/{total} valid h2 estimates")
+    print(f"  h2 range: [{results['h2'].min():.4f}, {results['h2'].max():.4f}]")
+    print(f"  Mean h2: {results['h2'].mean():.4f}")
+    
+    assert valid > 0, \
+        f"{config_name}: No valid h2 estimates produced (all NaN or Inf)"
+
+
 def check_results(results, config_name):
     """Check that >50% of h2 estimates are within [H2_MIN, H2_MAX]."""
     total = len(results)
@@ -81,6 +100,12 @@ class TestAdjHE:
         """Test AdjHE with random_groups (site) and qcovar/covar_discrete."""
         results = run_config("config_AdjHE_RV.json")
         check_results(results, "AdjHE_RV")
+
+    @pytest.mark.AdjHE
+    def test_AdjHE_complex(self):
+        """Test AdjHE with multiple phenotype files, #FID eigenvec, and participant_id IID."""
+        results = run_config("config_complexAdjHE.json")
+        check_results_numeric(results, "AdjHE complex")
 
 
 class TestGCTA:
@@ -171,6 +196,7 @@ class TestAllConfigs:
             "config_GCTA_mixed.json",
             "config_GCTA_mixed_both.json",
             "config_GCTA_multi_covar.json",
+            "config_complexAdjHE.json",
             "config_COMBAT.json",
         ]
         for config in configs:

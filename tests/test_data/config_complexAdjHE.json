@@ -1,0 +1,23 @@
+{
+  "PC": "tests/test_data/eigen_dummy.eigenvec",
+  "covar": ["tests/test_data/age_dummy.tsv", "tests/test_data/sex_dummy.tsv"],
+  "prefix": "tests/test_data/EUR3",
+  "pheno": ["tests/test_data/nihtb_dummy.tsv", "tests/test_data/smri_dummy.tsv"],
+  "out": "tests/results/EUR_AdjHE_results_complex",
+  "npc": [2],
+  "mpheno": ["mr_y_smri__vol__aseg__ab__lh_sum", "mr_y_smri__vol__aseg__ag__lh_sum", "mr_y_smri__vol__aseg__cbc__lh_sum",
+    "nc_y_nihtb__comp__fluid__uncor_score", "nc_y_nihtb__comp__cryst__uncor_score", "nc_y_nihtb__comp__tot__uncor_score"],
+  "k": 0,
+  "std": false,
+  "argfile": null,
+  "loop_covars": false,
+  "covar_relates": false,
+  "random_groups": null,
+  "Naive": false,
+  "Method": "AdjHE",
+  "ids": null,
+  "qcovar": ["ab_p_demo_age"], 
+  "covar_discrete": ["ab_g_stc__cohort_sex"],
+  "iid_col": "participant_id",
+  "fid_col": "FID"
+}

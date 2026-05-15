@@ -28,13 +28,13 @@ MASH uses JSON configuration files to specify all parameters for heritability es
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `prefix` | string | Prefix of GRM files in GCTA binary format (`prefix.grm.bin`, `prefix.grm.N.bin`, `prefix.grm.id`) |
-| `pheno` | string | Path to phenotype file. Supports `.parquet`, `.csv`, `.tsv`/`.tab`, or whitespace-delimited (PLINK format) |
+| `pheno` | string or array | Path(s) to phenotype file(s). Supports a single file path, comma-separated string, or array of multiple files (e.g., `["file1.tsv", "file2.tsv"]`). Multiple files are merged by FID/IID. Supports `.parquet`, `.csv`, `.tsv`/`.tab`, or whitespace-delimited (PLINK format) |
 
 ### Optional Parameters
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `PC` | string | null | Path to principal components file. Supports header or no-header (PLINK format) |
+| `PC` | string | null | Path to principal components file. Supports header (with FID/IID columns, including `#FID` notation) or no-header (PLINK format). PC column names (`PC1, PC2, ...`) are normalized to lowercase |
 | `npc` | integer or array | all PCs | Number of PCs to use. If integer, use top N PCs. If array (e.g., `[3, 5, 10]`), run estimates for each value |
 | `covar` | string or array | null | Path(s) to covariate file(s). Supports comma-separated string or array of paths. Multiple files merged on FID/IID |
 | `qcovar` | array of strings | null | Column names to treat as quantitative covariates (GCTA only). If null and `covar` provided, auto-detected |
@@ -48,6 +48,8 @@ MASH uses JSON configuration files to specify all parameters for heritability es
 | `loop_covs` | boolean | false | Loop over covariates, including all previous covariates in each iteration |
 | `pheno_filter` | string | null | Filter phenotype data (e.g., `"age>30"`, `"sex==1"`). Supports `==`, `!=`, `>`, `<`, `>=`, `<=` |
 | `covar_filter` | string | null | Filter covariate data (e.g., `"site==1"`, `"age>=18"`). Same operators as `pheno_filter` |
+| `iid_col` | string | `"IID"` | Custom name for the IID column in input files. Set to `"participant_id"` when files use that column name. When `participant_id` is found without a separate FID column, FID is set equal to IID automatically |
+| `fid_col` | string | `"FID"` | Custom name for the FID column in input files. Typically kept as `"FID"` |
 
 ## Covariate Specification
 
@@ -134,6 +136,27 @@ For GCTA method:
   "covar_discrete": ["sex"]
 }
 ```
+
+### AdjHE with Multiple Phenotype Files and Custom IID
+
+```json
+{
+  "PC": "tests/test_data/eigen_dummy.eigenvec",
+  "covar": ["tests/test_data/age_dummy.tsv", "tests/test_data/sex_dummy.tsv"],
+  "prefix": "tests/test_data/EUR3",
+  "pheno": ["tests/test_data/nihtb_dummy.tsv", "tests/test_data/smri_dummy.tsv"],
+  "out": "tests/results/EUR_AdjHE_results_complex",
+  "npc": [2],
+  "mpheno": ["phenotype_1", "phenotype_2", "phenotype_3",
+    "phenotype_4", "phenotype_5", "phenotype_6"],
+  "Method": "AdjHE",
+  "qcovar": ["ab_p_demo_age"],
+  "covar_discrete": ["ab_g_stc__cohort_sex"],
+  "iid_col": "participant_id",
+  "fid_col": "FID"
+}
+```
+*This example uses multiple phenotype files merged by FID/IID, `#FID` notation in the PC file header, `participant_id` as the IID column name, and automatic `session_id` handling.*
 
 ### AdjHE with Site as Random Effect
 
@@ -236,6 +259,12 @@ All input files (phenotype, covariate, PC) support multiple formats:
 | `.txt`, `.phe`, `.phen`, `.covar` | whitespace | optional | PLINK format (default) |
 
 All files should have the first two columns as FID (Family ID) and IID (Individual ID).
+
+**#FID support:** PC files can use `#FID` as the first column header (e.g., `#FID IID PC1 PC2 ...`). This is automatically detected and normalized to `FID`.
+
+**Custom IID column names:** Use `"iid_col"` to specify a custom IID name (e.g., `"participant_id"`). When `participant_id` is found without a separate FID column, FID is automatically set to match IID.
+
+**session_id handling:** If any covariate or phenotype file contains a `session_id` column, it is automatically dropped during loading to prevent duplicate column conflicts when merging multiple files.
 
 ## Output Format
 

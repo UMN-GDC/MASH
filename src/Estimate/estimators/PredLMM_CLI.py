@@ -1,7 +1,6 @@
 #-----------------------Loading  the required Module------------------------------------------
 import os
 import timeit
-import resource
 from scipy.sparse import csr_matrix
 import numpy as np
 from numpy.linalg import inv
@@ -102,17 +101,17 @@ results.to_csv(out + ".csv", index= False)
 # Pred_est = result_full['Heritability estimate'][0][0]
 # Pred_sd = result_full['SD of heritability estimate']
 # Pred_var = result_full['Variance estimate'][0][0]
-
-
+#
 # print("writing results")
-
-# #%%
+#
+# # #%%
 # sub_results = {"Est" : GREML_sub_est,
 #                "SD" : GREML_sub_sd,
 #                "Var" : GREML_sub_var,
 #                "Knot time" : Knot_sel_time,
 #                "Time for analysis(s)" : timeit.default_timer() - start_read,
-#                "Memory usage" : resource.getrusage(resource.RUSAGE_SELF).ru_maxrss}
+#                "Memory usage" : 0  # Removed resource dependency
+# }
 # results = pd.DataFrame(sub_results, index = ["GREML"])
 # #%%
 # full_results = {"Est" : Pred_est, 
@@ -120,7 +119,8 @@ results.to_csv(out + ".csv", index= False)
 #                 "Var" : Pred_var,
 #                 "Knot time" : Knot_sel_time,
 #                 "Time for analysis(s)" : timeit.default_timer() - start_read,
-#                 "Memory usage" : resource.getrusage(resource.RUSAGE_SELF).ru_maxrss}
+#                 "Memory usage" : 0  # Removed resource dependency
+# }
 # temp_results = pd.DataFrame(full_results, index = ["PredLMM"])
 # #%%
 # temp = [results, temp_results]

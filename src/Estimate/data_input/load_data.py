@@ -120,8 +120,13 @@ def validate_input_files(args):
         # .grm.N.bin is optional
     
     # Check phenotype file (required)
-    if args.get("pheno") and args["pheno"] != "None":
-        required_files.append((args["pheno"], "Phenotype"))
+    pheno_input = args.get("pheno")
+    if pheno_input is not None:
+        if isinstance(pheno_input, list):
+            for pf in pheno_input:
+                required_files.append((pf, "Phenotype"))
+        elif pheno_input != "None":
+            required_files.append((pheno_input, "Phenotype"))
     
     # Check optional files
     if args.get("PC") and args["PC"] != "None":
@@ -253,13 +258,61 @@ def _read_delimited_file(filepath, has_header=True, default_cols=None, args=None
     else:
         # Default: try whitespace (plink format)
         sep = None
+    
+    # Handle case where sep is None but we need to pass a valid separator to pandas
+    if sep is None:
+        sep = r'\s+'  # whitespace regex for pandas
+        
+    # Log separator for debugging
+    logger.debug(f"Reading file {filepath} with sep={repr(sep)} (type: {type(sep)})")
+    
+    # Validate sep is not None before passing to pandas
+    if sep is None:
+        logger.error("sep is None after processing! Setting to default whitespace.")
+        sep = r'\s+'
+        
+    # Additional validation - make sure sep is actually a string
+    if not isinstance(sep, str):
+        logger.error(f"sep is not a string! Got {type(sep)}: {sep}. Setting to default whitespace.")
+        sep = r'\s+'
 
+    logger.debug(f"Final sep value: {repr(sep)} (type: {type(sep)})")
+    
     # Try to read with header
-    df = pd.read_table(filepath, sep=sep, header=None if not has_header else 0)
+    try:
+        logger.debug(f"About to call pd.read_table with filepath={repr(filepath)}, sep={repr(sep)}, header={None if not has_header else 0}")
+        # Ensure sep is a valid string for pandas
+        if sep is None:
+            logger.error("sep is None! Forcing to whitespace separator.")
+            sep = r'\s+'
+        elif not isinstance(sep, str):
+            logger.error(f"sep is not a string! Got {type(sep)}: {sep}. Forcing to whitespace separator.")
+            sep = r'\s+'
+        logger.debug(f"Final sep value for pd.read_table: {repr(sep)}")
+        df = pd.read_table(filepath, sep=sep, header=None if not has_header else 0)
+    except Exception as e:
+        logger.error(f"Failed to read {filepath} with sep={repr(sep)}: {e}")
+        logger.error(f"sep type: {type(sep)}, sep value: {sep}")
+        # Log more details about the exception
+        import traceback
+        logger.error(f"Traceback: {traceback.format_exc()}")
+        # Try with default sep=None as fallback
+        logger.info(f"Trying fallback with sep=None")
+        df = pd.read_table(filepath, sep=None, header=None if not has_header else 0)
 
     # Strip whitespace from column names (common issue with some files)
     if has_header:
         df.columns = df.columns.str.strip()
+    
+    # Normalize #FID/#IID hashed column names in the first two columns
+    if has_header:
+        renames = {}
+        for col in list(df.columns):
+            stripped = col.lstrip('#')
+            if stripped != col and stripped.upper() in ['FID', 'IID']:
+                renames[col] = stripped
+        if renames:
+            df = df.rename(columns=renames)
 
     # Check if FID/IID columns exist with custom names (case-insensitive match)
     def has_col(name):
@@ -269,6 +322,13 @@ def _read_delimited_file(filepath, has_header=True, default_cols=None, args=None
         # Ensure FID and IID are string type for consistent merging
         df[fid_col] = df[fid_col].astype(str)
         df[iid_col] = df[iid_col].astype(str)
+        df = rename_id_cols(df, args)
+        return df
+
+    # Fallback to canonical FID/IID columns (in case config uses custom names but file has standard names)
+    if has_col('FID') and has_col('IID'):
+        df['FID'] = df['FID'].astype(str)
+        df['IID'] = df['IID'].astype(str)
         df = rename_id_cols(df, args)
         return df
 
@@ -420,33 +480,49 @@ def load_tables(ids= None, args = None) :
     # Handle multiple covariate files (list or comma-separated string)
     if args.get("covar") is not None:
         covar_input = args["covar"]
+        logger.debug(f"Processing covar input: {covar_input} (type: {type(covar_input)})")
         if isinstance(covar_input, str):
             covar_files = [f.strip() for f in covar_input.split(',')]
+            logger.debug(f"Split covar string into files: {covar_files}")
         elif isinstance(covar_input, list):
             covar_files = covar_input
+            logger.debug(f"Using covar list as files: {covar_files}")
         else:
             covar_files = [covar_input]
+            logger.debug(f"Wrapped single covar input in list: {covar_files}")
         
         covDFs = []
         for cov_file in covar_files:
+            logger.debug(f"Processing covariate file: {cov_file}")
             try:
                 cov_df = _read_delimited_file(cov_file, default_cols=["FID", "IID", "cov_1"], args=args)
+                logger.debug(f"Successfully read {cov_file}, shape: {cov_df.shape}")
+                # Drop session_id if present (used for filtering, not needed as covariate)
+                if 'session_id' in cov_df.columns:
+                    cov_df = cov_df.drop(columns=['session_id'])
                 # Apply covariate filter to each file BEFORE merging to avoid duplicates
                 # Only apply if the filter column exists in this file
                 if args.get("covar_filter"):
                     filter_expr = args["covar_filter"]
+                    logger.debug(f"Applying filter: {filter_expr}")
                     # Extract column name from filter expression
                     for op in ['==', '!=', '>=', '<=', '>', '<']:
                         if op in filter_expr:
                             filter_col = filter_expr.split(op)[0].strip()
                             break
+                    logger.debug(f"Filter column: {filter_col}")
                     if filter_col in cov_df.columns:
+                        logger.debug(f"Filter column {filter_col} found in dataframe")
                         cov_df = _apply_filter(cov_df, filter_expr)
+                        logger.debug(f"After filtering, shape: {cov_df.shape}")
                     else:
                         logger.warning(f"Filter column '{filter_col}' not found in {cov_file}, skipping filter for this file")
                 covDFs.append(cov_df)
+                logger.debug(f"Added {cov_file} to covDFs list, now {len(covDFs)} files processed")
             except Exception as e:
                 logger.warning(f"Could not read covariate file {cov_file}: {e}")
+                import traceback
+                logger.warning(f"Traceback: {traceback.format_exc()}")
         
         if covDFs:
             # Merge all covariate dataframes, keeping unique columns
@@ -528,34 +604,53 @@ def load_tables(ids= None, args = None) :
         # Validate PC columns are numeric
         pcDF = validate_column_types(pcDF, args["PC"], "PC")
     
-    # Handle phenotype - unambiguous format detection
-    pheno_file = args.get("pheno")
-    if pheno_file is not None:
-        ext = os.path.splitext(pheno_file)[1].lower()
-        
-        if ext == ".parquet":
-            pheno = pd.read_parquet(pheno_file).reset_index(names="IID")
-            pheno.IID = pheno.IID.astype(str)
-            pheno['IID'] = pheno['IID'].apply(insert_underscore)
-            pheno = pd.merge(ids, pheno, on = "IID", how = "left")
+    # Handle phenotype - always treat as list for consistency
+    pheno_input = args.get("pheno")
+    if pheno_input is not None:
+        # Normalize to list of pheno files
+        if isinstance(pheno_input, str):
+            pheno_files = [f.strip() for f in pheno_input.split(',')] if ',' in pheno_input else [pheno_input]
+        elif isinstance(pheno_input, list):
+            pheno_files = pheno_input
         else:
-            # Use unambiguous format detection
-            pheno = _read_delimited_file(pheno_file, default_cols=["FID", "IID"], args=args)
-            print(f"Phenotype file columns: {pheno.columns.tolist()[:10]}")
-            # Don't set FID = IID for phenotype files - this breaks merging when
-            # GRM has numeric FID but phenotype has participant_id style IDs
-            # The IID alone is sufficient for matching
+            pheno_files = [pheno_input]
         
-        # Apply phenotype filter BEFORE validation (so filter works on original values)
-        if args.get("pheno_filter"):
-            pheno = _apply_filter(pheno, args.get("pheno_filter"))
+        pheno_dfs = []
+        for pf in pheno_files:
+            if pf and pf != "None":
+                print(f"Reading phenotype file: {pf}")
+                ext = os.path.splitext(pf)[1].lower()
+                
+                if ext == ".parquet":
+                    pdf = pd.read_parquet(pf).reset_index(names="IID")
+                    pdf.IID = pdf.IID.astype(str)
+                    pdf['IID'] = pdf['IID'].apply(insert_underscore)
+                else:
+                    pdf = _read_delimited_file(pf, default_cols=["FID", "IID"], args=args)
+                
+                # Drop session_id if present (used for filtering, not needed in merge)
+                if 'session_id' in pdf.columns:
+                    pdf = pdf.drop(columns=['session_id'])
+                
+                # Apply phenotype filter BEFORE validation
+                if args.get("pheno_filter"):
+                    pdf = _apply_filter(pdf, args.get("pheno_filter"))
+                
+                pdf = validate_column_types(pdf, pf, "phenotype")
+                pheno_dfs.append(pdf)
         
-        # Validate phenotype columns are numeric (convert string columns like session_id to NaN)
-        pheno = validate_column_types(pheno, pheno_file, "phenotype")
-        
-        # After validation, drop rows where key phenotype columns are all NaN
-        pheno_cols = [c for c in pheno.columns if c not in ["FID", "IID"]]
-        pheno = pheno.dropna(subset=pheno_cols, how='all')
+        if pheno_dfs:
+            # Merge all phenotype dataframes, keeping unique columns
+            pheno = pheno_dfs[0]
+            for pdf in pheno_dfs[1:]:
+                overlap = set(pheno.columns) & set(pdf.columns) - {"FID", "IID"}
+                if overlap:
+                    pdf = pdf.rename(columns={c: f"{c}_2" for c in overlap})
+                pheno = pd.merge(pheno, pdf, on=["FID", "IID"], how="inner")
+            
+            # After validation, drop rows where key phenotype columns are all NaN
+            pheno_cols = [c for c in pheno.columns if c not in ["FID", "IID"]]
+            pheno = pheno.dropna(subset=pheno_cols, how='all')
     
     # Validate covariate columns
     if covDF is not None:
@@ -629,17 +724,34 @@ def load_everything(args, k=0):
     print("It took " + str(read_time) + " (s) to read GRM, covariates")
     print("Phenos + Covars:", df.columns.tolist())
    
-    # Get the phenotype names - use unambiguous format detection
-    pheno_file = args.get("pheno")
-    if pheno_file is not None:
-        ext = os.path.splitext(pheno_file)[1].lower()
-        
-        if ext == ".parquet":
-            phenotypes = pd.read_parquet(pheno_file).reset_index(names="IID").columns.tolist()
-            phenotypes.remove("IID")
+    # Get the phenotype names - handle list of files
+    pheno_input = args.get("pheno")
+    phenotypes = []
+    if pheno_input is not None:
+        if isinstance(pheno_input, list):
+            for pf in pheno_input:
+                if pf and pf != "None":
+                    ext = os.path.splitext(pf)[1].lower()
+                    if ext == ".parquet":
+                        pdf_phenos = pd.read_parquet(pf).reset_index(names="IID").columns.tolist()
+                        pdf_phenos.remove("IID")
+                    else:
+                        pdf = _read_delimited_file(pf, default_cols=["FID", "IID"], args=args)
+                        # Drop session_id if present (same as load_tables)
+                        if 'session_id' in pdf.columns:
+                            pdf = pdf.drop(columns=['session_id'])
+                        pdf_phenos = [c for c in pdf.columns if c not in ["FID", "IID"]]
+                    phenotypes.extend(pdf_phenos)
         else:
-            pheno_df = _read_delimited_file(pheno_file, default_cols=["FID", "IID"], args=args)
-            phenotypes = [c for c in pheno_df.columns if c not in ["FID", "IID"]]
+            ext = os.path.splitext(pheno_input)[1].lower()
+            if ext == ".parquet":
+                phenotypes = pd.read_parquet(pheno_input).reset_index(names="IID").columns.tolist()
+                phenotypes.remove("IID")
+            else:
+                pheno_df = _read_delimited_file(pheno_input, default_cols=["FID", "IID"], args=args)
+                if 'session_id' in pheno_df.columns:
+                    pheno_df = pheno_df.drop(columns=['session_id'])
+                phenotypes = [c for c in pheno_df.columns if c not in ["FID", "IID"]]
     
     print(df.shape)
     ids = ids.dropna()

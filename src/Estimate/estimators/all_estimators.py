@@ -6,7 +6,6 @@ Created on Tue Nov  8 03:22:59 2022
 @author: christian
 """
 import timeit
-import resource
 import logging
 import numpy as np
 import pandas as pd
@@ -436,7 +435,7 @@ class h2Estimation():
                 logging.debug(end_est - start_est)
                 
                 time = [end_est - start_est]
-                mem = [resource.getrusage(resource.RUSAGE_SELF).ru_maxrss/1000]
+                mem = [0]  # Placeholder for memory usage (removed resource dependency)
                 r["PCs"] = nnpc
                 r["time"] = time
                 r["mem"] = mem
