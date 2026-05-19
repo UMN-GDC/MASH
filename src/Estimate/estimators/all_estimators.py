@@ -180,9 +180,15 @@ def load_n_estimate(df, nnpc, mp, GRM, PC_effect="mixed", std=True, Method="AdjH
             result["N"] = len(temp)
 
         elif Method in ["Combat", "Covbat"]:
-            # AdjHE projects away covariates to start
-            result = AdjHE(A = GRM, df=df, mp = mp, random_groups = None, npc= nnpc, std=std)
-            result["N"] = len(df)
+            # COMBAT handles site effects; residualize remaining covariates via OLS
+            resid = smf.ols(formula=form, data=df, missing='drop').fit().resid
+            resid.name = "resid"
+            temp = df.merge(resid, left_index=True, right_index=True, how="inner")
+            temp[mp] = temp["resid"]
+            nonmissing = df[df.IID.isin(temp.IID)].index
+            GRM_nonmissing = GRM[nonmissing, :][:, nonmissing]
+            result = AdjHE(A=GRM_nonmissing, df=temp, mp=mp, random_groups=None, npc=nnpc, std=std)
+            result["N"] = len(temp)
 
 
         else:
@@ -293,7 +299,9 @@ class h2Estimation():
         # Forcing type to be integer for a little easier use
         if args["npc"] == None:
             npc = [0]
-            
+
+        random_groups = args["random_groups"]
+
         # Adjust data if any Combat based method is wanted
         if args["Method"] in ["Combat", "Covbat"] :
 
@@ -309,7 +317,6 @@ class h2Estimation():
                 FEs = ["pc" + str(i + 1) for i in range(max(args["npc"]))] + all_covars if all_covars else ["pc" + str(i + 1) for i in range(max(args["npc"]))]
             else:
                 FEs = all_covars
-            random_groups = args["random_groups"]
             no_missing = self.df[["FID", "IID"] + self.mpheno + FEs + [random_groups]].dropna()
             
             # Run neuroCombat: input shape (n_phenotypes, n_subjects), output same shape
@@ -318,7 +325,7 @@ class h2Estimation():
                                            covars=no_missing[FEs + [args["random_groups"]]],
                                            batch_col=args["random_groups"])["data"].T
             
-            args["random_groups"] = None
+            random_groups = None
             
             # Filter self.df to only rows that were used (no missing)
             nonmissing_idx = no_missing.index
@@ -372,10 +379,10 @@ class h2Estimation():
                           "PCs" : nnpc,
                           "Covariates" : C}
 
-                if (not args["Naive"]) or (random_groups == None):
+                if (not args["Naive"]) or (random_groups is None):
                     r = load_n_estimate(df=self.df, nnpc=nnpc,
                                         mp=mp, GRM=self.GRM, std=True, Method=args["Method"],
-                                        random_groups=args["random_groups"], homo=True, PC_effect = PC_effect,
+                                        random_groups=random_groups, homo=True, PC_effect = PC_effect,
                                         qcovar=args.get("qcovar"), covar_discrete=args.get("covar_discrete"),
                                         all_cols=self.all_covar_cols)
 
@@ -411,6 +418,7 @@ class h2Estimation():
                                                      qcovar=args.get("qcovar"), covar_discrete=args.get("covar_discrete"),
                                                      all_cols=self.all_covar_cols)
                             sub_result = pd.DataFrame({"h2": [sub_result["h2"][0]],
+                                                    "var(h2)": [sub_result.get("var(h2)", [np.nan])[0]],
                                                     "Size": [sub_n],
                                                     "N": [sub_result.get("N", sub_n)]})
                             # Add to the list of estimates
@@ -418,12 +426,12 @@ class h2Estimation():
                         except ValueError :
                             logging.error("Not estimated on this subgroups since there wasn't enough samples")
 
-                    # Pool the estimates
-                    sub_results["nh2"] = (
-                        sub_results["Size"] * sub_results["h2"]) / self.GRM.shape[0]
-                    h2 = np.sum(sub_results["nh2"])
+                    # Pool the estimates via inverse-variance weighted meta-analysis
+                    inv_var = 1.0 / sub_results["var(h2)"]
+                    w = inv_var / inv_var.sum()
+                    h2 = np.sum(w * sub_results["h2"])
                     r["h2"] = h2
-                    r["var(h2)"] =  np.var(sub_results["h2"])
+                    r["var(h2)"] = 1.0 / inv_var.sum()
                     r = pd.DataFrame(r, index=[0])
 
                 # Get memory for each step (in Mb) (This is a little sketchy)

@@ -135,7 +135,7 @@ def AdjHE(A, df, mp, random_groups = None, npc=0, std=False):
         
         # Construct the orthogonal projection matrix Q utilizing QR decomposition
         q, r = np.linalg.qr(X)
-        Q = np.identity(n) - X @ np.linalg.inv(r) @ q.T
+        Q = np.identity(n) - q @ q.T
         Q = np.array(Q)
             
         # Compute elements of 3x3 matrix

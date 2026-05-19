@@ -213,7 +213,7 @@ def standardize_across_features(X, design, info_dict):
         wh = np.isfinite(yy)
         mod = mod[wh,:]
         yy = yy[wh]
-        B = np.dot(np.dot(la.inv(np.dot(mod.T, mod)), mod.T), yy.T)
+        B, _, _, _ = np.linalg.lstsq(mod, yy, rcond=None)
         return B
 
     betas = []
@@ -237,7 +237,7 @@ def standardize_across_features(X, design, info_dict):
     else:
         var_pooled = np.dot(((X - np.dot(design, B_hat).T)**2), np.ones((n_sample, 1)) / float(n_sample))
 
-    var_pooled[var_pooled==0] = np.median(var_pooled!=0)
+    var_pooled[var_pooled==0] = np.median(var_pooled[var_pooled!=0])
     
     mod_mean = 0
     if design is not None:
@@ -280,7 +280,7 @@ def fit_LS_model_and_find_priors(s_data, design, info_dict, mean_only):
     batch_info = info_dict['batch_info'] 
     
     batch_design = design[:,:n_batch]
-    gamma_hat = np.dot(np.dot(la.inv(np.dot(batch_design.T, batch_design)), batch_design.T), s_data.T)
+    gamma_hat = np.linalg.lstsq(batch_design, s_data.T, rcond=None)[0]
 
     delta_hat = []
     for i, batch_idxs in enumerate(batch_info):
