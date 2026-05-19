@@ -526,12 +526,14 @@ def load_tables(ids= None, args = None) :
             # Merge all covariate dataframes, keeping unique columns
             covDF = covDFs[0]
             for df in covDFs[1:]:
-                # Find overlapping columns (excluding FID, IID)
+                # Use first file's FID as canonical; drop FID from subsequent files to avoid FID format mismatch
+                if 'FID' in df.columns:
+                    df = df.drop(columns=['FID'])
                 overlap = set(covDF.columns) & set(df.columns) - {"FID", "IID"}
                 if overlap:
                     # Rename overlapping columns in the second df before merging
                     df = df.rename(columns={c: f"{c}_2" for c in overlap})
-                covDF = pd.merge(covDF, df, on=["FID", "IID"], how="inner")
+                covDF = pd.merge(covDF, df, on="IID", how="inner")
     else:
         covDF = None
     
