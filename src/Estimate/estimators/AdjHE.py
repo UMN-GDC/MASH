@@ -44,6 +44,8 @@ def AdjHE(A, df, mp, random_groups = None, npc=0, std=False):
         standard error estimate
     """
     y = np.array(df[mp])
+    if std:
+        y = (y - y.mean()) / y.std()
     A = np.array(A)
 
     if npc ==0 :
@@ -92,6 +94,10 @@ def AdjHE(A, df, mp, random_groups = None, npc=0, std=False):
         sigmas = np.array(XXinv @ Ycol).flatten()
         
         h2 = sigmas[0] / (sigmas[0] + sigmas[1])
+        if sigmas[0] < 0:
+            logging.warning(f"AdjHE: Negative genetic variance. sigmas=({sigmas[0]:.4e}, {sigmas[1]:.4e}), "
+                           f"yay={yay:.4e}, yty={yty:.4e}, trA2={trA2:.4e}, trA={trA:.4e}, "
+                           f"topleft={topleft:.4e}, offdiag={offdiag:.4e}, bottomright={bottomright:.4e}")
         ss = 0
         # var_h2 = 2 * (sigmas[1]**2 * trA2 - 2*sigmas[0]*sigmas[1] * trA  + sigmas[0] **2 * n) / (sigmas[0] + sigmas[1])
 
@@ -118,6 +124,8 @@ def AdjHE(A, df, mp, random_groups = None, npc=0, std=False):
 
         # X = np.matrix(pd.get_dummies(df.drop(["FID", "IID", rv], axis = 1),  drop_first = True))
         y = np.array(df[mp])
+        if std:
+            y = (y - y.mean()) / y.std()
 
         # Create S similarity matrix 
         site, sizes= np.unique(df[random_groups], return_counts = True)
@@ -157,6 +165,9 @@ def AdjHE(A, df, mp, random_groups = None, npc=0, std=False):
         # Possible that the y's will need to account for prinicpal componetns in future real data cases
         sigmas = XtXm1 @ np.array([[trAY], [trQSQY], [trYout]])
         
+        if sigmas[0,0] < 0:
+            logging.warning(f"AdjHE (random_groups): Negative genetic variance. "
+                           f"sigmas=({sigmas[0,0]:.4e}, {sigmas[1,0]:.4e}, {sigmas[2,0]:.4e})")
         
         ss = sigmas[1,0]
         
@@ -165,19 +176,22 @@ def AdjHE(A, df, mp, random_groups = None, npc=0, std=False):
 
         
     # Calculate variance of estimate
-    # var_h2 = 2/ ( trA2 - 2*trA + n - np.sum(Sjs**2))
-    trA2 = np.trace(A ** 2)
+    trA2 = np.trace(np.linalg.matrix_power(A, 2))
     trA = np.trace(A)
-    var_h2 = 2 / (trA2 - trA**2)
-    if var_h2 < 0:
-        logging.warning("Variance estimate is negative setting as absolute value")
+    var_h2 = 2 * n / (n * trA2 - trA**2)
+    if var_h2 <= 0:
+        logging.warning(f"AdjHE: Variance estimate is negative ({var_h2:.4e}), setting as absolute value")
         var_h2 = abs(var_h2)
 
-    results = {"h2" : h2, "var(h2)" : var_h2}
+    h2_raw = h2
+    results = {"h2" : h2, "var(h2)" : var_h2, "h2_raw" : h2_raw}
     
     if results["h2"] < 0 :
+        logging.warning(f"AdjHE: h2 clamped from {results['h2']:.4e} to 0. "
+                       f"This indicates heritability near zero or a poor model fit")
         results["h2"] = 0
-    elif results["h2"] >1 :
+    elif results["h2"] > 1 :
+        logging.warning(f"AdjHE: h2 clamped from {results['h2']:.4e} to 1")
         results["h2"] = 1
     
     return results
@@ -258,9 +272,8 @@ def AdjHE(A, df, mp, random_groups = None, npc=0, std=False):
     
 #     results = {"sg" : top, "ss": bottom, "se" : 0, "var(sg)" : 0}
     
-#     # return heritability estimate
-#     return results
 
+    
 
 def AdjHE_rv_estimator_new(A,df, mp, random_groups, npc=0) :
     """

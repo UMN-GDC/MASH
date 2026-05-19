@@ -125,16 +125,15 @@ def load_n_estimate(df, nnpc, mp, GRM, PC_effect="fixed", std=True, Method="AdjH
     # GCTA is the only method that doesn't need to specify whether npcs are fixed or mixed.
     if Method != "GCTA" :
         if PC_effect == "fixed" :
-            # Add PC columns, avoiding duplicates
             for pc in pc_cols:
                 if pc not in fixed_effects:
                     fixed_effects.append(pc)
             nnpc = 0
-        if PC_effect == "mixed" :
+        elif PC_effect == "mixed" :
             for pc in pc_cols:
                 if pc not in fixed_effects:
                     fixed_effects.append(pc)
-        # Random is implicitly handled
+            nnpc = 0
 
     # Create formula string
     if len(fixed_effects) != 0:
