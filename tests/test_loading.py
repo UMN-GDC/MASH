@@ -210,6 +210,101 @@ def test_loading_eigenvec_no_header_fallback():
         os.unlink(eigenvec_file)
 
 
+def test_covar_filter_discrete():
+    """Test that covar_filter filters correctly on a discrete covariate column."""
+    # Create eigenvec file with 6 samples
+    eigenvec_content = "#FID	IID	PC1	PC2\n0	S1	0.1	0.2\n0	S2	0.3	0.4\n0	S3	0.5	0.6\n0	S4	0.7	0.8\n0	S5	0.9	1.0\n0	S6	1.1	1.2\n"
+    
+    with tempfile.NamedTemporaryFile(mode='w', suffix='.eigenvec', delete=False) as f:
+        f.write(eigenvec_content)
+        eigenvec_file = f.name
+    
+    # Create covariate file with dummy_sex column (M/F)
+    cov_content = "participant_id\tdummy_sex\nS1\tM\nS2\tF\nS3\tM\nS4\tM\nS5\tF\nS6\tM\n"
+    
+    with tempfile.NamedTemporaryFile(mode='w', suffix='.tsv', delete=False) as f:
+        f.write(cov_content)
+        cov_file = f.name
+    
+    try:
+        args = {
+            "PC": eigenvec_file,
+            "pheno": None,
+            "covar": [cov_file],
+            "covar_filter": "dummy_sex==M",
+            "fid_col": "FID",
+            "iid_col": "IID",
+        }
+        
+        ids = pd.DataFrame({
+            "FID": ["0"] * 6,
+            "IID": ["S1", "S2", "S3", "S4", "S5", "S6"],
+        })
+        ids["FID"] = ids["FID"].astype(str)
+        ids["IID"] = ids["IID"].astype(str)
+        
+        df = load_tables(ids, args)
+        
+        assert "dummy_sex" in df.columns, "dummy_sex column missing after load_tables"
+        present = df["dummy_sex"].dropna()
+        assert (present == "M").all(), f"Expected all present dummy_sex values to be 'M', got {present.unique()}"
+        # S2 and S5 were F, so they should be NaN (filtered then left-joined)
+        assert pd.isna(df.loc[df["IID"] == "S2", "dummy_sex"].iloc[0])
+        assert pd.isna(df.loc[df["IID"] == "S5", "dummy_sex"].iloc[0])
+        
+    finally:
+        os.unlink(eigenvec_file)
+        os.unlink(cov_file)
+
+
+def test_pheno_filter_numeric():
+    """Test that pheno_filter filters correctly on a numeric column."""
+    eigenvec_content = "#FID	IID	PC1	PC2\n0	S1	0.1	0.2\n0	S2	0.3	0.4\n0	S3	0.5	0.6\n0	S4	0.7	0.8\n0	S5	0.9	1.0\n0	S6	1.1	1.2\n"
+    
+    with tempfile.NamedTemporaryFile(mode='w', suffix='.eigenvec', delete=False) as f:
+        f.write(eigenvec_content)
+        eigenvec_file = f.name
+    
+    # Create phenotype file with both FID and IID
+    pheno_content = "FID\tIID\tpheno_1\n0\tS1\t1\n0\tS2\t5\n0\tS3\t2\n0\tS4\t3\n0\tS5\t-1\n0\tS6\t0\n"
+    
+    with tempfile.NamedTemporaryFile(mode='w', suffix='.tsv', delete=False) as f:
+        f.write(pheno_content)
+        pheno_file = f.name
+    
+    try:
+        args = {
+            "PC": eigenvec_file,
+            "pheno": pheno_file,
+            "covar": None,
+            "pheno_filter": "pheno_1<2",
+            "fid_col": "FID",
+            "iid_col": "IID",
+        }
+        
+        ids = pd.DataFrame({
+            "FID": ["0"] * 6,
+            "IID": ["S1", "S2", "S3", "S4", "S5", "S6"],
+        })
+        ids["FID"] = ids["FID"].astype(str)
+        ids["IID"] = ids["IID"].astype(str)
+        
+        df = load_tables(ids, args)
+        
+        assert "pheno_1" in df.columns, "pheno_1 column missing after load_tables"
+        present = df["pheno_1"].dropna()
+        # Only S1 (1), S5 (-1), S6 (0) satisfy pheno_1<2
+        assert set(present.tolist()) == {1, -1, 0}, f"Unexpected pheno_1 values: {present.tolist()}"
+        # S2 (5), S3 (2), S4 (3) were filtered out → NaN after left join
+        assert pd.isna(df.loc[df["IID"] == "S2", "pheno_1"].iloc[0])
+        assert pd.isna(df.loc[df["IID"] == "S3", "pheno_1"].iloc[0])
+        assert pd.isna(df.loc[df["IID"] == "S4", "pheno_1"].iloc[0])
+        
+    finally:
+        os.unlink(eigenvec_file)
+        os.unlink(pheno_file)
+
+
 if __name__ == "__main__":
     # Run tests manually if executed directly
     test_loading_eigenvec_hash_fid_uppercase_pcs()
@@ -223,5 +318,11 @@ if __name__ == "__main__":
     
     test_loading_eigenvec_no_header_fallback()
     print("✓ test_loading_eigenvec_no_header_fallback passed")
+    
+    test_covar_filter_discrete()
+    print("✓ test_covar_filter_discrete passed")
+    
+    test_pheno_filter_numeric()
+    print("✓ test_pheno_filter_numeric passed")
     
     print("\nAll tests passed!")

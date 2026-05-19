@@ -497,15 +497,10 @@ def load_tables(ids= None, args = None) :
             try:
                 cov_df = _read_delimited_file(cov_file, default_cols=["FID", "IID", "cov_1"], args=args)
                 logger.debug(f"Successfully read {cov_file}, shape: {cov_df.shape}")
-                # Drop session_id if present (used for filtering, not needed as covariate)
-                if 'session_id' in cov_df.columns:
-                    cov_df = cov_df.drop(columns=['session_id'])
-                # Apply covariate filter to each file BEFORE merging to avoid duplicates
-                # Only apply if the filter column exists in this file
+                # Apply covariate filter BEFORE dropping filter column
                 if args.get("covar_filter"):
                     filter_expr = args["covar_filter"]
                     logger.debug(f"Applying filter: {filter_expr}")
-                    # Extract column name from filter expression
                     for op in ['==', '!=', '>=', '<=', '>', '<']:
                         if op in filter_expr:
                             filter_col = filter_expr.split(op)[0].strip()
@@ -517,6 +512,9 @@ def load_tables(ids= None, args = None) :
                         logger.debug(f"After filtering, shape: {cov_df.shape}")
                     else:
                         logger.warning(f"Filter column '{filter_col}' not found in {cov_file}, skipping filter for this file")
+                # Drop session_id if present (used for filtering, not needed as covariate)
+                if 'session_id' in cov_df.columns:
+                    cov_df = cov_df.drop(columns=['session_id'])
                 covDFs.append(cov_df)
                 logger.debug(f"Added {cov_file} to covDFs list, now {len(covDFs)} files processed")
             except Exception as e:
@@ -628,13 +626,13 @@ def load_tables(ids= None, args = None) :
                 else:
                     pdf = _read_delimited_file(pf, default_cols=["FID", "IID"], args=args)
                 
+                # Apply phenotype filter BEFORE validation and BEFORE dropping filter column
+                if args.get("pheno_filter"):
+                    pdf = _apply_filter(pdf, args.get("pheno_filter"))
+
                 # Drop session_id if present (used for filtering, not needed in merge)
                 if 'session_id' in pdf.columns:
                     pdf = pdf.drop(columns=['session_id'])
-                
-                # Apply phenotype filter BEFORE validation
-                if args.get("pheno_filter"):
-                    pdf = _apply_filter(pdf, args.get("pheno_filter"))
                 
                 pdf = validate_column_types(pdf, pf, "phenotype")
                 pheno_dfs.append(pdf)
