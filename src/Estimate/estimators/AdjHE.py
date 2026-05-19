@@ -57,25 +57,20 @@ def AdjHE(A, df, mp, random_groups = None, npc=0, std=False):
         # Select specified number of Pcs
         PC = np.array(df.iloc[:,PC_cols])[:, :npc]
         # Stack the PCs for easier matrix multiplications
-        PCs = np.reshape(PC.T, newshape=(PC.shape[1], PC.shape[0], 1), order = "C")
+        PCs = np.reshape(PC.T, (PC.shape[1], PC.shape[0], 1), order="C")
         # transpose the PCs
-        PCsT = np.reshape(PC.T, newshape=(PC.shape[1], 1, PC.shape[0]), order = "C")
-    
+        PCsT = np.reshape(PC.T, (PC.shape[1], 1, PC.shape[0]), order="C")
     
         # Calculate outer products of eigenvectors
         PPt = np.matmul(PCs, PCsT)
-        logging.debug(str(y.shape))
-        logging.debug(str(PPt.shape))
         # Calculate tj's
         Tjs = np.matmul(np.matmul(y, PPt), y.T)
-        # potentially could be Tjs = np.dot(y, PC) **2
         # Calculated Sj's
         Sjs = np.matmul(np.matmul(PCsT, A), PCs).flatten()
         
     # Compute elements of regression matrix
     n = A.shape[0]
     
-    # Could square A faster with following A^2 = VD^2 V', but need to pass in eigenvalues D
     trA2 = np.trace(np.linalg.matrix_power(A, 2))
     trA = np.trace(A)
     
@@ -263,128 +258,4 @@ def AdjHE(A, df, mp, random_groups = None, npc=0, std=False):
 #     trQSQA = np.trace(QSQ * A)
 #     trQSQQSQ = np.trace(QSQ * QSQ)
 
-#     youter = np.matrix(np.outer(y,y))
 
-#     denom = trA2 * trQSQQSQ - trQSQA **2 
-#     top = (A * trQSQQSQ - QSQ * trQSQA) * youter / denom
-#     bottom = (QSQ* trA2 - A * trQSQA) * youter / denom
-
-    
-#     results = {"sg" : top, "ss": bottom, "se" : 0, "var(sg)" : 0}
-    
-
-    
-
-def AdjHE_rv_estimator_new(A,df, mp, random_groups, npc=0) :
-    """
-    Estimate the heritability of the presence of an additional random effect.
-
-    Parameters
-    ----------
-    A : numpy array  
-        n x n array containing the GRM values.
-    df : pandas dataframe
-        A dataframe containing all covariates, principal components, and phenotype that has been residualized if necessary.
-    mp : int
-        1 based index specifying the phenotype to be estimated on.
-    random_groups : string
-        specifying the name of the column to be used as a random variable.
-    npc : int, optional
-        number of prinicpal components to adjust for. The default is 0.
-    std : bool, optional
-        Specify whether or not to standaridize the variables before estimation. The default is False.
-
-    Returns
-    -------
-    tuple(scalar, scalar)
-        h2 - heritability estimate.
-        standard error estimate
-    """
-    y = np.array(df[mp])
-    A = np.array(A)
-    
-    # Create S similarity matrix 
-    site, sizes= np.unique(df[random_groups], return_counts = True)
-    # Construct the block diagonal
-    diags = [np.ones((size,size)) for size in sizes]
-    S = np.array(block_diag(*diags))
-
-
-    if npc ==0 :
-        Sjs = np.array([0])
-        Tjs = np.array([0])
-        Ujs = np.array([0])
-    else :
-        # Grab the PCs
-        PC_cols = [ col.startswith("pc")   for col in df ]
-        # Select specified number of Pcs
-        PC = np.array(df.iloc[:,PC_cols])[:, :npc]
-        # Stack the PCs for easier matrix multiplications
-        PCs = np.reshape(PC.T, newshape=(PC.shape[1], PC.shape[0], 1), order = "C")
-        # transpose the PCs
-        PCsT = np.reshape(PC.T, newshape=(PC.shape[1], 1, PC.shape[0]), order = "C")
-    
-    
-        # Calculate outer products of eigenvectors
-        PPt = np.matmul(PCs, PCsT)
-    
-        # Calculate tj's
-        Ujs = np.matmul(np.matmul(y, PPt), y.T)
-    
-        # Calculated Sj's
-        Sjs = np.matmul(np.matmul(PCsT, S), PCs).flatten()
-        
-        Tjs = np.matmul(np.matmul(PCsT, A), PCs).flatten()
-
-    # Compute elements of regression matrix
-    N = A.shape[0]
-    k= len(Tjs)
-    
-    # Calculate traces
-    trA2 = np.trace(np.linalg.matrix_power(A, 2))
-    trAS = np.trace(np.matmul(A, S))
-    trA = np.trace(A)
-    
-    # calculated sums w pc loadings
-    sum_t = sum(Tjs)
-    sum_s = sum(Sjs)
-    sum_u = sum(Ujs)
-    sum_st = sum(Tjs * Sjs)
-    sum_tu = sum(Tjs * Ujs)
-    sum_su = sum(Sjs * Ujs)
-    sum_t2 = sum(Tjs ** 2 )
-    sum_s2 = sum(Sjs ** 2)
-    sum_n2 = sum(sizes ** 2)
-    
-    
-    
-    # construct the matrix to invert
-    x_11 = trA2 - sum_t2
-    x_12 = trAS - sum_st 
-    x_13 = trA - sum_t
-    x_22 = sum_n2 - sum_s2 
-    x_23 = N - sum_s 
-    x_33 = N - npc
-    
-    X_inv = np.linalg.inv((
-        np.array([[x_11, x_12, x_13],
-                   [x_12, x_22, x_23],
-                   [x_13, x_23, x_33]])))
-        
-    yAy = np.matmul(y.T, np.matmul(A, y))
-    ySy = np.matmul(y.T, np.matmul(S, y))
-    yty = np.inner(y,y)
-    
-    # construct the adjusted y vector
-    Y_adj = np.array([[yAy - sum_tu],
-                       [ySy - sum_su],
-                       [yty - sum_u]])
-    
-    # Solve the regression problem
-    sigmas = X_inv @ Y_adj
-    
-    return {"h2" : sigmas[0,0] / (sigmas[0,0] + sigmas[2,0]), "sg" : sigmas[0,0], "ss": sigmas[1,0], "se" : sigmas[2,0], "var(sg)" : 0}
-
-    
-    
-    

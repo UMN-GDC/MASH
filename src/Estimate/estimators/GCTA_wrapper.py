@@ -145,6 +145,12 @@ def GCTA(df, nnpc, mp, GRM, gcta, method = "GCTA", silent=False, qcovar=None, co
     covar_discrete_in_df = [c for c in covar_discrete if c in all_covars_in_df]
     qcovar_in_df = [c for c in qcovar if c in all_covars_in_df]
 
+    # Include PCs as quantitative covariates for GCTA
+    if nnpc > 0:
+        for pc in pcs:
+            if pc not in qcovar_in_df:
+                qcovar_in_df.append(pc)
+
     if covar_discrete_in_df:
         df_for_covars[["FID", "IID"] + covar_discrete_in_df].to_csv(temp_name + "_Discrete.txt", sep = " ", header= False, index= False, na_rep = "NA")
     if qcovar_in_df:

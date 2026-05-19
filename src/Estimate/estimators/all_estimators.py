@@ -32,7 +32,7 @@ from Estimate.estimators.combat import neuroCombat
 
 
 
-def load_n_estimate(df, nnpc, mp, GRM, PC_effect="fixed", std=True, Method="AdjHE", random_groups=None, silent=False, homo=True, gcta=None, qcovar=None, covar_discrete=None, all_cols=None):
+def load_n_estimate(df, nnpc, mp, GRM, PC_effect="mixed", std=True, Method="AdjHE", random_groups=None, silent=False, homo=True, gcta=None, qcovar=None, covar_discrete=None, all_cols=None):
     """
     Estimates heritability, but solves a full OLS problem making it slower than the closed form solution. Takes 
     a dataframe, selects only the necessary columns (so that when we do complete cases it doesnt exclude too many samples)
@@ -133,7 +133,6 @@ def load_n_estimate(df, nnpc, mp, GRM, PC_effect="fixed", std=True, Method="AdjH
             for pc in pc_cols:
                 if pc not in fixed_effects:
                     fixed_effects.append(pc)
-            nnpc = 0
 
     # Create formula string
     if len(fixed_effects) != 0:
@@ -247,7 +246,7 @@ class h2Estimation():
                 self.all_covar_cols = list(all_covar_cols)
             #self.df = pd.merge(self.ids, self.df, on = ["FID", "IID"], how = "left")
 
-    def estimate(self, PC_effect = "fixed"):
+    def estimate(self, PC_effect = "mixed"):
         args = self.args
 
         # Build fixed_effects from qcovar and covar_discrete
