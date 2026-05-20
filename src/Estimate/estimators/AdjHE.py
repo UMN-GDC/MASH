@@ -54,6 +54,21 @@ def _adjhe_2comp(A, df, mp, npc, std):
         trA2_adj, trA_adj, n_adj, yAy_adj, yty_adj = trA2, trA, n, yAy, yty
 
     det = trA2_adj * n_adj - trA_adj ** 2
+
+    if det <= 0 or np.isnan(det) or np.isinf(det):
+        logging.warning(
+            f"AdjHE: Non-positive or invalid determinant ({det:.6e}) with npc={npc}. "
+            f"trA2={trA2:.4e}, trA={trA:.4e}, n={n}, "
+            f"trA2_adj={trA2_adj:.4e}, trA_adj={trA_adj:.4e}, n_adj={n_adj}, "
+            f"yAy={yAy:.4e}, yty={yty:.4e}, "
+            f"yAy_adj={yAy_adj:.4e}, yty_adj={yty_adj:.4e}, "
+            f"sum_Sjs2={np.sum(Sjs**2) if npc > 0 else 0:.4e}, "
+            f"sum_Sjs={np.sum(Sjs) if npc > 0 else 0:.4e}, "
+            f"sum_TjsSjs={np.sum(Tjs*Sjs) if npc > 0 else 0:.4e}, "
+            f"sum_Tjs={np.sum(Tjs) if npc > 0 else 0:.4e}"
+        )
+        return np.nan, np.nan, n, trA, trA2
+
     sigma_g = (yAy_adj * n_adj - trA_adj * yty_adj) / det
     sigma_e = (trA2_adj * yty_adj - trA_adj * yAy_adj) / det
 
@@ -102,7 +117,15 @@ def _adjhe_3comp(A, df, mp, random_groups, std):
         np.trace(youter),
     ])
 
-    sigmas = np.linalg.solve(XtX, Xty)
+    try:
+        sigmas = np.linalg.solve(XtX, Xty)
+    except np.linalg.LinAlgError:
+        logging.warning("AdjHE (random_groups): Singular system in 3-component solve")
+        return np.nan, np.nan, n, trA, trA2
+
+    if np.any(np.isnan(sigmas)):
+        logging.warning("AdjHE (random_groups): NaN in solve result")
+        return np.nan, np.nan, n, trA, trA2
 
     if sigmas[0] < 0:
         logging.warning(
@@ -124,6 +147,10 @@ def _h2_variance(n, trA, trA2):
 
 
 def _package(sigma_g, sigma_e, var_h2):
+    if np.isnan(sigma_g):
+        logging.warning("AdjHE: Estimate is NaN (singular system, returning NaN)")
+        return {"h2": np.nan, "var(h2)": var_h2}
+
     h2 = sigma_g / (sigma_g + sigma_e)
 
     if h2 < 0:
