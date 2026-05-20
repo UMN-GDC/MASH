@@ -130,9 +130,7 @@ def load_n_estimate(df, nnpc, mp, GRM, PC_effect="mixed", std=True, Method="AdjH
                     fixed_effects.append(pc)
             nnpc = 0
         elif PC_effect == "mixed" :
-            for pc in pc_cols:
-                if pc not in fixed_effects:
-                    fixed_effects.append(pc)
+            pass
 
     # Create formula string
     if len(fixed_effects) != 0:
