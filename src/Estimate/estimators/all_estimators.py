@@ -122,6 +122,15 @@ def load_n_estimate(df, nnpc, mp, GRM, PC_effect="mixed", std=True, Method="AdjH
     seen = set()
     fixed_effects = [x for x in fixed_effects if not (x in seen or seen.add(x))]
 
+    # Save original method name before any normalization
+    orig_method = Method
+
+    # Parse AdjHE_* method names to set PC_effect automatically
+    if Method in ("AdjHE_mixed", "AdjHE_fixed", "AdjHE_random"):
+        suffix = Method.split("_", 1)[1]
+        PC_effect = suffix
+        Method = "AdjHE"
+
     # GCTA is the only method that doesn't need to specify whether npcs are fixed or mixed.
     if Method != "GCTA" :
         if PC_effect == "fixed" :
@@ -196,6 +205,7 @@ def load_n_estimate(df, nnpc, mp, GRM, PC_effect="mixed", std=True, Method="AdjH
             result = {}
 
         result["pheno"] = mp
+        result["method"] = orig_method
         result["N"] = result.get("N", len(df))
         return pd.DataFrame(result, index=[0])
 
