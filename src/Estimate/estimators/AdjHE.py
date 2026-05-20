@@ -125,7 +125,6 @@ def _h2_variance(n, trA, trA2):
 
 def _package(sigma_g, sigma_e, var_h2):
     h2 = sigma_g / (sigma_g + sigma_e)
-    h2_raw = h2
 
     if h2 < 0:
         logging.warning(
@@ -137,4 +136,4 @@ def _package(sigma_g, sigma_e, var_h2):
         logging.warning(f"AdjHE: h2 clamped from {h2:.4e} to 1")
         h2 = 1
 
-    return {"h2": h2, "var(h2)": var_h2, "h2_raw": h2_raw}
+    return {"h2": h2, "var(h2)": var_h2}
