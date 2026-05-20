@@ -27,12 +27,26 @@ def _extract_y(df, mp, std):
     return y
 
 
-def _pc_projections(df, npc, A, y):
+def _q_projections(df, npc, A, y, n):
+    """Build Q = I - V(V'V)^{-1}V' via QR and compute projected traces without materializing Q."""
     pc_cols = [c for c in df.columns if c.startswith("pc")]
-    PC = np.array(df[pc_cols])[:, :npc]
-    Tjs = (y @ PC) ** 2
-    Sjs = np.diag(PC.T @ A @ PC)
-    return Sjs, Tjs
+    V = np.array(df[pc_cols])[:, :npc]
+    V, _ = np.linalg.qr(V, mode="reduced")
+
+    Ay = A @ y
+    AV = A @ V
+
+    yV = y @ V
+    VAy = V.T @ Ay
+    N = V.T @ AV
+    N2 = AV.T @ AV
+
+    trQA = np.trace(A) - np.trace(N)
+    trQAQA = np.trace(A @ A) - 2 * np.trace(N2) + np.trace(N @ N)
+    yQy = y @ y - yV @ yV
+    yQAQy = y @ Ay - 2 * yV @ VAy + yV @ N @ yV
+
+    return trQA, trQAQA, yQy, yQAQy, n - npc
 
 
 def _adjhe_2comp(A, df, mp, npc, std):
@@ -44,12 +58,7 @@ def _adjhe_2comp(A, df, mp, npc, std):
     yty = y @ y
 
     if npc > 0:
-        Sjs, Tjs = _pc_projections(df, npc, A, y)
-        trA2_adj = trA2 - np.sum(Sjs ** 2)
-        trA_adj = trA - np.sum(Sjs)
-        n_adj = n - npc
-        yAy_adj = yAy - np.sum(Tjs * Sjs)
-        yty_adj = yty - np.sum(Tjs)
+        trA_adj, trA2_adj, yty_adj, yAy_adj, n_adj = _q_projections(df, npc, A, y, n)
     else:
         trA2_adj, trA_adj, n_adj, yAy_adj, yty_adj = trA2, trA, n, yAy, yty
 
@@ -61,11 +70,7 @@ def _adjhe_2comp(A, df, mp, npc, std):
             f"trA2={trA2:.4e}, trA={trA:.4e}, n={n}, "
             f"trA2_adj={trA2_adj:.4e}, trA_adj={trA_adj:.4e}, n_adj={n_adj}, "
             f"yAy={yAy:.4e}, yty={yty:.4e}, "
-            f"yAy_adj={yAy_adj:.4e}, yty_adj={yty_adj:.4e}, "
-            f"sum_Sjs2={np.sum(Sjs**2) if npc > 0 else 0:.4e}, "
-            f"sum_Sjs={np.sum(Sjs) if npc > 0 else 0:.4e}, "
-            f"sum_TjsSjs={np.sum(Tjs*Sjs) if npc > 0 else 0:.4e}, "
-            f"sum_Tjs={np.sum(Tjs) if npc > 0 else 0:.4e}"
+            f"yAy_adj={yAy_adj:.4e}, yty_adj={yty_adj:.4e}"
         )
         return np.nan, np.nan, n, trA, trA2
 
