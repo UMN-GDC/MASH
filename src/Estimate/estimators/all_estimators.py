@@ -161,6 +161,7 @@ def load_n_estimate(df, nnpc, mp, GRM, PC_effect="mixed", std=True, Method="AdjH
             temp[mp] = temp["resid"]
             nonmissing = df[df.IID.isin(temp.IID)].index
             GRM_nonmissing = GRM[nonmissing, :][:, nonmissing]
+            temp = temp.reset_index(drop=True)
             result = AdjHE(A = GRM_nonmissing, df=temp, mp = mp, random_groups = random_groups, npc= nnpc, std=std)
             result["N"] = len(temp)
 
@@ -182,6 +183,7 @@ def load_n_estimate(df, nnpc, mp, GRM, PC_effect="mixed", std=True, Method="AdjH
             temp[mp] = temp["resid2"]
             nonmissing = df[df.IID.isin(temp.IID)].index
             GRM_nonmissing = GRM[nonmissing, :][:, nonmissing]
+            temp = temp.reset_index(drop=True)
 
             result = AdjHE(A = GRM_nonmissing, df = temp, mp = mp, random_groups = None, npc=nnpc, std=False)
             result["N"] = len(temp)
@@ -194,6 +196,7 @@ def load_n_estimate(df, nnpc, mp, GRM, PC_effect="mixed", std=True, Method="AdjH
             temp[mp] = temp["resid"]
             nonmissing = df[df.IID.isin(temp.IID)].index
             GRM_nonmissing = GRM[nonmissing, :][:, nonmissing]
+            temp = temp.reset_index(drop=True)
             result = AdjHE(A=GRM_nonmissing, df=temp, mp=mp, random_groups=None, npc=nnpc, std=std)
             result["N"] = len(temp)
 

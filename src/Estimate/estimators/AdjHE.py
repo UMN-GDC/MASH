@@ -31,6 +31,16 @@ def _q_projections(df, npc, A, y, n):
     """Build Q = I - V(V'V)^{-1}V' via QR and compute projected traces without materializing Q."""
     pc_cols = [c for c in df.columns if c.startswith("pc")]
     V = np.array(df[pc_cols])[:, :npc]
+
+    if np.any(np.isnan(V)):
+        nan_count = np.sum(np.isnan(V), axis=0)
+        cols_msg = ", ".join(f"{c}: {int(n)}" for c, n in zip(pc_cols[:npc], nan_count))
+        logging.warning(
+            f"AdjHE: {int(np.sum(nan_count))} NaN values in PC columns ({cols_msg}). "
+            f"Falling back to unprojected traces. Use PC_effect=fixed to drop these rows via OLS."
+        )
+        return np.trace(A), np.trace(A @ A), y @ y, y @ A @ y, n
+
     V, _ = np.linalg.qr(V, mode="reduced")
 
     Ay = A @ y
