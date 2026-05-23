@@ -159,8 +159,8 @@ def load_n_estimate(df, nnpc, mp, GRM, PC_effect="mixed", std=True, Method="AdjH
             resid.name = "resid"
             temp = df.merge(resid, left_index = True, right_index =True, how = "inner")
             temp[mp] = temp["resid"]
-            nonmissing = df[df.IID.isin(temp.IID)].index
-            GRM_nonmissing = GRM[nonmissing, :][:, nonmissing]
+            grm_mask = df.IID.isin(temp.IID).values[:GRM.shape[0]]
+            GRM_nonmissing = GRM[grm_mask, :][:, grm_mask]
             temp = temp.reset_index(drop=True)
             result = AdjHE(A = GRM_nonmissing, df=temp, mp = mp, random_groups = random_groups, npc= nnpc, std=std)
             result["N"] = len(temp)
@@ -181,8 +181,8 @@ def load_n_estimate(df, nnpc, mp, GRM, PC_effect="mixed", std=True, Method="AdjH
             resid.name= "resid2"
             temp = temp.merge(resid, left_index= True, right_index = True,how = "inner")
             temp[mp] = temp["resid2"]
-            nonmissing = df[df.IID.isin(temp.IID)].index
-            GRM_nonmissing = GRM[nonmissing, :][:, nonmissing]
+            grm_mask = df.IID.isin(temp.IID).values[:GRM.shape[0]]
+            GRM_nonmissing = GRM[grm_mask, :][:, grm_mask]
             temp = temp.reset_index(drop=True)
 
             result = AdjHE(A = GRM_nonmissing, df = temp, mp = mp, random_groups = None, npc=nnpc, std=False)
@@ -194,8 +194,8 @@ def load_n_estimate(df, nnpc, mp, GRM, PC_effect="mixed", std=True, Method="AdjH
             resid.name = "resid"
             temp = df.merge(resid, left_index=True, right_index=True, how="inner")
             temp[mp] = temp["resid"]
-            nonmissing = df[df.IID.isin(temp.IID)].index
-            GRM_nonmissing = GRM[nonmissing, :][:, nonmissing]
+            grm_mask = df.IID.isin(temp.IID).values[:GRM.shape[0]]
+            GRM_nonmissing = GRM[grm_mask, :][:, grm_mask]
             temp = temp.reset_index(drop=True)
             result = AdjHE(A=GRM_nonmissing, df=temp, mp=mp, random_groups=None, npc=nnpc, std=std)
             result["N"] = len(temp)
@@ -339,9 +339,12 @@ class h2Estimation():
             random_groups = None
             
             # Filter self.df to only rows that were used (no missing)
-            nonmissing_idx = no_missing.index
-            self.GRM = self.GRM[nonmissing_idx, :][:, nonmissing_idx]
-            self.df = self.df.loc[nonmissing_idx].copy()
+            grm_n = self.GRM.shape[0]
+            mask = np.zeros(len(self.df), dtype=bool)
+            mask[no_missing.index] = True
+            mask = mask[:grm_n]
+            self.GRM = self.GRM[mask, :][:, mask]
+            self.df = self.df.iloc[:grm_n].loc[mask].copy()
             
             # Assign transformed phenotype data back to dataframe
             # Make sure shapes match: transformed_data should be (n_subjects, n_phenotypes)
