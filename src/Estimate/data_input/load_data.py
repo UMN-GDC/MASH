@@ -401,7 +401,9 @@ def _apply_filter(df, filter_expr):
     df : pandas.DataFrame
         DataFrame to filter
     filter_expr : str
-        Filter expression like "age>30", "sex==1", "site!=2"
+        Single filter expression like "age>30", "sex==1", "site!=2".
+        For multiple filters, covar_filter/pheno_filter can be a list of strings;
+        each is applied sequentially via a loop in the caller.
     
     Returns
     -------
@@ -499,19 +501,22 @@ def load_tables(ids= None, args = None) :
                 logger.debug(f"Successfully read {cov_file}, shape: {cov_df.shape}")
                 # Apply covariate filter BEFORE dropping filter column
                 if args.get("covar_filter"):
-                    filter_expr = args["covar_filter"]
-                    logger.debug(f"Applying filter: {filter_expr}")
-                    for op in ['==', '!=', '>=', '<=', '>', '<']:
-                        if op in filter_expr:
-                            filter_col = filter_expr.split(op)[0].strip()
-                            break
-                    logger.debug(f"Filter column: {filter_col}")
-                    if filter_col in cov_df.columns:
-                        logger.debug(f"Filter column {filter_col} found in dataframe")
-                        cov_df = _apply_filter(cov_df, filter_expr)
-                        logger.debug(f"After filtering, shape: {cov_df.shape}")
-                    else:
-                        logger.warning(f"Filter column '{filter_col}' not found in {cov_file}, skipping filter for this file")
+                    filter_exprs = args["covar_filter"]
+                    if isinstance(filter_exprs, str):
+                        filter_exprs = [filter_exprs]
+                    for filter_expr in filter_exprs:
+                        logger.debug(f"Applying filter: {filter_expr}")
+                        for op in ['==', '!=', '>=', '<=', '>', '<']:
+                            if op in filter_expr:
+                                filter_col = filter_expr.split(op)[0].strip()
+                                break
+                        logger.debug(f"Filter column: {filter_col}")
+                        if filter_col in cov_df.columns:
+                            logger.debug(f"Filter column {filter_col} found in dataframe")
+                            cov_df = _apply_filter(cov_df, filter_expr)
+                            logger.debug(f"After filtering, shape: {cov_df.shape}")
+                        else:
+                            logger.warning(f"Filter column '{filter_col}' not found in {cov_file}, skipping filter for this file")
                 # Drop session_id if present (used for filtering, not needed as covariate)
                 if 'session_id' in cov_df.columns:
                     cov_df = cov_df.drop(columns=['session_id'])
@@ -630,7 +635,11 @@ def load_tables(ids= None, args = None) :
                 
                 # Apply phenotype filter BEFORE validation and BEFORE dropping filter column
                 if args.get("pheno_filter"):
-                    pdf = _apply_filter(pdf, args.get("pheno_filter"))
+                    filter_exprs = args["pheno_filter"]
+                    if isinstance(filter_exprs, str):
+                        filter_exprs = [filter_exprs]
+                    for filter_expr in filter_exprs:
+                        pdf = _apply_filter(pdf, filter_expr)
 
                 # Drop session_id if present (used for filtering, not needed in merge)
                 if 'session_id' in pdf.columns:

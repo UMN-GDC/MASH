@@ -107,6 +107,12 @@ class TestAdjHE:
         results = run_config("config_complexAdjHE.json")
         check_results_numeric(results, "AdjHE complex")
 
+    @pytest.mark.AdjHE
+    def test_AdjHE_3PC(self):
+        """Test AdjHE with 3 PCs (3rd is random noise)."""
+        results = run_config("config_AdjHE_3PC.json")
+        check_results(results, "AdjHE 3PC")
+
 
 class TestGCTA:
     """Tests for GCTA method configs."""
