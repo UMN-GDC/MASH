@@ -164,6 +164,12 @@ def get_args() :
                         metavar= "FID_COLUMN",
                         help='Name of the FID column in phenotype/covariate files. Default: FID')
 
+    parser.add_argument('--na-values',
+                        nargs="+",
+                        metavar= "NA_VALUE",
+                        help='Additional values to recognize as NA/missing in delimited input files '
+                        '(e.g., -777 -888). Accepts a list of values.')
+
     # Set defaults
     parser.set_defaults(PC="None", fast = False, npc=None,
                         covar="None", mpheno=1, k=0,
@@ -172,7 +178,8 @@ def get_args() :
                         loop_covs=False, argfile = None, covars =1,
                         std= False, qcovar=None, covar_discrete=None,
                         pheno_filter=None, covar_filter=None,
-                        iid_col='IID', fid_col='FID')
+                        iid_col='IID', fid_col='FID',
+                        na_values=None)
     
     
     # return the arguments as a dictionary
@@ -239,7 +246,36 @@ def read_flags(raw_args):
         #     # convert single integer to integer list 
         #     raw_args["covars"] = raw_args["covars"]
     
+    # Normalize na_values to a list of scalars (or None)
+    raw_args['na_values'] = normalize_na_values(raw_args.get('na_values'))
+    
     return(raw_args)
+
+
+def normalize_na_values(na_values):
+    """
+    Ensure na_values is a list of scalars (or None) so it can be passed
+    directly to pandas read functions. Numeric-looking strings (e.g. from
+    the command line) are converted to int/float so they match numeric
+    columns during parsing.
+    """
+    if na_values is None:
+        return None
+    if not isinstance(na_values, list):
+        na_values = [na_values]
+    out = []
+    for v in na_values:
+        if isinstance(v, str):
+            try:
+                out.append(int(v))
+            except ValueError:
+                try:
+                    out.append(float(v))
+                except ValueError:
+                    out.append(v)
+        else:
+            out.append(v)
+    return out
 
 
 

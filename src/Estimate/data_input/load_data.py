@@ -246,6 +246,7 @@ def _read_delimited_file(filepath, has_header=True, default_cols=None, args=None
     import os
     fid_col = args.get("fid_col", "FID") if args else "FID"
     iid_col = args.get("iid_col", "IID") if args else "IID"
+    na_values = args.get("na_values") if args else None
     ext = os.path.splitext(filepath)[1].lower()
 
     # Determine separator based on extension
@@ -289,7 +290,7 @@ def _read_delimited_file(filepath, has_header=True, default_cols=None, args=None
             logger.error(f"sep is not a string! Got {type(sep)}: {sep}. Forcing to whitespace separator.")
             sep = r'\s+'
         logger.debug(f"Final sep value for pd.read_table: {repr(sep)}")
-        df = pd.read_table(filepath, sep=sep, header=None if not has_header else 0)
+        df = pd.read_table(filepath, sep=sep, header=None if not has_header else 0, na_values=na_values)
     except Exception as e:
         logger.error(f"Failed to read {filepath} with sep={repr(sep)}: {e}")
         logger.error(f"sep type: {type(sep)}, sep value: {sep}")
@@ -298,7 +299,7 @@ def _read_delimited_file(filepath, has_header=True, default_cols=None, args=None
         logger.error(f"Traceback: {traceback.format_exc()}")
         # Try with default sep=None as fallback
         logger.info(f"Trying fallback with sep=None")
-        df = pd.read_table(filepath, sep=None, header=None if not has_header else 0)
+        df = pd.read_table(filepath, sep=None, header=None if not has_header else 0, na_values=na_values)
 
     # Strip whitespace from column names (common issue with some files)
     if has_header:

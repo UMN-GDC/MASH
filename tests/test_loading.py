@@ -305,6 +305,106 @@ def test_pheno_filter_numeric():
         os.unlink(pheno_file)
 
 
+def test_loading_custom_na_values_from_config():
+    """Test that custom na_values from config (list) are recognized as missing."""
+    pheno_content = """FID\tIID\tpheno_1\tpheno_2
+0\tS1\t-777\t5
+0\tS2\t3\t-888
+0\tS3\t4\t6
+"""
+    with tempfile.NamedTemporaryFile(mode='w', suffix='.tsv', delete=False) as f:
+        f.write(pheno_content)
+        pheno_file = f.name
+    try:
+        args = {
+            "PC": None,
+            "pheno": pheno_file,
+            "covar": None,
+            "fid_col": "FID",
+            "iid_col": "IID",
+            "na_values": [-777, -888],
+        }
+        ids = pd.DataFrame({
+            "FID": ["0", "0", "0"],
+            "IID": ["S1", "S2", "S3"],
+        })
+        ids["FID"] = ids["FID"].astype(str)
+        ids["IID"] = ids["IID"].astype(str)
+
+        df = load_tables(ids, args)
+
+        # Sentinel values should be converted to NaN
+        assert pd.isna(df.loc[df["IID"] == "S1", "pheno_1"].iloc[0])
+        assert pd.isna(df.loc[df["IID"] == "S2", "pheno_2"].iloc[0])
+        # Valid values should be preserved
+        assert df.loc[df["IID"] == "S1", "pheno_2"].iloc[0] == 5
+        assert df.loc[df["IID"] == "S2", "pheno_1"].iloc[0] == 3
+        assert df.loc[df["IID"] == "S3", "pheno_1"].iloc[0] == 4
+    finally:
+        os.unlink(pheno_file)
+
+
+def test_loading_without_na_values_keeps_sentinels():
+    """Test that without na_values config, sentinel values are kept as-is."""
+    pheno_content = """FID\tIID\tpheno_1
+0\tS1\t-777
+0\tS2\t3
+"""
+    with tempfile.NamedTemporaryFile(mode='w', suffix='.tsv', delete=False) as f:
+        f.write(pheno_content)
+        pheno_file = f.name
+    try:
+        args = {
+            "PC": None,
+            "pheno": pheno_file,
+            "covar": None,
+            "fid_col": "FID",
+            "iid_col": "IID",
+        }
+        ids = pd.DataFrame({
+            "FID": ["0", "0"],
+            "IID": ["S1", "S2"],
+        })
+        ids["FID"] = ids["FID"].astype(str)
+        ids["IID"] = ids["IID"].astype(str)
+
+        df = load_tables(ids, args)
+
+        # Without na_values, -777 is a real value, not NaN
+        assert df.loc[df["IID"] == "S1", "pheno_1"].iloc[0] == -777
+        assert df.loc[df["IID"] == "S2", "pheno_1"].iloc[0] == 3
+    finally:
+        os.unlink(pheno_file)
+
+
+def test_read_flags_na_values_from_config():
+    """Test that na_values is exposed from the config (JSON argfile) as a list."""
+    import json
+    config = {
+        "na_values": [-777, -888],
+        "PC": None,
+        "pheno": None,
+        "covar": None,
+    }
+    with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as f:
+        json.dump(config, f)
+        config_file = f.name
+    try:
+        args = read_flags({"argfile": config_file})
+        assert args["na_values"] == [-777, -888]
+    finally:
+        os.unlink(config_file)
+
+
+def test_read_flags_na_values_normalization():
+    """Test that na_values accepts a single value and coerces numeric strings."""
+    from Estimate.data_input.parser import normalize_na_values
+    assert normalize_na_values(None) is None
+    assert normalize_na_values(-777) == [-777]
+    assert normalize_na_values(["-777", "-888"]) == [-777, -888]
+    assert normalize_na_values(["NA", "-888"]) == ["NA", -888]
+
+
 if __name__ == "__main__":
     # Run tests manually if executed directly
     test_loading_eigenvec_hash_fid_uppercase_pcs()
@@ -324,5 +424,17 @@ if __name__ == "__main__":
     
     test_pheno_filter_numeric()
     print("✓ test_pheno_filter_numeric passed")
+    
+    test_loading_custom_na_values_from_config()
+    print("✓ test_loading_custom_na_values_from_config passed")
+    
+    test_loading_without_na_values_keeps_sentinels()
+    print("✓ test_loading_without_na_values_keeps_sentinels passed")
+    
+    test_read_flags_na_values_from_config()
+    print("✓ test_read_flags_na_values_from_config passed")
+    
+    test_read_flags_na_values_normalization()
+    print("✓ test_read_flags_na_values_normalization passed")
     
     print("\nAll tests passed!")
