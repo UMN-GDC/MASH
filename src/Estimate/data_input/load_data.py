@@ -8,6 +8,25 @@ logger = logging.getLogger(__name__)
 
 #%%
 
+def resolve_covariates(qcovar, covar_discrete, all_covariate_cols, df=None):
+    """
+    Resolve qcovar/covar_discrete config values into explicit column lists.
+
+    - null (None)  -> use ALL covariate columns
+    - empty list [] -> use NO covariates
+    - list          -> use exactly those columns
+
+    Returns a (qcovar, covar_discrete) tuple of lists.
+    """
+    if qcovar is None and covar_discrete is None:
+        df_cols = set(df.columns) if df is not None else set()
+        covariate_cols = [c for c in (all_covariate_cols or [])
+                          if c not in ["FID", "IID"]
+                          and not c.lower().startswith("pc")
+                          and (not df_cols or c in df_cols)]
+        return covariate_cols, []
+    return qcovar or [], covar_discrete or []
+
 
 def ReadGRMBin(prefix, sub_ids = None, args = None):
     """

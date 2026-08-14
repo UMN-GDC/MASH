@@ -85,12 +85,12 @@ It is reccomended that users define a `.json` file containing all of the argumen
 | --argfile ARGFILE.json | COND REQUIRED. ARGFILE.json, *string*, is the filename to be passed containing all information for PC's, covariates, phenotypes, and GRM. This takes priority over all other arguments. [See the example arfile included under the Example directory.](https://github.com/UMN-GDC/MASH/blob/master/Example/Argfile.json) |
 | --prefix PREFIX|  REQUIRED. *string* PREFIX is the prefix of GRM file with GCTA binary GRM format. (`PREFIX.grm.bin`, `PREFIX.grm.N.bin` and `PREFIX.grm.id`)|
 | --pheno PHENO |  REQUIRED. PHENO, *string or array*, is the phenotype file. Supports a single file path, a comma-separated string, or an array of multiple files (e.g., `["file1.tsv", "file2.tsv"]`). Multiple files are merged by FID/IID. Supports `.parquet`, `.csv`, `.tsv`/`.tab`, or whitespace-delimited formats. First two columns must be FID and IID, followed by phenotype columns. |
-| --mpheno m| OPTIONAL. *list of integers or integer*, Default=1. If you have multiple phenotypes in the file, you can specify by `--mpheno m`. Otherwise, the first phenotype will be used. Note that 1 refers to the third column of the file since we skip over the FID and IID columns. If passed a list, estimates will be computed for every phenotype specified. |
+| --mpheno m| OPTIONAL. *list of integers, integer, or "ALL"*, Default=1. If you have multiple phenotypes in the file, you can specify by `--mpheno m`. Otherwise, the first phenotype will be used. Note that 1 refers to the third column of the file since we skip over the FID and IID columns. If passed a list, estimates will be computed for every phenotype specified. Use `"ALL"` (case-insensitive) to run across **all** phenotypes in the phenotype file. |
 | --PC PC | OPTIONAL. PC, *string*, is the name of PCs file. Supports header (with FID/IID columns, including `#FID` notation) or no-header (PLINK format). Column names can be `PC1, PC2` or `pc_1, pc_2`. |
 | --npc n | OPTIONAL. *integer*, Default = all PCs in the PC file will be used. You can specify top n PCs to be adjusted by `--npc n`.|
 | --covar COVAR | OPTIONAL. COVAR, *string or array*, is the name of covariate file(s). Supports multiple files as comma-separated string or array of paths. Multiple files are merged on FID/IID. For GCTA, if no explicit qcovar or covar_discrete specified, columns will be auto-classified as discrete (<35 unique values) or quantitative. |
-| --qcovar QCOVARS | OPTIONAL (GCTA only). Space-separated list of quantitative covariate column names for GCTA (e.g., `--qcovar PC1 PC2 age`). If not specified and `--covar` is provided, columns will be auto-detected as quantitative or discrete based on number of unique values. |
-| --covar_discrete DISCRETE_COVARS | OPTIONAL (GCTA only). Space-separated list of discrete/categorical covariate column names for GCTA (e.g., `--covar_discrete sex site`). |
+| --qcovar QCOVARS | OPTIONAL. List of quantitative covariate column names (e.g., `--qcovar age bmi`). Setting `qcovar: null` uses **all** covariate columns; setting `qcovar: []` uses **no** covariates. For GCTA, if not specified, columns are auto-classified as quantitative or discrete based on number of unique values. |
+| --covar_discrete DISCRETE_COVARS | OPTIONAL. List of discrete/categorical covariate column names (e.g., `--covar_discrete sex site`). Setting `covar_discrete: null` uses **all** covariate columns; setting `covar_discrete: []` uses **no** covariates. For GCTA, if not specified, columns are auto-classified based on number of unique values. |
 | --Method METHOD | OPTIONAL. Specify estimation method: `AdjHE` (default), `GCTA`, `PredLMM`, `SWD`, `Combat`, or `Covbat`. |
 | --RV RANDOM_VAR | OPTIONAL. Specify a column name to use as a random effect (for methods that support it, e.g., AdjHE with site effects). |
 | --iid_col COL | OPTIONAL. Name of the IID column in input files. Default: `"IID"`. Supports custom names like `"participant_id"`. When `participant_id` is found without a separate FID column, FID is set equal to IID automatically. |
@@ -99,6 +99,7 @@ It is reccomended that users define a `.json` file containing all of the argumen
 | --loop_covs| OPTIONAL: Default= False. If True, loop over the ORDERED set of covariates including all previous covariates in each iteration. **Note: The order in which the covariates are controlled for is based upon the researcher's best judgements.**|
 | --pheno_filter FILTER | OPTIONAL. Filter phenotype data by a condition (e.g., `"age>30"`, `"sex==1"`). Supports: `==`, `!=`, `>`, `<`, `>=`, `<=`. Column names must exist in the phenotype file. |
 | --covar-filter FILTER | OPTIONAL. Filter by covariate values (e.g., `"site==1"`, `"age>=18"`). Same operators as pheno_filter. Column names must exist in the covariate file. |
+| --na-values NA_VALUES | OPTIONAL. Additional values to recognize as NA/missing in delimited input files (e.g., `--na-values -777 -888`). Accepts a list of values. Sentinel codes like `-777`/`-888` (common in ABCD data) will then be treated as missing instead of real numbers. |
 
 ## Description of Input File Formats
 
@@ -143,6 +144,58 @@ MASH --pheno data/phenotypes.tsv --covar data/covariates.tsv --pheno-filter "age
 ```
 
 Filters are applied before merging, so `--pheno-filter` affects phenotype rows and `--covar-filter` affects covariate rows. Only subjects passing both filters (and present in the GRM) will be included in analysis.
+
+### Missing Values (`na_values`)
+By default, MASH recognizes the standard missing markers (empty values, `NA`, `NaN`, `n/a`, etc.). Some datasets (e.g., ABCD) encode missing data with sentinel values such as `-777` or `-888`. Use `na_values` to declare additional values that should be treated as missing:
+
+```json
+{
+  "na_values": [-777, -888]
+}
+```
+```bash
+# Command line usage
+MASH --argfile config.json --na-values -777 -888
+```
+
+Custom NA values are *added* to the built-in list, so you don't need to re-specify standard markers. `na_values` applies to all delimited text files (phenotype, covariate, and PC files).
+
+### Covariate Selection (`qcovar` / `covar_discrete`)
+Control which covariates are used in the model:
+
+| Setting | Behavior |
+|---------|----------|
+| `null` (default) | Use **all** covariate columns |
+| `[]` | Use **no** covariates |
+| `["age", "sex"]` | Use exactly those columns |
+
+```json
+{
+  "qcovar": null,
+  "covar_discrete": null
+}
+```
+```json
+{
+  "qcovar": [],
+  "covar_discrete": []
+}
+```
+
+For the `GCTA` method, `null` triggers automatic classification of covariate columns into quantitative vs. discrete based on the number of unique values.
+
+### Running All Phenotypes (`mpheno: "ALL"`)
+Set `mpheno` to `"ALL"` (case-insensitive) to estimate heritability across **every** phenotype in the phenotype file:
+
+```json
+{
+  "mpheno": "ALL"
+}
+```
+```bash
+# Command line usage
+MASH --argfile config.json --mpheno ALL
+```
 
 ### Example Input Files
 

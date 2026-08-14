@@ -405,6 +405,72 @@ def test_read_flags_na_values_normalization():
     assert normalize_na_values(["NA", "-888"]) == ["NA", -888]
 
 
+def test_read_flags_mpheno_all_from_config():
+    """Test that mpheno 'ALL' is exposed from the config (JSON argfile)."""
+    import json
+    config = {
+        "mpheno": "ALL",
+        "qcovar": [],
+        "covar_discrete": [],
+    }
+    with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as f:
+        json.dump(config, f)
+        config_file = f.name
+    try:
+        args = read_flags({"argfile": config_file})
+        assert args["mpheno"] == "ALL"
+        assert args["qcovar"] == []
+        assert args["covar_discrete"] == []
+    finally:
+        os.unlink(config_file)
+
+
+def test_read_flags_mpheno_cli_all():
+    """Test that --mpheno ALL is normalized via the CLI path."""
+    raw = {"argfile": None, "mpheno": ["ALL"], "npc": [2], "k": 0,
+           "qcovar": None, "covar_discrete": None, "na_values": None}
+    args = read_flags(raw)
+    assert args["mpheno"] == "ALL"
+
+
+def test_read_flags_mpheno_normalization():
+    """Test that mpheno handles ints, numeric strings, and column names."""
+    from Estimate.data_input.parser import normalize_mpheno
+    assert normalize_mpheno("ALL") == "ALL"
+    assert normalize_mpheno("all") == "ALL"
+    assert normalize_mpheno(["ALL"]) == "ALL"
+    assert normalize_mpheno(1) == [1]
+    assert normalize_mpheno([1, 2, 3]) == [1, 2, 3]
+    assert normalize_mpheno(["1", "2"]) == [1, 2]
+    assert normalize_mpheno(["pheno_1", "pheno_2"]) == ["pheno_1", "pheno_2"]
+
+
+def test_resolve_covariates_null_uses_all():
+    """Test that null (None) qcovar/covar_discrete resolves to all covariate columns."""
+    from Estimate.data_input.load_data import resolve_covariates
+    all_cols = ["age", "sex", "site", "pc1"]
+    df = pd.DataFrame(columns=["FID", "IID", "age", "sex", "site", "pc1", "pheno_1"])
+    qcovar, covar_discrete = resolve_covariates(None, None, all_cols, df=df)
+    assert qcovar == ["age", "sex", "site"]  # pc1 excluded
+    assert covar_discrete == []
+
+
+def test_resolve_covariates_empty_uses_none():
+    """Test that empty lists [] resolve to no covariates."""
+    from Estimate.data_input.load_data import resolve_covariates
+    qcovar, covar_discrete = resolve_covariates([], [], ["age", "sex"])
+    assert qcovar == []
+    assert covar_discrete == []
+
+
+def test_resolve_covariates_explicit_list():
+    """Test that explicit lists are kept as-is."""
+    from Estimate.data_input.load_data import resolve_covariates
+    qcovar, covar_discrete = resolve_covariates(["age"], ["sex"], ["age", "sex", "site"])
+    assert qcovar == ["age"]
+    assert covar_discrete == ["sex"]
+
+
 if __name__ == "__main__":
     # Run tests manually if executed directly
     test_loading_eigenvec_hash_fid_uppercase_pcs()
@@ -436,5 +502,23 @@ if __name__ == "__main__":
     
     test_read_flags_na_values_normalization()
     print("✓ test_read_flags_na_values_normalization passed")
+    
+    test_read_flags_mpheno_all_from_config()
+    print("✓ test_read_flags_mpheno_all_from_config passed")
+    
+    test_read_flags_mpheno_cli_all()
+    print("✓ test_read_flags_mpheno_cli_all passed")
+    
+    test_read_flags_mpheno_normalization()
+    print("✓ test_read_flags_mpheno_normalization passed")
+    
+    test_resolve_covariates_null_uses_all()
+    print("✓ test_resolve_covariates_null_uses_all passed")
+    
+    test_resolve_covariates_empty_uses_none()
+    print("✓ test_resolve_covariates_empty_uses_none passed")
+    
+    test_resolve_covariates_explicit_list()
+    print("✓ test_resolve_covariates_explicit_list passed")
     
     print("\nAll tests passed!")

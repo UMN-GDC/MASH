@@ -14,7 +14,7 @@ import itertools
 from sklearn.decomposition import PCA
 
 from tqdm.auto import tqdm
-from Estimate.data_input.load_data import load_everything
+from Estimate.data_input.load_data import load_everything, resolve_covariates
 from Estimate.estimators.AdjHE import AdjHE #, load_n_MOM
 
 
@@ -25,6 +25,8 @@ def sort_pc_columns(pc_cols):
         match = re.search(r'pc(\d+)', col.lower())
         return int(match.group(1)) if match else float('inf')
     return sorted(pc_cols, key=get_pc_num)
+
+
 from Estimate.estimators.PredLMM import load_n_PredLMM
 from Estimate.estimators.GCTA_wrapper import gcta, GCTA
 from Estimate.estimators.combat import neuroCombat
@@ -266,13 +268,27 @@ class h2Estimation():
     def estimate(self, PC_effect = "mixed"):
         args = self.args
 
-        # Build fixed_effects from qcovar and covar_discrete
-        qcovar = args.get("qcovar") or []
-        covar_discrete = args.get("covar_discrete") or []
+        # Resolve covariate specification:
+        #   null (None) -> use ALL covariate columns
+        #   empty list [] -> use NO covariates
+        #   list -> use exactly those columns
+        qcovar = args.get("qcovar")
+        covar_discrete = args.get("covar_discrete")
+        qcovar, covar_discrete = resolve_covariates(qcovar, covar_discrete, self.all_covar_cols, df=self.df)
+
         fixed_effects = qcovar + covar_discrete
         # Remove duplicates while preserving order
         seen = set()
         fixed_effects = [x for x in fixed_effects if not (x in seen or seen.add(x))]
+
+        # For GCTA, pass the raw qcovar/covar_discrete so its auto-detection
+        # (null -> all covariates) still works; other methods get the resolved lists.
+        if args["Method"] == "GCTA":
+            load_qcovar = args.get("qcovar")
+            load_covar_discrete = args.get("covar_discrete")
+        else:
+            load_qcovar = qcovar
+            load_covar_discrete = covar_discrete
 
         # Create list of covariate sets to regress over
         if not fixed_effects:
@@ -285,10 +301,10 @@ class h2Estimation():
             if not args["loop_covars"]:
                 fixed_combos = [fixed_combos[-1]]
 
-        if args["mpheno"] == "all":
+        # "ALL" (case-insensitive) runs across all phenotypes in the phenotype file
+        if isinstance(args["mpheno"], str) and args["mpheno"].lower() == "all":
             self.mpheno = self.phenotypes
         else:
-            # make them lowercase
             self.mpheno = args["mpheno"] 
             # Convert numeric mpheno to column names if needed
             if self.mpheno and isinstance(self.mpheno[0], int):
@@ -319,8 +335,6 @@ class h2Estimation():
             logging.info("Method: " + args["Method"])
             # Get PC columns flexibly
             all_pc_cols = [c for c in self.df.columns if c.lower().startswith("pc") and c.lower() not in ["fid", "iid"]]
-            qcovar = args.get("qcovar") or []
-            covar_discrete = args.get("covar_discrete") or []
             all_covars = qcovar + covar_discrete
             if all_pc_cols:
                 FEs = all_pc_cols + all_covars if all_covars else all_pc_cols
@@ -397,7 +411,7 @@ class h2Estimation():
                     r = load_n_estimate(df=self.df, nnpc=nnpc,
                                         mp=mp, GRM=self.GRM, std=True, Method=args["Method"],
                                         random_groups=random_groups, homo=True, PC_effect = PC_effect,
-                                        qcovar=args.get("qcovar"), covar_discrete=args.get("covar_discrete"),
+                                        qcovar=load_qcovar, covar_discrete=load_covar_discrete,
                                         all_cols=self.all_covar_cols)
 
                 else:
@@ -429,7 +443,7 @@ class h2Estimation():
                             # Estimate just on the supsample
                             sub_result = load_n_estimate(df=sub_df, nnpc=nnpc, mp=mp, GRM=sub_GRM, std=True, Method=args["Method"], random_groups=None,
                                                      silent=True, homo=True, PC_effect = PC_effect,
-                                                     qcovar=args.get("qcovar"), covar_discrete=args.get("covar_discrete"),
+                                                     qcovar=load_qcovar, covar_discrete=load_covar_discrete,
                                                      all_cols=self.all_covar_cols)
                             sub_result = pd.DataFrame({"h2": [sub_result["h2"][0]],
                                                     "var(h2)": [sub_result.get("var(h2)", [np.nan])[0]],

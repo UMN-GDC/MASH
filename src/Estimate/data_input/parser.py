@@ -19,6 +19,15 @@ from Estimate.data_input.types_n_valids import readable_file_or_none, readable_j
 
 #%%
 
+def mpheno_type(value):
+    """
+    Argparse type for --mpheno: accept integer phenotype indices or the
+    string "ALL" (case-insensitive) to run across all phenotypes.
+    """
+    if str(value).lower() == "all":
+        return "ALL"
+    return int(value)
+
 def get_args() :
     """
     Collects user input from command line and returns them for running with Estimate.
@@ -78,9 +87,10 @@ def get_args() :
     
     parser.add_argument('--mpheno',
                         nargs="+",
-                        type=int,
+                        type=mpheno_type,
                         metavar= "DESIRED_PHEN_INDEX", 
-                        help='Specify which phenotype to use from phenotype file (Can be a list). The index starts after the FID and IID columns')
+                        help='Specify which phenotype to use from phenotype file (Can be a list). The index starts after the FID and IID columns. '
+                        'Use "ALL" to run across all phenotypes.')
     
     parser.add_argument('--k',
                         type=int,
@@ -214,12 +224,6 @@ def read_flags(raw_args):
         
         # Ensure types 
         raw_args["k"] = int(raw_args["k"])
-        try:
-            # convert a string of arugments sto a list
-            raw_args['mpheno'] = eval(raw_args['mpheno'])
-        except:
-            # Convert a single integer value to a list
-            raw_args['mpheno'] = list(raw_args['mpheno'])
           
         try:
             # convert a string of arugments sto a list
@@ -246,10 +250,43 @@ def read_flags(raw_args):
         #     # convert single integer to integer list 
         #     raw_args["covars"] = raw_args["covars"]
     
+    # Normalize mpheno ("ALL" or list of ints) across both config and CLI paths
+    raw_args['mpheno'] = normalize_mpheno(raw_args.get('mpheno'))
     # Normalize na_values to a list of scalars (or None)
     raw_args['na_values'] = normalize_na_values(raw_args.get('na_values'))
     
     return(raw_args)
+
+
+def normalize_mpheno(mpheno):
+    """
+    Ensure mpheno is either the string "ALL" (case-insensitive), a list of
+    integer phenotype indices, or a list of phenotype column names. Applies to
+    both config (JSON argfile) and CLI.
+    """
+    if mpheno is None:
+        return None
+    if isinstance(mpheno, str):
+        if mpheno.lower() == "all":
+            return "ALL"
+        try:
+            return [int(mpheno)]
+        except ValueError:
+            return [mpheno]  # a single column name
+    if isinstance(mpheno, list):
+        if len(mpheno) == 1 and isinstance(mpheno[0], str) and mpheno[0].lower() == "all":
+            return "ALL"
+        out = []
+        for m in mpheno:
+            if isinstance(m, str):
+                try:
+                    out.append(int(m))
+                except ValueError:
+                    out.append(m)  # keep column names as-is
+            else:
+                out.append(m)
+        return out
+    return [int(mpheno)]  # single scalar
 
 
 def normalize_na_values(na_values):
