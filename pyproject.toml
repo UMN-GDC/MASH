@@ -32,7 +32,9 @@ dependencies = [
     "statsmodels",
     "scikit-learn",
     "pandas_plink",
-    "tqdm"
+    "tqdm",
+    "nibabel",
+    "pyarrow"
 ]
 
 [project.urls]
