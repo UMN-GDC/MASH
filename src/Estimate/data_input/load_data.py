@@ -88,10 +88,6 @@ def ReadGRMBin(prefix, sub_ids = None, args = None):
 
     return ids, GRM
 
-def insert_underscore(s):
-    return s[:4] + '_' + s[4:]
-
-
 def find_col(header, col_name, desc=""):
     idx = [i for i, c in enumerate(header) if str(c).upper() == str(col_name).upper()]
     if len(idx) == 0:
@@ -649,7 +645,6 @@ def load_tables(ids= None, args = None) :
                 if ext == ".parquet":
                     pdf = pd.read_parquet(pf).reset_index(names="IID")
                     pdf.IID = pdf.IID.astype(str)
-                    pdf['IID'] = pdf['IID'].apply(insert_underscore)
                 else:
                     pdf = _read_delimited_file(pf, default_cols=["FID", "IID"], args=args)
                 
