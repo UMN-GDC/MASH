@@ -18,5 +18,5 @@ sim.sim_pheno(h2Hom = 0.5, h2Het= [0, 0], alpha = 0)
 est = h2Estimation()
 est.GRM = sim.GRM
 est.df = sim.df
-result = est.estimate(mpheno = ["Y0", "Y1"], npc = [0, 1], Method = "GCTA", fixed_effects= ["Xc"])
+result = est.estimate(continuousPhenos = ["Y0", "Y1"], npc = [0, 1], Method = "GCTA", fixed_effects= ["Xc"])
 

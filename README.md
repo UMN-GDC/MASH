@@ -85,7 +85,7 @@ It is reccomended that users define a `.json` file containing all of the argumen
 | --argfile ARGFILE.json | COND REQUIRED. ARGFILE.json, *string*, is the filename to be passed containing all information for PC's, covariates, phenotypes, and GRM. This takes priority over all other arguments. [See the example arfile included under the Example directory.](https://github.com/UMN-GDC/MASH/blob/master/Example/Argfile.json) |
 | --prefix PREFIX|  REQUIRED. *string* PREFIX is the prefix of GRM file with GCTA binary GRM format. (`PREFIX.grm.bin`, `PREFIX.grm.N.bin` and `PREFIX.grm.id`)|
 | --pheno PHENO |  REQUIRED. PHENO, *string or array*, is the phenotype file. Supports a single file path, a comma-separated string, or an array of multiple files (e.g., `["file1.tsv", "file2.tsv"]`). Multiple files are merged by FID/IID. Supports `.parquet`, `.csv`, `.tsv`/`.tab`, or whitespace-delimited formats. First two columns must be FID and IID, followed by phenotype columns. |
-| --mpheno m| OPTIONAL. *list of integers, integer, or "ALL"*, Default=1. If you have multiple phenotypes in the file, you can specify by `--mpheno m`. Otherwise, the first phenotype will be used. Note that 1 refers to the third column of the file since we skip over the FID and IID columns. If passed a list, estimates will be computed for every phenotype specified. Use `"ALL"` (case-insensitive) to run across **all** phenotypes in the phenotype file. |
+| --continuousPhenos m| OPTIONAL. *list of integers, integer, or "ALL"*, Default=1. If you have multiple phenotypes in the file, you can specify by `--continuousPhenos m`. Otherwise, the first phenotype will be used. Note that 1 refers to the third column of the file since we skip over the FID and IID columns. If passed a list, estimates will be computed for every phenotype specified. Use `"ALL"` (case-insensitive) to run across **all** phenotypes in the phenotype file. |
 | --PC PC | OPTIONAL. PC, *string*, is the name of PCs file. Supports header (with FID/IID columns, including `#FID` notation) or no-header (PLINK format). Column names can be `PC1, PC2` or `pc_1, pc_2`. |
 | --npc n | OPTIONAL. *integer*, Default = all PCs in the PC file will be used. You can specify top n PCs to be adjusted by `--npc n`.|
 | --covar COVAR | OPTIONAL. COVAR, *string or array*, is the name of covariate file(s). Supports multiple files as comma-separated string or array of paths. Multiple files are merged on FID/IID. For GCTA, if no explicit qcovar or covar_discrete specified, columns will be auto-classified as discrete (<35 unique values) or quantitative. |
@@ -100,6 +100,47 @@ It is reccomended that users define a `.json` file containing all of the argumen
 | --pheno_filter FILTER | OPTIONAL. Filter phenotype data by a condition (e.g., `"age>30"`, `"sex==1"`). Supports: `==`, `!=`, `>`, `<`, `>=`, `<=`. Column names must exist in the phenotype file. |
 | --covar-filter FILTER | OPTIONAL. Filter by covariate values (e.g., `"site==1"`, `"age>=18"`). Same operators as pheno_filter. Column names must exist in the covariate file. |
 | --na-values NA_VALUES | OPTIONAL. Additional values to recognize as NA/missing in delimited input files (e.g., `--na-values -777 -888`). Accepts a list of values. Sentinel codes like `-777`/`-888` (common in ABCD data) will then be treated as missing instead of real numbers. |
+| --continuousPhenos | OPTIONAL. List of continuous phenotype column names or integer indices. Default=1. See [Running Continuous Phenotypes](#running-continuous-phenotypes). |
+| --binPhenos | OPTIONAL. List of binary phenotype column names (0/1). Requires `--prevalence` for each binary phenotype. Only fully supported with `--Method GCTA`. |
+| --prevalence | OPTIONAL. Prevalence for binary phenotypes. Format: `pheno1:0.1 pheno2:0.05` or JSON dict `{"pheno1": 0.1}`. Required when using `--binPhenos`. |
+| --preprocess | OPTIONAL. Preprocessing method to apply before estimation: `None` (default), `Combat`, or `Covbat`. Can be used with any estimator method. |
+
+## Binary Phenotypes (Beta)
+
+MASH supports binary (case/control) phenotype heritability estimation. Binary phenotypes should be coded as 0 (control) and 1 (case) in the phenotype file.
+
+**Current limitations:**
+- **GCTA** is the only estimator fully supported for binary phenotypes. Use `--Method GCTA` with `--binPhenos` and `--prevalence`.
+- **AdjHE and SWD** support binary phenotypes via liability-scale transformation (rank-based inverse normal). However, heritability estimates are on the liability scale and may differ from GCTA results.
+- **PredLMM** does not yet support binary phenotypes.
+
+### Example: Binary Phenotype with GCTA
+
+```json
+{
+  "continuousPhenos": null,
+  "binPhenos": ["binary_pheno_1"],
+  "prevalence": {"binary_pheno_1": 0.1},
+  "preprocess": "None",
+  "Method": "GCTA",
+  "prefix": "data/my_GRM",
+  "pheno": "data/phenotypes.pheno"
+}
+```
+
+### Example: Binary Phenotype with Liability-Scale Transformation (AdjHE)
+
+```json
+{
+  "continuousPhenos": ["pheno_1"],
+  "binPhenos": ["binary_pheno_1"],
+  "prevalence": {"binary_pheno_1": 0.1},
+  "preprocess": "None",
+  "Method": "AdjHE",
+  "prefix": "data/my_GRM",
+  "pheno": "data/phenotypes.pheno"
+}
+```
 
 ## Description of Input File Formats
 
@@ -184,17 +225,17 @@ Control which covariates are used in the model:
 
 For the `GCTA` method, `null` triggers automatic classification of covariate columns into quantitative vs. discrete based on the number of unique values.
 
-### Running All Phenotypes (`mpheno: "ALL"`)
-Set `mpheno` to `"ALL"` (case-insensitive) to estimate heritability across **every** phenotype in the phenotype file:
+### Running All Phenotypes (`continuousPhenos: "ALL"`)
+Set `continuousPhenos` to `"ALL" (case-insensitive) to estimate heritability across **every** phenotype in the phenotype file:
 
 ```json
 {
-  "mpheno": "ALL"
+  "continuousPhenos": "ALL"
 }
 ```
 ```bash
 # Command line usage
-MASH --argfile config.json --mpheno ALL
+MASH --argfile config.json --continuousPhenos ALL
 ```
 
 ### Example Input Files
@@ -230,7 +271,7 @@ FID	IID	site	age	sex
   "pheno": "data/phenotypes.pheno",
   "out": "results/my_results",
   "npc": [3, 5, 10],
-  "mpheno": [1, 2, 3],
+  "continuousPhenos": [1, 2, 3],
   "Method": "GCTA",
   "qcovar": null,
   "covar_discrete": null
@@ -247,7 +288,7 @@ FID	IID	site	age	sex
   "pheno": "data/phenotypes.pheno",
   "out": "results/my_results",
   "npc": [5],
-  "mpheno": [1],
+  "continuousPhenos": [1],
   "Method": "GCTA",
   "qcovar": ["PC1", "PC2", "age", "bmi"],
   "covar_discrete": ["sex", "site"]
@@ -263,7 +304,7 @@ FID	IID	site	age	sex
   "pheno": "data/phenotypes.pheno",
   "out": "results/my_results",
   "npc": [5],
-  "mpheno": [1],
+  "continuousPhenos": [1],
   "Method": "AdjHE",
   "qcovar": ["age", "sex"],
   "random_groups": "site"
@@ -279,7 +320,7 @@ FID	IID	site	age	sex
   "pheno": "data/phenotypes.pheno",
   "out": "results/my_results",
   "npc": [5],
-  "mpheno": [1],
+  "continuousPhenos": [1],
   "Method": "AdjHE",
   "pheno_filter": "age>=18",
   "covar_filter": "site==1"
@@ -295,7 +336,7 @@ FID	IID	site	age	sex
   "pheno": ["data/nihtb_phenotypes.tsv", "data/mri_phenotypes.tsv"],
   "out": "results/complex_results",
   "npc": [2],
-  "mpheno": ["phenotype_1", "phenotype_2", "phenotype_3",
+  "continuousPhenos": ["phenotype_1", "phenotype_2", "phenotype_3",
     "phenotype_4", "phenotype_5", "phenotype_6"],
   "Method": "AdjHE",
   "qcovar": ["age"],
@@ -356,7 +397,7 @@ PC='Example/pcas.eigenvec'
 covar='Example/covar.csv'
 out='Example/results.csv'
 
-python Estimate.py --prefix ${prefix} --PC ${PC} --npc 10  --covar ${covar} --pheno ${pheno} --mpheno 1 --out ${out}
+python Estimate.py --prefix ${prefix} --PC ${PC} --npc 10  --covar ${covar} --pheno ${pheno} --continuousPhenos 1 --out ${out}
 ```
 This should result in estimates for heritability stored in a .csv with the estimated heritability. For this dataset, the simulated heritability was 80%. Notice that the estimate is sensitive to the number of Prinicipal components included in the model since the data was simulated to have population stratification. The covariates don't have much of an influence on the estimates since they were not included in the simulation of this dataset. Compare your results with the [results included in the Example folder](https://github.com/coffm049/Basu_herit/blob/master/Example/results.csv.
 

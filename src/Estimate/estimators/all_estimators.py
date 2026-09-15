@@ -34,11 +34,11 @@ from Estimate.estimators.combat import neuroCombat
 
 
 
-def load_n_estimate(df, nnpc, mp, GRM, PC_effect="mixed", std=True, Method="AdjHE", random_groups=None, silent=False, homo=True, gcta=None, qcovar=None, covar_discrete=None, all_cols=None):
+def load_n_estimate(df, nnpc, mp, GRM, PC_effect="mixed", std=True, Method="AdjHE", random_groups=None, silent=False, homo=True, gcta=None, qcovar=None, covar_discrete=None, all_cols=None, prevalence=None):
     """
     Estimates heritability, but solves a full OLS problem making it slower than the closed form solution. Takes 
     a dataframe, selects only the necessary columns (so that when we do complete cases it doesnt exclude too many samples)
-    residualizes the phenotype, then documents the heritability, standard error and some computer usage metrics.
+    residualizes the phenotype, then documents heritability, standard error and some computer usage metrics.
 
     Parameters
     ----------
@@ -46,7 +46,7 @@ def load_n_estimate(df, nnpc, mp, GRM, PC_effect="mixed", std=True, Method="AdjH
         dataframe containing phenotype, covariates, and principal components.
     nnpc : int
         number of pcs to include.
-    mp : int
+    mp : str
         which phenotype to estimate on.
     GRM : np array
         the GRM with missingness removed.
@@ -65,6 +65,8 @@ def load_n_estimate(df, nnpc, mp, GRM, PC_effect="mixed", std=True, Method="AdjH
         List of discrete covariates
     all_cols : list, optional
         All available columns from covariate file (for GCTA auto-detection)
+    prevalence : float, optional
+        Prevalence for binary phenotypes (used with GCTA)
 
     Returns
     -------
@@ -169,7 +171,7 @@ def load_n_estimate(df, nnpc, mp, GRM, PC_effect="mixed", std=True, Method="AdjH
 
         elif (Method == "GCTA") or (Method == "HEreg"):
             from Estimate.estimators.GCTA_wrapper import gcta as gcta_path
-            result = GCTA(df, nnpc, mp, GRM, gcta=gcta_path, method=Method, silent=False, qcovar=qcovar, covar_discrete=covar_discrete, all_available_cols=all_cols)
+            result = GCTA(df, nnpc, mp, GRM, gcta=gcta_path, method=Method, silent=False, qcovar=qcovar, covar_discrete=covar_discrete, all_available_cols=all_cols, prevalence=prevalence)
             result["N"] = len(df)
             
         elif Method == "SWD":
@@ -190,19 +192,6 @@ def load_n_estimate(df, nnpc, mp, GRM, PC_effect="mixed", std=True, Method="AdjH
             result = AdjHE(A = GRM_nonmissing, df = temp, mp = mp, random_groups = None, npc=nnpc, std=False)
             result["N"] = len(temp)
 
-        elif Method in ["Combat", "Covbat"]:
-            # COMBAT handles site effects; residualize remaining covariates via OLS
-            resid = smf.ols(formula=form, data=df, missing='drop').fit().resid
-            resid.name = "resid"
-            temp = df.merge(resid, left_index=True, right_index=True, how="inner")
-            temp[mp] = temp["resid"]
-            grm_mask = df.IID.isin(temp.IID).values[:GRM.shape[0]]
-            GRM_nonmissing = GRM[grm_mask, :][:, grm_mask]
-            temp = temp.reset_index(drop=True)
-            result = AdjHE(A=GRM_nonmissing, df=temp, mp=mp, random_groups=None, npc=nnpc, std=std)
-            result["N"] = len(temp)
-
-
         else:
             logging.error("Not an accepted method of estimation: " + Method)
             result = {}
@@ -218,6 +207,94 @@ def load_n_estimate(df, nnpc, mp, GRM, PC_effect="mixed", std=True, Method="AdjH
     except TypeError :
         logging.error("Muffed estimate")
         pass
+
+
+def preprocess_data(df, GRM, args, continuousPhenos):
+    """
+    Apply preprocessing (Combat/Covbat) to the data before estimation.
+    This is decoupled from the estimator method and can be applied
+    with AdjHE, GCTA, PredLMM, or any other estimator.
+
+    Parameters
+    ----------
+    df : pandas dataframe
+        Full dataframe with phenotypes, covariates, PCs.
+    GRM : np array
+        Genotype relationship matrix.
+    args : dict
+        Dictionary of arguments containing preprocessing settings.
+    continuousPhenos : list
+        List of continuous phenotype column names.
+
+    Returns
+    -------
+    tuple of (df, GRM, random_groups, continuousPhenos)
+        Preprocessed dataframe, GRM, updated random_groups, and phenotype list.
+    """
+    preprocess = args.get("preprocess", "None")
+    
+    if preprocess in ["None", None, ""]:
+        return df, GRM, args["random_groups"], continuousPhenos
+    
+    if preprocess not in ["Combat", "Covbat"]:
+        logging.warning(f"Unknown preprocess method: {preprocess}. Skipping preprocessing.")
+        return df, GRM, args["random_groups"], continuousPhenos
+
+    logging.info(f"Applying {preprocess} preprocessing")
+    
+    # Get PC columns flexibly
+    all_pc_cols = [c for c in df.columns if c.lower().startswith("pc") and c.lower() not in ["fid", "iid"]]
+    qcovar = args.get("qcovar")
+    covar_discrete = args.get("covar_discrete")
+    all_covars = qcovar + covar_discrete if qcovar and covar_discrete else (qcovar or covar_discrete or [])
+    
+    if all_pc_cols:
+        FEs = all_pc_cols + all_covars if all_covars else all_pc_cols
+    elif args["npc"]:
+        FEs = ["pc" + str(i + 1) for i in range(max(args["npc"]))] + all_covars if all_covars else ["pc" + str(i + 1) for i in range(max(args["npc"]))]
+    else:
+        FEs = all_covars
+    
+    random_groups = args["random_groups"]
+    if random_groups == "None" or random_groups is None:
+        return df, GRM, args["random_groups"], continuousPhenos
+    
+    no_missing = df[["FID", "IID"] + continuousPhenos + FEs + [random_groups]].dropna()
+    
+    # Run neuroCombat: input shape (n_phenotypes, n_subjects), output same shape
+    # After .T: shape is (n_subjects, n_phenotypes)
+    transformed_data = neuroCombat(dat=no_missing[continuousPhenos].T,
+                                   covars=no_missing[FEs + [random_groups]],
+                                   batch_col=random_groups)["data"].T
+    
+    random_groups = None  # Site effects already removed by Combat/Covbat
+    
+    random_groups = None  # Site effects already removed by Combat/Covbat
+    
+    # Filter self.df to only rows that were used (no missing)
+    grm_n = GRM.shape[0]
+    mask = np.zeros(len(df), dtype=bool)
+    mask[no_missing.index] = True
+    mask = mask[:grm_n]
+    GRM = GRM[mask, :][:, mask]
+    df = df.iloc[:grm_n].loc[mask].copy()
+    
+    # Assign transformed phenotype data back to dataframe
+    if len(transformed_data.shape) == 1:
+        transformed_data = transformed_data.reshape(-1, 1)
+    
+    n_subjects, n_phenotypes = transformed_data.shape
+    if n_phenotypes == len(continuousPhenos):
+        df[continuousPhenos] = transformed_data
+    else:
+        logging.warning(f"Transformed data has {n_phenotypes} phenotypes, expected {len(continuousPhenos)}")
+        for i, pheno in enumerate(continuousPhenos[:n_phenotypes]):
+            df[pheno] = transformed_data[:, i]
+    
+    logging.info(f"{preprocess} preprocessing complete. random_groups set to None.")
+    
+    return df, GRM, random_groups, continuousPhenos
+
 
 class h2Estimation():
     def __init__(self, args= None,  k=0, ids=None):
@@ -268,6 +345,12 @@ class h2Estimation():
     def estimate(self, PC_effect = "mixed"):
         args = self.args
 
+        # Handle backward compatibility: Method "Combat"/"Covbat" maps to AdjHE with preprocessing
+        if args["Method"] in ["Combat", "Covbat"]:
+            if args.get("preprocess") == "None" or args.get("preprocess") is None:
+                args["preprocess"] = args["Method"]
+            args["Method"] = "AdjHE"
+
         # Resolve covariate specification:
         #   null (None) -> use ALL covariate columns
         #   empty list [] -> use NO covariates
@@ -302,14 +385,17 @@ class h2Estimation():
                 fixed_combos = [fixed_combos[-1]]
 
         # "ALL" (case-insensitive) runs across all phenotypes in the phenotype file
-        if isinstance(args["mpheno"], str) and args["mpheno"].lower() == "all":
-            self.mpheno = self.phenotypes
+        if isinstance(args["continuousPhenos"], str) and args["continuousPhenos"].lower() == "all":
+            self.continuousPhenos = self.phenotypes
         else:
-            self.mpheno = args["mpheno"] 
-            # Convert numeric mpheno to column names if needed
-            if self.mpheno and isinstance(self.mpheno[0], int):
-                self.mpheno = ["pheno_" + str(m) for m in self.mpheno]
-            
+            self.continuousPhenos = args["continuousPhenos"] 
+            # Convert numeric continuousPhenos to column names if needed
+            if self.continuousPhenos and isinstance(self.continuousPhenos[0], int):
+                self.continuousPhenos = ["pheno_" + str(m) for m in self.continuousPhenos]
+        
+        # Set binPhenos - convert None to empty list, keep column names
+        self.binPhenos = args.get("binPhenos") or []
+        
         logging.info("Estimating with " + args["Method"])
         
         if args["random_groups"] != "None":
@@ -327,79 +413,53 @@ class h2Estimation():
         if args["npc"] == None:
             npc = [0]
 
-        random_groups = args["random_groups"]
+        # Apply preprocessing if requested (decoupled from estimator method)
+        self.df, self.GRM, random_groups, self.continuousPhenos = preprocess_data(
+            self.df, self.GRM, args, self.continuousPhenos
+        )
 
-        # Adjust data if any Combat based method is wanted
-        if args["Method"] in ["Combat", "Covbat"] :
+        # Parse prevalence dict for binary phenotypes
+        prevalence_dict = args.get("prevalence") or {}
 
-            logging.info("Method: " + args["Method"])
-            # Get PC columns flexibly
-            all_pc_cols = [c for c in self.df.columns if c.lower().startswith("pc") and c.lower() not in ["fid", "iid"]]
-            all_covars = qcovar + covar_discrete
-            if all_pc_cols:
-                FEs = all_pc_cols + all_covars if all_covars else all_pc_cols
-            elif args["npc"]:
-                FEs = ["pc" + str(i + 1) for i in range(max(args["npc"]))] + all_covars if all_covars else ["pc" + str(i + 1) for i in range(max(args["npc"]))]
-            else:
-                FEs = all_covars
-            no_missing = self.df[["FID", "IID"] + self.mpheno + FEs + [random_groups]].dropna()
-            
-            # Run neuroCombat: input shape (n_phenotypes, n_subjects), output same shape
-            # After .T: shape is (n_subjects, n_phenotypes)
-            transformed_data = neuroCombat(dat=no_missing[self.mpheno].T,
-                                           covars=no_missing[FEs + [args["random_groups"]]],
-                                           batch_col=args["random_groups"])["data"].T
-            
-            random_groups = None
-            
-            # Filter self.df to only rows that were used (no missing)
-            grm_n = self.GRM.shape[0]
-            mask = np.zeros(len(self.df), dtype=bool)
-            mask[no_missing.index] = True
-            mask = mask[:grm_n]
-            self.GRM = self.GRM[mask, :][:, mask]
-            self.df = self.df.iloc[:grm_n].loc[mask].copy()
-            
-            # Assign transformed phenotype data back to dataframe
-            # Make sure shapes match: transformed_data should be (n_subjects, n_phenotypes)
-            if len(transformed_data.shape) == 1:
-                transformed_data = transformed_data.reshape(-1, 1)
-            
-            # Ensure self.df has the phenotype columns before assignment
-            # If transformed_data has different shape than expected, adjust
-            n_subjects, n_phenotypes = transformed_data.shape
-            if n_phenotypes == len(self.mpheno):
-                self.df[self.mpheno] = transformed_data
-            else:
-                # Handle case where number of phenotypes changed (e.g., PCA was applied)
-                logging.warning(f"Transformed data has {n_phenotypes} phenotypes, expected {len(self.mpheno)}")
-                # For now, just use first n_phenotypes columns
-                for i, pheno in enumerate(self.mpheno[:n_phenotypes]):
-                    self.df[pheno] = transformed_data[:, i]
-            
-            # After transforming, Combat and Covbat procedures proceed just as the basic AdjHE estimator
+        # Validate binary phenotypes and issue warnings
+        if self.binPhenos and args["Method"] in ["AdjHE", "PredLMM", "SWD"]:
+            logging.warning(
+                f"Binary phenotypes ({', '.join(self.binPhenos)}) are not yet "
+                f"fully supported for {args['Method']}. Use --method GCTA with "
+                f"--prevalence for binary trait heritability estimation."
+            )
+        if self.binPhenos and args["Method"] == "GCTA":
+            for bp in self.binPhenos:
+                if bp not in prevalence_dict:
+                    logging.warning(
+                        f"Binary phenotype '{bp}' has no prevalence specified. "
+                        f"Use --prevalence {bp}:<value> to specify prevalence."
+                    )
 
-        
+        # Apply liability-scale transformation to binary phenotypes
+        if self.binPhenos and args["Method"] in ["AdjHE", "SWD"]:
+            self._apply_liability_scale(self.binPhenos)
+
         logging.info("Beginning estimation")
         # Calculate total iterations for progress bar
-        total_iters = len(fixed_combos) * len(self.mpheno) * len(args["npc"])
+        total_continuous = len(fixed_combos) * len(self.continuousPhenos) * len(args["npc"]) if self.continuousPhenos else 0
+        total_binary = len(fixed_combos) * len(self.binPhenos) * len(args["npc"]) if self.binPhenos else 0
+        total_iters = total_continuous + total_binary
         pbar = tqdm(total=total_iters, desc="Estimating", unit="phenotype")
         
         # Loop over each set of covariate combos
         for covs in fixed_combos:
             # For each set of covariates recalculate the projection matrix
             logging.debug(covs)
-            # loop over all combinations of pcs and phenotypes
-            for mp, nnpc in itertools.product(self.mpheno, args["npc"]):
+            # loop over all combinations of pcs and continuous phenotypes
+            for mp, nnpc in itertools.product(self.continuousPhenos or [], args["npc"]):
                 pbar.set_description(f"Estimating: {mp}")
                 pbar.update(1)
                 
                 start_est = timeit.default_timer()
 
-
-                
                 try: 
-                    C = "+".join(covs)
+                    C = "+".join(covs) if covs else "None"
                 except TypeError :
                     C = "None"
                     
@@ -438,8 +498,6 @@ class h2Estimation():
                                 #Add site specific PC's
                                 sub_df = pd.concat([sub_df, pcs], axis=1)
 
-
-
                             # Estimate just on the supsample
                             sub_result = load_n_estimate(df=sub_df, nnpc=nnpc, mp=mp, GRM=sub_GRM, std=True, Method=args["Method"], random_groups=None,
                                                      silent=True, homo=True, PC_effect = PC_effect,
@@ -476,10 +534,84 @@ class h2Estimation():
                 r["N"] = r.get("N", np.nan)
                 results = pd.concat([results, r], ignore_index=True)
 
+            # Loop over binary phenotypes
+            for mp, nnpc in itertools.product(self.binPhenos or [], args["npc"]):
+                pbar.set_description(f"Estimating binary: {mp}")
+                pbar.update(1)
+                
+                start_est = timeit.default_timer()
+
+                try:
+                    C = "+".join(covs) if covs else "None"
+                except TypeError:
+                    C = "None"
+
+                r = {"Pheno": mp,
+                          "PCs" : nnpc,
+                          "Covariates" : C,
+                          "isBinary": True}
+
+                # For binary phenotypes, only GCTA is supported
+                if args["Method"] != "GCTA":
+                    logging.warning(f"Binary phenotype {mp} can only be estimated with GCTA. Skipping.")
+                    continue
+
+                # Get prevalence for this binary phenotype
+                prevalence = prevalence_dict.get(mp) if isinstance(prevalence_dict, dict) else None
+
+                if (not args["Naive"]) or (random_groups is None):
+                    r = load_n_estimate(df=self.df, nnpc=nnpc,
+                                        mp=mp, GRM=self.GRM, std=True, Method="GCTA",
+                                        random_groups=None, homo=True, PC_effect=PC_effect,
+                                        qcovar=load_qcovar, covar_discrete=load_covar_discrete,
+                                        all_cols=self.all_covar_cols, prevalence=prevalence)
+
+                else:
+                    logging.warning(f"Naive mode not supported for binary phenotype {mp}. Skipping.")
+                    continue
+
+                # Get memory for each step
+                logging.debug("Started" + str(start_est))
+                end_est = timeit.default_timer()
+                logging.debug("Ended" + str(end_est))
+                logging.debug(end_est - start_est)
+
+                time = [end_est - start_est]
+                mem = [0]
+                r["PCs"] = nnpc
+                r["time"] = time
+                r["mem"] = mem
+                r["N"] = r.get("N", np.nan)
+                results = pd.concat([results, r], ignore_index=True)
+
         pbar.close()
         self.results = results
-        return results # , sub_results
+        return results
 
+    def _apply_liability_scale(self, bin_phenos):
+        """
+        Transform binary 0/1 phenotypes to liability scale using rank-based
+        inverse normal transformation (Van der Waerden scores). This produces
+        approximately normal liability scores suitable for AdjHE/SWD estimation.
 
-
-
+        Parameters
+        ----------
+        bin_phenos : list
+            List of binary phenotype column names in self.df.
+        """
+        from scipy.stats import norm
+        for pheno in bin_phenos:
+            if pheno not in self.df.columns:
+                logging.warning(f"Binary phenotype '{pheno}' not found in dataframe. Skipping liability transform.")
+                continue
+            y = self.df[pheno].values
+            K = np.mean(y)
+            if K <= 0 or K >= 1:
+                logging.warning(f"Binary phenotype '{pheno}' has prevalence {K:.4f}. Skipping liability transform.")
+                continue
+            # Rank-based inverse normal transformation (Van der Waerden scores)
+            ranked = pd.Series(y).rank()
+            pvals = ranked / (len(y) + 1)
+            liability = norm.ppf(pvals)
+            self.df[pheno] = liability
+            logging.info(f"Applied liability-scale transformation to '{pheno}' (prevalence={K:.4f})")

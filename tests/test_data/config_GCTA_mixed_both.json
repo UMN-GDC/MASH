@@ -5,7 +5,7 @@
   "pheno": "tests/test_data/EUR_simulation2.pheno",
   "out": "/users/4/coffm049/software/MASH/tests/results/EUR_GCTA_mixed_both_test",
   "npc": [2],
-  "mpheno": [1],
+  "continuousPhenos": [1],
   "k": 0,
   "std": false,
   "argfile": null,

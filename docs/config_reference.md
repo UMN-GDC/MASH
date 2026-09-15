@@ -14,7 +14,10 @@ MASH uses JSON configuration files to specify all parameters for heritability es
   "pheno": "path/to/phenotypes.pheno",
   "out": "path/to/output_results",
   "npc": 2,
-  "mpheno": [1],
+  "continuousPhenos": [1],
+  "binPhenos": null,
+  "prevalence": null,
+  "preprocess": "None",
   "Method": "GCTA",
   "qcovar": ["age", "bmi"],
   "covar_discrete": ["sex", "site"]
@@ -39,7 +42,10 @@ MASH uses JSON configuration files to specify all parameters for heritability es
 | `covar` | string or array | null | Path(s) to covariate file(s). Supports comma-separated string or array of paths. Multiple files merged on FID/IID |
 | `qcovar` | array of strings | null | Column names to treat as quantitative covariates (GCTA only). If null and `covar` provided, auto-detected |
 | `covar_discrete` | array of strings | null | Column names to treat as discrete/categorical covariates (GCTA only). If null and `covar` provided, auto-detected |
-| `mpheno` | integer or array | 1 | Phenotype column(s) to analyze. 1 = third column (after FID, IID). Accepts list for multiple phenotypes |
+| `continuousPhenos` | integer, array, or "ALL" | 1 | Continuous phenotype column(s) to analyze. 1 = third column (after FID, IID). Accepts list for multiple phenotypes. Use `"ALL"` to run across all phenotypes |
+| `binPhenos` | array of strings | null | Binary phenotype column names to analyze. Requires `prevalence` to be specified for each phenotype |
+| `prevalence` | dict or array | null | Prevalence for binary phenotypes. Can be a dict mapping phenotype names to prevalence values (e.g., `{"pheno1": 0.1}`) or a list of strings in format `"pheno:0.1"` |
+| `preprocess` | string | "None" | Preprocessing method to apply before estimation: `None`, `Combat`, or `Covbat`. Can be used with any estimator method |
 | `Method` | string | "AdjHE" | Estimation method: `AdjHE`, `GCTA`, `PredLMM`, `SWD`, `Combat`, or `Covbat` |
 | `RV` | string | null | Column name to use as random effect (for methods that support it, e.g., AdjHE with site effects) |
 | `out` | string | "MASH_results" | Output file prefix (`.csv` and `.log` will be appended) |
@@ -50,6 +56,33 @@ MASH uses JSON configuration files to specify all parameters for heritability es
 | `covar_filter` | string | null | Filter covariate data (e.g., `"site==1"`, `"age>=18"`). Same operators as `pheno_filter` |
 | `iid_col` | string | `"IID"` | Custom name for the IID column in input files. Set to `"participant_id"` when files use that column name. When `participant_id` is found without a separate FID column, FID is set equal to IID automatically |
 | `fid_col` | string | `"FID"` | Custom name for the FID column in input files. Typically kept as `"FID"` |
+
+## Binary Phenotypes (Beta)
+
+MASH supports binary phenotype heritability estimation. Binary phenotypes should be coded as 0 (control) and 1 (case) in the phenotype file.
+
+**Current limitations:**
+- **GCTA** is the only estimator fully supported for binary phenotypes
+- **AdjHE/SWD** support binary phenotypes via liability-scale transformation, but estimates are on the liability scale
+- **PredLMM** does not yet support binary phenotypes
+
+### Example Config with Binary Phenotypes
+
+```json
+{
+  "continuousPhenos": ["pheno_1"],
+  "binPhenos": ["binary_pheno_1"],
+  "prevalence": {"binary_pheno_1": 0.1},
+  "preprocess": "None",
+  "Method": "GCTA",
+  "prefix": "tests/test_data/EUR2",
+  "pheno": "tests/test_data/EUR_simulation2.pheno"
+}
+```
+
+### Liability-Scale Transformation
+
+For AdjHE/SWD with binary phenotypes, MASH applies a rank-based inverse normal transformation (Van der Waerden scores) to convert binary 0/1 values to approximately normal liability scores. This allows heritability estimation on the liability scale.
 
 ## Covariate Specification
 
@@ -113,7 +146,7 @@ For GCTA method:
   "pheno": "tests/test_data/EUR_simulation2.pheno",
   "out": "tests/results/EUR_GCTA_results",
   "npc": 2,
-  "mpheno": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+  "continuousPhenos": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
   "Method": "GCTA",
   "qcovar": null,
   "covar_discrete": null
@@ -130,7 +163,7 @@ For GCTA method:
   "pheno": "tests/test_data/EUR_simulation2.pheno",
   "out": "tests/results/EUR_GCTA_named_results",
   "npc": 2,
-  "mpheno": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+  "continuousPhenos": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
   "Method": "GCTA",
   "qcovar": ["pc1", "pc2", "age"],
   "covar_discrete": ["sex"]
@@ -168,7 +201,7 @@ For GCTA method:
   "pheno": "tests/test_data/EUR_simulation2.pheno",
   "out": "tests/results/EUR_AdjHE_RV_results",
   "npc": 2,
-  "mpheno": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+  "continuousPhenos": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
   "Method": "AdjHE",
   "RV": "site",
   "qcovar": ["age", "sex"]
@@ -185,7 +218,7 @@ For GCTA method:
   "pheno": "tests/test_data/EUR_simulation2.pheno",
   "out": "tests/results/EUR_AdjHE_results",
   "npc": 2,
-  "mpheno": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+  "continuousPhenos": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
   "Method": "AdjHE",
   "qcovar": ["age", "sex"]
 }
@@ -201,7 +234,7 @@ For GCTA method:
   "pheno": "tests/test_data/EUR_simulation2.pheno",
   "out": "tests/results/EUR_SWD_results",
   "npc": 2,
-  "mpheno": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+  "continuousPhenos": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
   "Method": "SWD",
   "qcovar": ["age", "sex"]
 }
@@ -217,7 +250,7 @@ For GCTA method:
   "pheno": "tests/test_data/EUR_simulation2.pheno",
   "out": "tests/results/EUR_COMBAT_results",
   "npc": 2,
-  "mpheno": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+  "continuousPhenos": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
   "Method": "Combat",
   "qcovar": ["age", "sex"],
   "covar_discrete": ["site"]

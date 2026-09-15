@@ -79,11 +79,11 @@ result_full = derivative_minim_full(ynew, Xnew, Xnew.T, Ct, id_diag, add, G_sele
 
 #%%
 
-results = pd.DataFrame(np.zeros((len(mpheno), 4)))
+results = pd.DataFrame(np.zeros((len(continuousPhenos), 4)))
 results.columns = ["h2", "SE", "Var", "Time"]
 
 Xnew = X.iloc[:,0]
-for mp in mpheno:
+for mp in continuousPhenos:
     result_full = derivative_minim_full(ynew[phenotypes[mp]], Xnew, Xnew.T, Ct, id_diag, add, G_selected, GRM_array, N)
     results.iloc[(mp-1),0] = result_full["Heritability estimate"][0,0]
     results.iloc[(mp-1),1] = result_full["SD of heritability estimate"]

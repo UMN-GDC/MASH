@@ -5,7 +5,7 @@
   "pheno": ["tests/test_data/nihtb_dummy.tsv", "tests/test_data/smri_dummy.tsv"],
   "out": "tests/results/EUR_AdjHE_results_complex",
   "npc": [2],
-  "mpheno": ["mr_y_smri__vol__aseg__ab__lh_sum", "mr_y_smri__vol__aseg__ag__lh_sum", "mr_y_smri__vol__aseg__cbc__lh_sum",
+  "continuousPhenos": ["mr_y_smri__vol__aseg__ab__lh_sum", "mr_y_smri__vol__aseg__ag__lh_sum", "mr_y_smri__vol__aseg__cbc__lh_sum",
     "nc_y_nihtb__comp__fluid__uncor_score", "nc_y_nihtb__comp__cryst__uncor_score", "nc_y_nihtb__comp__tot__uncor_score"],
   "k": 0,
   "std": false,

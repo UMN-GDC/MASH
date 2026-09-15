@@ -57,7 +57,7 @@ gcta = os.path.expanduser(gcta)
 
 
 #%%
-def GCTA(df, nnpc, mp, GRM, gcta, method = "GCTA", silent=False, qcovar=None, covar_discrete=None, all_available_cols=None):
+def GCTA(df, nnpc, mp, GRM, gcta, method = "GCTA", silent=False, qcovar=None, covar_discrete=None, all_available_cols=None, prevalence=None):
     import tempfile
     import hashlib
 
@@ -175,6 +175,11 @@ def GCTA(df, nnpc, mp, GRM, gcta, method = "GCTA", silent=False, qcovar=None, co
     if covar_discrete_in_df:
         covs += " --covar " + temp_name + "_Discrete.txt "
     
+    # Add prevalence flag for binary phenotypes
+    prev_str = ""
+    if prevalence is not None:
+        prev_str = f" --prevalence {prevalence}"
+    
     if method == "GCTA":
         estimator = " --reml --reml-priors 0.05 0.95"
     else :
@@ -188,7 +193,7 @@ def GCTA(df, nnpc, mp, GRM, gcta, method = "GCTA", silent=False, qcovar=None, co
         all_covariates.extend(covar_discrete_in_df)
 
     # run gcta
-    bashcommand = f"{gcta} --grm {temp_name} --pheno {temp_name}_pheno.txt --mpheno 1 {estimator} --out {temp_name} {covs}"
+    bashcommand = f"{gcta} --grm {temp_name} --pheno {temp_name}_pheno.txt --mpheno 1 {estimator} --out {temp_name} {covs}{prev_str}"
     print(bashcommand)
     process = subprocess.Popen(bashcommand.split(), stdout=subprocess.PIPE)
     __output, __error = process.communicate()
@@ -208,7 +213,7 @@ def GCTA(df, nnpc, mp, GRM, gcta, method = "GCTA", silent=False, qcovar=None, co
         try :
             if method == "GCTA" :
                 logging.error("Estimations were not made. Trying again unconstrained and with seeded reml estimates")
-                bashcommand = f"{gcta} --grm {temp_name} --pheno {temp_name}_pheno.txt --mpheno 1 {estimator} --out {temp_name} {covs} --reml-no-constrain --reml-maxit 200 --reml-priors 0.025 0.975"
+                bashcommand = f"{gcta} --grm {temp_name} --pheno {temp_name}_pheno.txt --mpheno 1 {estimator} --out {temp_name} {covs}{prev_str} --reml-no-constrain --reml-maxit 200 --reml-priors 0.025 0.975"
                 print(bashcommand)
                 process = subprocess.Popen(bashcommand.split(), stdout=subprocess.PIPE)
                 __output, __error = process.communicate()

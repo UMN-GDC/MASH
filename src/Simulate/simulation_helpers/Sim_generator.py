@@ -155,6 +155,48 @@ class pheno_simulator():
             for i in range(self.nphenos) :
                 self.df[f"{phenobasename}{i}"] += self.df[f"Site_contrib{i}"] 
 
+    def sim_bin_pheno(self, h2Hom=0.5, h2Het=[0], alpha=-1, phenobasename="Y_bin",
+                         prop_causal=[0.1, 0.1], siteEffects=False, prevalence=0.1):
+        """
+        Simulate a binary phenotype from a genetic liability model.
+        
+        Generates a continuous phenotype using the same genetic model as
+        sim_pheno, then thresholds it at the specified prevalence.
+        
+        Parameters
+        ----------
+        h2Hom : float, optional
+            Heritability for homogeneous component. Default is 0.5.
+        h2Het : list of floats, optional
+            Heritability for heterogeneous (cluster-specific) components. Default is [0].
+        alpha : float, optional
+            Exponent for dependency between SNP frequency and effect size. Default is -1.
+        phenobasename : str, optional
+            Name prefix for the phenotype. Default is "Y_bin".
+        prop_causal : list of floats, optional
+            Proportion of causal SNPs from shared and unshared regions. Default is [0.1, 0.1].
+        siteEffects : bool, optional
+            Whether to include site measurement effects. Default is False.
+        prevalence : float, optional
+            Target prevalence of cases (y=1). Default is 0.1.
+        """
+        from Simulate.simulation_helpers.pheno import sim_bin_pheno
+        (self.df, self.causals) = sim_bin_pheno(
+            rng=self.rng,
+            genotypes=self.genotypes,
+            df=self.df,
+            h2Hom=h2Hom,
+            h2Het=h2Het,
+            alpha=alpha,
+            phenoname=phenobasename,
+            prop_causal=prop_causal,
+            sharedIdx=self.sharedIdx,
+            prevalence=prevalence
+        )
+        
+        if siteEffects :
+            for i in range(self.nphenos) :
+                self.df[f"{phenobasename}{i}"] += self.df[f"Site_contrib{i}"] 
 
     def summary(self) :
         """

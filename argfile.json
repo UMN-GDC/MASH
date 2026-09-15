@@ -8,7 +8,7 @@
   ],
   "out": "/users/4/coffm049/papers/MASH/reanalysis/testSNPherit",
   "npc": [10],
-  "mpheno": [
+  "continuousPhenos": [
     "mr_y_smri__t1__aseg__ab__lh_mean",
     "mr_y_smri__t1__aseg__ag__lh_mean",
     "mr_y_smri__t1__aseg__cbc__lh_mean",

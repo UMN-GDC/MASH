@@ -17,7 +17,7 @@ def simNEstSeparate(rng = 123, h2Hom = 0.5, h2Het = [0.0, 0.0], N=500):
     est = h2Estimation()
     est.GRM = sim.GRM
     est.df = sim.df
-    result = est.estimate(mpheno = ["Y0"], npc = [1], Method = "GCTA", fixed_effects= ["Xc"]) 
+    result = est.estimate(continuousPhenos = ["Y0"], npc = [1], Method = "GCTA", fixed_effects= ["Xc"]) 
     simvar= est.df[["homo_contrib", "errors"]].var()
     simest = simvar["homo_contrib"] / np.sum(simvar)
 
@@ -38,8 +38,8 @@ def simNEstSeparate(rng = 123, h2Hom = 0.5, h2Het = [0.0, 0.0], N=500):
     simvar2 = est.df[["homo_contrib", "errors"]].var()
     simest2 = simvar2["homo_contrib"] / np.sum(simvar2)
 
-    result1 = est1.estimate(mpheno = ["Y0"], npc = [0], Method = "GCTA", fixed_effects= ["Xc"])
-    result2 = est2.estimate(mpheno = ["Y0"], npc = [0], Method = "GCTA", fixed_effects= ["Xc"])
+    result1 = est1.estimate(continuousPhenos = ["Y0"], npc = [0], Method = "GCTA", fixed_effects= ["Xc"])
+    result2 = est2.estimate(continuousPhenos = ["Y0"], npc = [0], Method = "GCTA", fixed_effects= ["Xc"])
 
     return pd.DataFrame({"EstCombined" : result["h2"], "Est1": result1["h2"], "Est2": result2["h2"],
                          "SimCombined" : simest, "Sim1" : simest1, "Sim2" : simest2})

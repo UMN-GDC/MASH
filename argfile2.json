@@ -8,7 +8,7 @@
   ],
   "out": "/users/4/coffm049/papers/MASH/reanalysis/anthroHeritAdjHE",
   "npc": [2, 10],
-  "mpheno": [
+  "continuousPhenos": [
     "ph_y_anthr__height__r01_001",
     "ph_y_anthr__height__r02_001",
     "ph_y_anthr__height__r03_001",

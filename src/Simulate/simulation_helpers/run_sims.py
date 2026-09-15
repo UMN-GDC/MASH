@@ -54,7 +54,7 @@ def sim_n_est(nsubjects = 1000, h2 = 0.5, nsites = 30,
         ests = h2Estimation()
         ests.df= sim.df
         ests.GRM = sim.GRM
-        ests.mpheno = ["Y1"] 
+        ests.continuousPhenos = ["Y1"] 
         
         # Set args for the estimate method
         ests.args = {

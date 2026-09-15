@@ -97,5 +97,118 @@ def sim_pheno(rng, genotypes, df, h2Hom, h2Het, alpha = -1, phenoname = "Y0", ca
     
     df[str(phenoname)] -= df[str(phenoname)].mean()
     
+    return df, causals
 
+
+def sim_bin_pheno(rng, genotypes, df, h2Hom, h2Het, alpha=-1, phenoname="Y_bin",
+                   prop_causal=[0.1, 0.1], sharedIdx=None, prevalence=0.1):
+    """
+    Simulate a binary phenotype from a genetic liability model.
+    
+    Generates a continuous phenotype using the same genetic model as sim_pheno,
+    then thresholds it at the specified prevalence to produce a binary outcome.
+    
+    Parameters
+    ----------
+    rng : numpy random number generator
+    genotypes : array
+        Genotype matrix.
+    df : pandas dataframe
+        Dataframe containing all covariates and phenotypes.
+    h2Hom : float
+        Heritability for homogeneous (shared) component.
+    h2Het : list of floats
+        Heritability for heterogeneous (cluster-specific) components.
+    alpha : float, optional
+        Exponent for dependency between SNP frequency and effect size. Default is -1.
+    phenoname : str, optional
+        Name prefix for the phenotype. Default is "Y_bin".
+    prop_causal : list of floats, optional
+        Proportion of causal SNPs from shared and unshared regions. Default is [0.1, 0.1].
+    sharedIdx : array, optional
+        Index of SNPs with shared frequencies between populations.
+    prevalence : float, optional
+        Target prevalence of cases (y=1). Default is 0.1.
+    
+    Returns
+    -------
+    df : pandas dataframe
+        Dataframe with binary phenotype column added.
+    causals : array
+        Indices of causal SNPs.
+    """
+    nsubjects, nSNPs = genotypes.shape
+    
+    # sample causal SNPs if user didn't specify their own specific string of causal SNPs
+    causals = np.repeat(False, nSNPs)
+    if sharedIdx is not None:
+        causals[:int(prop_causal[0] * sum(sharedIdx))] = True
+        causals[int(sum(sharedIdx)): int(sum(sharedIdx) + ((nSNPs - sum(sharedIdx)) * prop_causal[1]))] = True
+    
+    nCausal = sum(causals)
+    
+    Xcausal = np.matrix(genotypes[:, causals])
+    freqs = np.asarray(np.mean(Xcausal, axis = 0)/2).flatten()
+    
+    # sample shared (homogeneous) effects
+    prop = (freqs * (1-freqs))**alpha
+    homo_eff = rng.normal(np.repeat(0, nCausal), np.sqrt(h2Hom / nCausal * (2 * prop) ** alpha  * 2 ** (alpha+ 1)), size =  nCausal)
+    homo_eff[np.isinf(homo_eff)] = 0
+    homo_contrib = np.array(np.dot(Xcausal, homo_eff)).flatten()
+    df[f"homo_contrib{phenoname}"] = homo_contrib * np.sqrt(h2Hom / np.var(homo_contrib))
+    nclusts = df.subj_ancestries.nunique()
+    cluster_eff = np.zeros((nCausal, nclusts))
+    cluster_contrib = np.zeros(nsubjects)
+    errors = np.zeros(nsubjects)
+    
+    if nclusts > 1 :
+        for cluster in range(nclusts) :
+            cluster_position = df.subj_ancestries == cluster 
+            cluster_freq = np.asarray(np.mean(genotypes[cluster_position,:][:,causals], axis = 0)/2).flatten()
+            prop = (cluster_freq * (1- cluster_freq)) ** alpha
+            cluster_eff[:,cluster] = rng.normal(np.repeat(0, nCausal), prop, size =  nCausal)
+            cluster_eff[np.isinf(cluster_eff)] = 0
+            cluster_contrib[cluster_position] = np.array(np.dot(Xcausal[cluster_position, :], cluster_eff[:,cluster])).flatten()
+            cluster_contrib[cluster_position]= cluster_contrib[cluster_position] * np.sqrt(h2Het[cluster]/ np.var(cluster_contrib[cluster_position]))
+            cluster_error = rng.normal(0, 1, cluster_position.sum())
+            errors[cluster_position] = cluster_error * np.sqrt((1- h2Hom - h2Het[cluster]) / np.var(cluster_error))
+    else :
+        errors = rng.normal(0, np.sqrt(1-h2Hom), nsubjects)
+    
+    if h2Het[0] == 0 :
+        cluster_contrib = 0
+    df[f"cluster_contrib{phenoname}"] = cluster_contrib
+    df[f"errors{phenoname}"] = errors
+    
+    # sum across all columns with phenoname at the end of the column name
+    df[str(phenoname)] = df.filter(regex = f"{phenoname}").sum(axis = 1)
+    df[str(phenoname)] -= df[str(phenoname)].mean()
+    
+    # Threshold to create binary phenotype based on target prevalence
+    # Standardize continuous phenotype first, then threshold
+    cont_pheno = df[str(phenoname)].values
+    cont_pheno = (cont_pheno - cont_pheno.mean()) / cont_pheno.std()
+    
+    # Calculate threshold to achieve target prevalence
+    from scipy.stats import norm
+    threshold = -norm.ppf(prevalence)
+    
+    # Create binary phenotype: 1 = case, 0 = control
+    # Individuals with higher liability (standardized score > threshold) are cases
+    binary_pheno = (cont_pheno > threshold).astype(int)
+    
+    # Verify prevalence matches target
+    actual_prev = np.mean(binary_pheno)
+    logging.info(f"Binary phenotype '{phenoname}' simulated with prevalence={actual_prev:.4f} (target={prevalence:.4f})")
+    
+    # If prevalence doesn't match well, adjust threshold
+    if abs(actual_prev - prevalence) > 0.05:
+        # Use empirical quantile approach
+        threshold_emp = np.percentile(cont_pheno, (1 - prevalence) * 100)
+        binary_pheno = (cont_pheno > threshold_emp).astype(int)
+        actual_prev = np.mean(binary_pheno)
+        logging.info(f"Adjusted threshold: prevalence={actual_prev:.4f}")
+    
+    df[phenoname] = binary_pheno
+    
     return df, causals

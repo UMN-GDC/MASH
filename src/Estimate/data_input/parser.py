@@ -1,4 +1,4 @@
-#! /usr/bin/env python3
+# ! /usr/bin/env python3
 
 """
 AdjHE command line argument parser
@@ -19,14 +19,20 @@ from Estimate.data_input.types_n_valids import readable_file_or_none, readable_j
 
 #%%
 
-def mpheno_type(value):
+def continuous_pheno_type(value):
     """
-    Argparse type for --mpheno: accept integer phenotype indices or the
+    Argparse type for --continuousPhenos: accept integer phenotype indices or the
     string "ALL" (case-insensitive) to run across all phenotypes.
     """
     if str(value).lower() == "all":
         return "ALL"
     return int(value)
+
+def bin_pheno_type(value):
+    """
+    Argparse type for --binPhenos: accept a string phenotype name or column name.
+    """
+    return str(value)
 
 def get_args() :
     """
@@ -85,12 +91,33 @@ def get_args() :
                         metavar= "#_PCs", 
                         help='Specify the number of PCs to be adjusted for. Can be a list for model comparison')
     
-    parser.add_argument('--mpheno',
+    parser.add_argument('--continuousPhenos',
                         nargs="+",
-                        type=mpheno_type,
+                        type=continuous_pheno_type,
                         metavar= "DESIRED_PHEN_INDEX", 
-                        help='Specify which phenotype to use from phenotype file (Can be a list). The index starts after the FID and IID columns. '
+                        help='Specify which continuous phenotype to use from phenotype file (Can be a list). The index starts after the FID and IID columns. '
                         'Use "ALL" to run across all phenotypes.')
+    
+    parser.add_argument('--binPhenos',
+                        nargs="+",
+                        type=bin_pheno_type,
+                        metavar= "BINARY_PHENO_NAME", 
+                        help='Specify binary phenotype column names to analyze. Requires --prevalence to be specified for each phenotype.')
+    
+    parser.add_argument('--prevalence',
+                        nargs="+",
+                        type=str,
+                        metavar= "PHENO:PREVALENCE", 
+                        help='Specify prevalence for binary phenotypes in format phenotype:prevalence (e.g., "pheno1:0.1"). '
+                        'Required when using --binPhenos.')
+    
+    parser.add_argument('--preprocess',
+                        type=str,
+                        choices=['None', 'Combat', 'Covbat'],
+                        default='None',
+                        metavar= "PREPROCESSING_METHOD", 
+                        help='Specify preprocessing method to apply before estimation. '
+                        'Options: None, Combat, Covbat. Can be used with any estimator method.')
     
     parser.add_argument('--k',
                         type=int,
@@ -182,7 +209,8 @@ def get_args() :
 
     # Set defaults
     parser.set_defaults(PC="None", fast = False, npc=None,
-                        covar="None", mpheno=1, k=0,
+                        covar="None", continuousPhenos=1, binPhenos=None,
+                        prevalence=None, preprocess='None', k=0,
                         prefix = "None", pheno = "None", out = "None",
                         PredLMM = False, RV = None, covar_relates = True,
                         loop_covs=False, argfile = None, covars =1,
@@ -197,6 +225,7 @@ def get_args() :
     # ForTroubleshooting  uncomment the next line
     # args['argfile'] = '/home/christian/Research/Stat_gen/tools/Basu_herit/Example/Arg_file.txt'
     return(args)
+
 
 
 
@@ -220,64 +249,79 @@ def read_flags(raw_args):
         with open(raw_args['argfile']) as f:
             raw_args = json.load(f)
     
-    else : # Read each individual flag
-        
-        # Ensure types 
-        raw_args["k"] = int(raw_args["k"])
-          
+    # Handle backward compatibility: mpheno -> continuousPhenos
+    if 'mpheno' in raw_args and raw_args['mpheno'] is not None:
+        if 'continuousPhenos' not in raw_args or raw_args['continuousPhenos'] is None:
+            raw_args['continuousPhenos'] = raw_args['mpheno']
+    
+    # Ensure types and process arguments (applies to both JSON and CLI paths)
+    raw_args["k"] = int(raw_args.get("k", 0))
+    
+    if "npc" in raw_args and raw_args["npc"] is not None:
         try:
             # convert a string of arugments sto a list
             raw_args['npc'] = eval(raw_args['npc'])
         except:
             # Convert a single integer value to a list
             raw_args['npc'] = list(raw_args['npc'])
-        
-        # Handle qcovar and covar_discrete - convert to list or None
-        for key in ['qcovar', 'covar_discrete']:
-            if key in raw_args and raw_args[key] is not None:
-                if isinstance(raw_args[key], str):
-                    raw_args[key] = raw_args[key].split(',')
-                elif isinstance(raw_args[key], list):
-                    pass  # Already a list
-                else:
-                    raw_args[key] = None
-            
-        ## Do the same for specified covariates
-        # try:
-        #     # Convert to    list of integers of agrument is a list
-        #     raw_args["covars"] = eval(raw_args["covars"])
-        # except: 
-        #     # convert single integer to integer list 
-        #     raw_args["covars"] = raw_args["covars"]
     
-    # Normalize mpheno ("ALL" or list of ints) across both config and CLI paths
-    raw_args['mpheno'] = normalize_mpheno(raw_args.get('mpheno'))
+    # Handle qcovar and covar_discrete - convert to list or None
+    for key in ['qcovar', 'covar_discrete']:
+        if key in raw_args and raw_args[key] is not None:
+            if isinstance(raw_args[key], str):
+                raw_args[key] = raw_args[key].split(',')
+            elif isinstance(raw_args[key], list):
+                pass  # Already a list
+            else:
+                raw_args[key] = None
+    
+    # Parse prevalence strings into a dict {pheno: prevalence}
+    raw_args['prevalence'] = normalize_prevalence(raw_args.get('prevalence'))
+    
+    # Parse binPhenos into a list if it's a string
+    bin_phenos = raw_args.get('binPhenos')
+    if bin_phenos is not None:
+        if isinstance(bin_phenos, str):
+            raw_args['binPhenos'] = [bin_phenos]
+        elif isinstance(bin_phenos, list):
+            raw_args['binPhenos'] = bin_phenos
+        else:
+            raw_args['binPhenos'] = None
+    
+    # Ensure preprocess is set
+    if 'preprocess' not in raw_args or raw_args['preprocess'] is None:
+        raw_args['preprocess'] = 'None'
+    
+    # Normalize continuousPhenos ("ALL" or list of ints) across both config and CLI paths
+    raw_args['continuousPhenos'] = normalize_continuous_phenos(raw_args.get('continuousPhenos'))
+    # Normalize binPhenos across both config and CLI paths
+    raw_args['binPhenos'] = normalize_bin_phenos(raw_args.get('binPhenos'))
     # Normalize na_values to a list of scalars (or None)
     raw_args['na_values'] = normalize_na_values(raw_args.get('na_values'))
     
     return(raw_args)
 
 
-def normalize_mpheno(mpheno):
+def normalize_continuous_phenos(continuous_phenos):
     """
-    Ensure mpheno is either the string "ALL" (case-insensitive), a list of
+    Ensure continuousPhenos is either the string "ALL" (case-insensitive), a list of
     integer phenotype indices, or a list of phenotype column names. Applies to
     both config (JSON argfile) and CLI.
     """
-    if mpheno is None:
+    if continuous_phenos is None:
         return None
-    if isinstance(mpheno, str):
-        if mpheno.lower() == "all":
+    if isinstance(continuous_phenos, str):
+        if continuous_phenos.lower() == "all":
             return "ALL"
         try:
-            return [int(mpheno)]
+            return [int(continuous_phenos)]
         except ValueError:
-            return [mpheno]  # a single column name
-    if isinstance(mpheno, list):
-        if len(mpheno) == 1 and isinstance(mpheno[0], str) and mpheno[0].lower() == "all":
+            return [continuous_phenos]  # a single column name
+    if isinstance(continuous_phenos, list):
+        if len(continuous_phenos) == 1 and isinstance(continuous_phenos[0], str) and continuous_phenos[0].lower() == "all":
             return "ALL"
         out = []
-        for m in mpheno:
+        for m in continuous_phenos:
             if isinstance(m, str):
                 try:
                     out.append(int(m))
@@ -286,7 +330,43 @@ def normalize_mpheno(mpheno):
             else:
                 out.append(m)
         return out
-    return [int(mpheno)]  # single scalar
+    return [int(continuous_phenos)]  # single scalar
+
+
+def normalize_bin_phenos(bin_phenos):
+    """
+    Ensure binPhenos is either None or a list of phenotype column names (strings).
+    Applies to both config (JSON argfile) and CLI.
+    """
+    if bin_phenos is None:
+        return None
+    if isinstance(bin_phenos, str):
+        return [bin_phenos]
+    if isinstance(bin_phenos, list):
+        return [str(b) for b in bin_phenos]
+    return None
+
+
+def normalize_prevalence(prevalence):
+    """
+    Parse prevalence specifications into a dict {pheno: float}.
+    Input format: ['pheno1:0.1', 'pheno2:0.05'] or {'pheno1': 0.1}
+    Returns dict {pheno_name: prevalence_float} or None.
+    """
+    if prevalence is None:
+        return None
+    if isinstance(prevalence, dict):
+        return {str(k): float(v) for k, v in prevalence.items()}
+    if isinstance(prevalence, list):
+        result = {}
+        for item in prevalence:
+            if ':' in str(item):
+                pheno, prev = str(item).split(':', 1)
+                result[str(pheno)] = float(prev)
+            else:
+                result[str(item)] = None  # No prevalence specified
+        return result
+    return None
 
 
 def normalize_na_values(na_values):
@@ -313,7 +393,6 @@ def normalize_na_values(na_values):
         else:
             out.append(v)
     return out
-
 
 
 

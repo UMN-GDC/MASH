@@ -24,11 +24,24 @@ with open("Example/Batch_Arg_file.txt") as f:
         args[key] = val[:-1]
 try:
     # convert a string of arugments sto a list
-    args['mpheno'] = eval(args['mpheno'])
+    args['continuousPhenos'] = eval(args['continuousPhenos'])
 except:
     # Convert a single integer value to a list
-    args['mpheno'] = list(args['mpheno'])
+    args['continuousPhenos'] = list(args['continuousPhenos'])
 
+try:
+    args['binPhenos'] = eval(args.get('binPhenos', 'None'))
+except:
+    args['binPhenos'] = None
+
+try:
+    args['prevalence'] = eval(args.get('prevalence', 'None'))
+except:
+    args['prevalence'] = None
+
+# Ensure preprocess is set
+if 'preprocess' not in args:
+    args['preprocess'] = 'None'
 
 
 
@@ -60,12 +73,12 @@ def single_batch(args, batch_out) :
 #%%
 def split(a, n):
     """
-    Split mphenos (a) into n approximately equal length lists
+    Split phenotypes (a) into n approximately equal length lists
 
     Parameters
     ----------
     a : list
-        list of integers for phenotypes.
+        list of phenotype indices or names.
     n : int
         number of batches to create.
 
@@ -89,7 +102,7 @@ def all_batches(args, nbatches) :
     Parameters
     ----------
     args : dict
-        dictiponary of AdjHE arguments.
+        dictionary of AdjHE arguments.
     nbatches : int
         number of desired batches to run.
 
@@ -98,19 +111,23 @@ def all_batches(args, nbatches) :
     None.
 
     """
-    # split up phenotypes into nbatches roughly equally sized lists
-    pheno_splits =  list(split(args["mpheno"], nbatches))
+    # split up continuous phenotypes into nbatches roughly equally sized lists
+    continuous_splits = list(split(args["continuousPhenos"], nbatches))
+    
+    # split up binary phenotypes into nbatches roughly equally sized lists
+    bin_splits = list(split(args.get("binPhenos", []), nbatches)) if args.get("binPhenos") else []
     
     # create temp args
     temp = args.copy()
     
     # loop over the desired number of batches
     for i in range(0, nbatches) :
-        temp["mpheno"] = pheno_splits[i]
+        if i < len(continuous_splits):
+            temp["continuousPhenos"] = continuous_splits[i]
+        else:
+            temp["continuousPhenos"] = []
+        if i < len(bin_splits):
+            temp["binPhenos"] = bin_splits[i]
+        else:
+            temp["binPhenos"] = []
         single_batch(args = temp, batch_out= args["out"] +"_" + str(i + 1) + "of" + str(nbatches))
-        
-        
-    
-
-
-

@@ -405,11 +405,11 @@ def test_read_flags_na_values_normalization():
     assert normalize_na_values(["NA", "-888"]) == ["NA", -888]
 
 
-def test_read_flags_mpheno_all_from_config():
-    """Test that mpheno 'ALL' is exposed from the config (JSON argfile)."""
+def test_read_flags_continuousPhenos_all_from_config():
+    """Test that continuousPhenos 'ALL' is exposed from the config (JSON argfile)."""
     import json
     config = {
-        "mpheno": "ALL",
+        "continuousPhenos": "ALL",
         "qcovar": [],
         "covar_discrete": [],
     }
@@ -418,31 +418,47 @@ def test_read_flags_mpheno_all_from_config():
         config_file = f.name
     try:
         args = read_flags({"argfile": config_file})
-        assert args["mpheno"] == "ALL"
+        assert args["continuousPhenos"] == "ALL"
         assert args["qcovar"] == []
         assert args["covar_discrete"] == []
     finally:
         os.unlink(config_file)
 
 
-def test_read_flags_mpheno_cli_all():
-    """Test that --mpheno ALL is normalized via the CLI path."""
-    raw = {"argfile": None, "mpheno": ["ALL"], "npc": [2], "k": 0,
-           "qcovar": None, "covar_discrete": None, "na_values": None}
+def test_read_flags_continuousPhenos_cli_all():
+    """Test that --continuousPhenos ALL is normalized via the CLI path."""
+    raw = {"argfile": None, "continuousPhenos": ["ALL"], "npc": [2], "k": 0,
+            "qcovar": None, "covar_discrete": None, "na_values": None}
     args = read_flags(raw)
-    assert args["mpheno"] == "ALL"
+    assert args["continuousPhenos"] == "ALL"
 
 
-def test_read_flags_mpheno_normalization():
-    """Test that mpheno handles ints, numeric strings, and column names."""
-    from Estimate.data_input.parser import normalize_mpheno
-    assert normalize_mpheno("ALL") == "ALL"
-    assert normalize_mpheno("all") == "ALL"
-    assert normalize_mpheno(["ALL"]) == "ALL"
-    assert normalize_mpheno(1) == [1]
-    assert normalize_mpheno([1, 2, 3]) == [1, 2, 3]
-    assert normalize_mpheno(["1", "2"]) == [1, 2]
-    assert normalize_mpheno(["pheno_1", "pheno_2"]) == ["pheno_1", "pheno_2"]
+def test_read_flags_continuousPhenos_normalization():
+    """Test that continuousPhenos handles ints, numeric strings, and column names."""
+    from Estimate.data_input.parser import normalize_continuous_phenos
+    assert normalize_continuous_phenos("ALL") == "ALL"
+    assert normalize_continuous_phenos("all") == "ALL"
+    assert normalize_continuous_phenos(["ALL"]) == "ALL"
+    assert normalize_continuous_phenos(1) == [1]
+    assert normalize_continuous_phenos([1, 2, 3]) == [1, 2, 3]
+    assert normalize_continuous_phenos(["1", "2"]) == [1, 2]
+    assert normalize_continuous_phenos(["pheno_1", "pheno_2"]) == ["pheno_1", "pheno_2"]
+
+
+def test_read_flags_binPhenos():
+    """Test that binPhenos is normalized correctly."""
+    from Estimate.data_input.parser import normalize_bin_phenos
+    assert normalize_bin_phenos(None) is None
+    assert normalize_bin_phenos("pheno1") == ["pheno1"]
+    assert normalize_bin_phenos(["pheno1", "pheno2"]) == ["pheno1", "pheno2"]
+
+
+def test_read_flags_prevalence():
+    """Test that prevalence is parsed into a dict."""
+    from Estimate.data_input.parser import normalize_prevalence
+    assert normalize_prevalence(None) is None
+    assert normalize_prevalence(["pheno1:0.1", "pheno2:0.05"]) == {"pheno1": 0.1, "pheno2": 0.05}
+    assert normalize_prevalence({"pheno1": 0.1}) == {"pheno1": 0.1}
 
 
 def test_resolve_covariates_null_uses_all():
@@ -503,14 +519,20 @@ if __name__ == "__main__":
     test_read_flags_na_values_normalization()
     print("✓ test_read_flags_na_values_normalization passed")
     
-    test_read_flags_mpheno_all_from_config()
-    print("✓ test_read_flags_mpheno_all_from_config passed")
+    test_read_flags_continuousPhenos_all_from_config()
+    print("✓ test_read_flags_continuousPhenos_all_from_config passed")
     
-    test_read_flags_mpheno_cli_all()
-    print("✓ test_read_flags_mpheno_cli_all passed")
+    test_read_flags_continuousPhenos_cli_all()
+    print("✓ test_read_flags_continuousPhenos_cli_all passed")
     
-    test_read_flags_mpheno_normalization()
-    print("✓ test_read_flags_mpheno_normalization passed")
+    test_read_flags_continuousPhenos_normalization()
+    print("✓ test_read_flags_continuousPhenos_normalization passed")
+    
+    test_read_flags_binPhenos()
+    print("✓ test_read_flags_binPhenos passed")
+    
+    test_read_flags_prevalence()
+    print("✓ test_read_flags_prevalence passed")
     
     test_resolve_covariates_null_uses_all()
     print("✓ test_resolve_covariates_null_uses_all passed")
