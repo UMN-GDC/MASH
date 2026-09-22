@@ -133,6 +133,13 @@ def _adjhe_3comp(A, df, mp, random_groups, std):
     ])
 
     try:
+        cond = np.linalg.cond(XtX)
+        if cond > 1e10 or np.isnan(cond) or np.isinf(cond):
+            logging.warning(
+                "AdjHE (random_groups): Ill-conditioned system "
+                f"(cond={cond:.3e}); variance components unreliable, returning NaN"
+            )
+            return np.nan, np.nan, n, trA, trA2
         sigmas = np.linalg.solve(XtX, Xty)
     except np.linalg.LinAlgError:
         logging.warning("AdjHE (random_groups): Singular system in 3-component solve")
@@ -175,7 +182,13 @@ def _package(sigma_g, sigma_e, var_h2):
         )
         h2 = 0
     elif h2 > 1:
-        logging.warning(f"AdjHE: h2 clamped from {h2:.4e} to 1")
-        h2 = 1
+        # h2 > 1 is mathematically impossible for a variance ratio and signals
+        # a collapsed/biased variance solve (e.g. sigma_e ~ 0). Do NOT clamp
+        # to 1 (which would masquerade as perfect heritability); return NaN so
+        # the failure is visible downstream.
+        logging.warning(
+            f"AdjHE: h2={h2:.4e} exceeds 1 (invalid model fit); returning NaN"
+        )
+        return {"h2": np.nan, "var(h2)": var_h2}
 
     return {"h2": h2, "var(h2)": var_h2}
