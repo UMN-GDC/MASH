@@ -10,14 +10,14 @@ def AdjHE(A, df, mp, random_groups=None, npc=0, std=False):
     A = np.asarray(A, dtype=float)
 
     if random_groups is None:
-        sigma_g, sigma_e, n, trA, trA2 = _adjhe_2comp(A, df, mp, npc, std)
+        sigma_g, sigma_s, sigma_e, n, trA, trA2 = _adjhe_2comp(A, df, mp, npc, std)
     else:
         df = df.sort_values(random_groups).dropna(subset=[random_groups])
         A = A[df.index][:, df.index]
-        sigma_g, sigma_e, n, trA, trA2 = _adjhe_3comp(A, df, mp, random_groups, std)
+        sigma_g, sigma_s, sigma_e, n, trA, trA2 = _adjhe_3comp(A, df, mp, random_groups, std)
 
     var_h2 = _h2_variance(n, trA, trA2)
-    return _package(sigma_g, sigma_e, var_h2)
+    return _package(sigma_g, sigma_s, sigma_e, var_h2)
 
 
 def _extract_y(df, mp, std):
@@ -60,6 +60,8 @@ def _q_projections(df, npc, A, y, n):
 
 
 def _adjhe_2comp(A, df, mp, npc, std):
+    """Two-component solve. Returns (sigma_g, sigma_s, sigma_e, n, trA, trA2)
+    with sigma_s = NaN (no site component in this path)."""
     y = _extract_y(df, mp, std)
     n = A.shape[0]
     trA = np.trace(A)
@@ -82,7 +84,7 @@ def _adjhe_2comp(A, df, mp, npc, std):
             f"yAy={yAy:.4e}, yty={yty:.4e}, "
             f"yAy_adj={yAy_adj:.4e}, yty_adj={yty_adj:.4e}"
         )
-        return np.nan, np.nan, n, trA, trA2
+        return np.nan, np.nan, np.nan, n, trA, trA2
 
     sigma_g = (yAy_adj * n_adj - trA_adj * yty_adj) / det
     sigma_e = (trA2_adj * yty_adj - trA_adj * yAy_adj) / det
@@ -95,10 +97,12 @@ def _adjhe_2comp(A, df, mp, npc, std):
             f"topleft={trA2_adj:.4e}, offdiag={trA_adj:.4e}, bottomright={n_adj:.4e}"
         )
 
-    return sigma_g, sigma_e, n, trA, trA2
+    return sigma_g, np.nan, sigma_e, n, trA, trA2
 
 
 def _adjhe_3comp(A, df, mp, random_groups, std):
+    """Three-component solve (genetic + site + residual).
+    Returns (sigma_g, sigma_s, sigma_e, n, trA, trA2)."""
     y = _extract_y(df, mp, std)
     n = A.shape[0]
 
@@ -139,15 +143,15 @@ def _adjhe_3comp(A, df, mp, random_groups, std):
                 "AdjHE (random_groups): Ill-conditioned system "
                 f"(cond={cond:.3e}); variance components unreliable, returning NaN"
             )
-            return np.nan, np.nan, n, trA, trA2
+            return np.nan, np.nan, np.nan, n, trA, trA2
         sigmas = np.linalg.solve(XtX, Xty)
     except np.linalg.LinAlgError:
         logging.warning("AdjHE (random_groups): Singular system in 3-component solve")
-        return np.nan, np.nan, n, trA, trA2
+        return np.nan, np.nan, np.nan, n, trA, trA2
 
     if np.any(np.isnan(sigmas)):
         logging.warning("AdjHE (random_groups): NaN in solve result")
-        return np.nan, np.nan, n, trA, trA2
+        return np.nan, np.nan, np.nan, n, trA, trA2
 
     if sigmas[0] < 0:
         logging.warning(
@@ -155,7 +159,7 @@ def _adjhe_3comp(A, df, mp, random_groups, std):
             f"sigmas=({sigmas[0]:.4e}, {sigmas[1]:.4e}, {sigmas[2]:.4e})"
         )
 
-    return sigmas[0], sigmas[2], n, trA, trA2
+    return sigmas[0], sigmas[1], sigmas[2], n, trA, trA2
 
 
 def _h2_variance(n, trA, trA2):
@@ -168,10 +172,12 @@ def _h2_variance(n, trA, trA2):
     return v
 
 
-def _package(sigma_g, sigma_e, var_h2):
+def _package(sigma_g, sigma_s, sigma_e, var_h2):
+    """Package variance components + h2. G/E/S always pass through (NaN on
+    failure) so post-hoc filtering on variance collapse is possible."""
     if np.isnan(sigma_g):
         logging.warning("AdjHE: Estimate is NaN (singular system, returning NaN)")
-        return {"h2": np.nan, "var(h2)": var_h2}
+        return {"h2": np.nan, "var(h2)": var_h2, "G": np.nan, "E": np.nan, "S": np.nan}
 
     h2 = sigma_g / (sigma_g + sigma_e)
 
@@ -189,6 +195,7 @@ def _package(sigma_g, sigma_e, var_h2):
         logging.warning(
             f"AdjHE: h2={h2:.4e} exceeds 1 (invalid model fit); returning NaN"
         )
-        return {"h2": np.nan, "var(h2)": var_h2}
+        return {"h2": np.nan, "var(h2)": var_h2,
+                "G": sigma_g, "E": sigma_e, "S": sigma_s}
 
-    return {"h2": h2, "var(h2)": var_h2}
+    return {"h2": h2, "var(h2)": var_h2, "G": sigma_g, "E": sigma_e, "S": sigma_s}
