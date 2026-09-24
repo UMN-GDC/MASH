@@ -72,8 +72,9 @@ def ReadGRMBin(prefix, sub_ids = None, args = None):
     GRM = GRM + GRM.T - np.diag(np.diag(GRM))
 
     # drop missing
-    GRM = GRM[np.invert(ids["missing"]),:][:,np.invert(ids["missing"])]
-    ids = ids.dropna()[["FID", "IID"]]
+    keep = np.invert(ids["missing"])
+    GRM = GRM[keep, :][:, keep]
+    ids = ids.loc[keep, ["FID", "IID"]].reset_index(drop=True)
 
     if sub_ids != None :
         sub_fid_col = args.get("fid_col", "FID") if args else "FID"
