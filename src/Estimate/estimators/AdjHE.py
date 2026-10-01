@@ -14,7 +14,7 @@ def AdjHE(A, df, mp, random_groups=None, npc=0, std=False):
     else:
         df = df.sort_values(random_groups).dropna(subset=[random_groups])
         A = A[df.index][:, df.index]
-        sigma_g, sigma_s, sigma_e, n, trA, trA2, flag = _adjhe_3comp(A, df, mp, random_groups, std)
+        sigma_g, sigma_s, sigma_e, n, trA, trA2, flag = _adjhe_3comp(A, df, mp, random_groups, npc, std)
 
     var_h2 = _h2_variance(n, trA, trA2)
     return _package(sigma_g, sigma_s, sigma_e, var_h2, flag)
@@ -102,18 +102,29 @@ def _adjhe_2comp(A, df, mp, npc, std):
     return sigma_g, np.nan, sigma_e, n, trA, trA2, flag
 
 
-def _adjhe_3comp(A, df, mp, random_groups, std):
+def _adjhe_3comp(A, df, mp, random_groups, npc, std):
     """Three-component solve (genetic + site + residual).
     Returns (sigma_g, sigma_s, sigma_e, n, trA, trA2, flag)."""
     y = _extract_y(df, mp, std)
     n = A.shape[0]
 
-    proj_cols = [c for c in df.columns if c.startswith("pc")]
-    proj_cols.append(random_groups)
-    X = np.array(pd.get_dummies(df[proj_cols]))
-
-    q, _ = np.linalg.qr(X)
-    Q = np.eye(n) - q @ q.T
+    # Project out the PCs only -- the same set _q_projections uses for the
+    # 2-component path, sliced to npc so `npc` actually selects columns.
+    #
+    # random_groups must NOT join this projection. S is built from the very
+    # same site indicator matrix D (S = block_diag of ones == D D'), so if the
+    # site dummies are spanned by q then Q D = 0 and
+    #     QSQ = Q D D' Q = (Q D)(Q D)' = 0
+    # identically, leaving XtX with a zero middle row and cond = inf for every
+    # phenotype, npc and sample size. A component being estimated as a random
+    # effect has no business being projected away as a fixed effect.
+    pc_cols = [c for c in df.columns if c.startswith("pc")][:npc]
+    if pc_cols:
+        X = np.array(pd.get_dummies(df[pc_cols]))
+        q, _ = np.linalg.qr(X)
+        Q = np.eye(n) - q @ q.T
+    else:
+        Q = np.eye(n)
 
     sizes = np.unique(df[random_groups], return_counts=True)[1]
     S = block_diag(*[np.ones((s, s)) for s in sizes])
